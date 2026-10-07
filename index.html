@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0a0e17" />
+<meta name="theme-color" content="#0d0b12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Abax Tracker" />
@@ -24,36 +24,37 @@
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   /* touch-action:manipulation wyłącza opóźnienie 300ms i double-tap zoom na mobilkach */
   :root {
-    --ink: #070a12;            /* tekst na jasnych przyciskach */
+    --ink: #0d0b12;            /* tekst na jasnych przyciskach */
     --bg: var(--ink);
-    --bg-grad: radial-gradient(circle at 50% 0%, #0f172a 0%, var(--bg) 75%);
-    --surface: rgba(255, 255, 255, 0.03);
-    --surface-2: rgba(255, 255, 255, 0.04);
-    --surface-hover: rgba(226, 232, 240, 0.1);
-    --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b;
+    --bg-grad: radial-gradient(circle at 50% 0%, #1e172a 0%, var(--bg) 80%);
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-2: rgba(255, 255, 255, 0.06);
+    --surface-hover: rgba(168, 85, 247, 0.15);
+    --slate-800: #1a1625; --slate-700: #2a243a; --slate-600: #3c3452; --slate-500: #6b5c82;
     --tap: 44px;               /* minimalny cel dotyku */
     --pc: var(--silver);       /* kolor gracza (ustawiany klasami .c0–.c7) */
-    --card-bg: rgba(15, 23, 42, 0.75);
-    --card-inner: #0f172a;
+    --card-bg: rgba(26, 22, 37, 0.8);
+    --card-inner: #161220;
 
-    --silver: #e2e8f0;
+    --silver: #e9d5ff;
     --silver-light: #ffffff;
-    --silver-dark: #94a3b8;
-    --silver-grad: linear-gradient(135deg, #94a3b8 0%, #f1f5f9 50%, #64748b 100%);
+    --silver-dark: #a855f7;
+    --silver-grad: linear-gradient(135deg, #a855f7 0%, #c084fc 50%, #7e22ce 100%);
 
     --green-grad: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
     --red-grad: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #fb7185 100%);
 
-    --border: rgba(226, 232, 240, 0.25);
-    --border-glow: rgba(226, 232, 240, 0.08);
+    --border: rgba(168, 85, 247, 0.25);
+    --border-glow: rgba(168, 85, 247, 0.12);
 
     --green: #10b981;
     --red: #f43f5e;
-    --text-light: #f8fafc;
+    --text-light: #f5f3ff;
     /* Podbity kontrast tekstu pomocniczego (WCAG AA na ciemnym tle) */
-    --text-muted: #a8b7cb;
+    --text-muted: #c4b5fd;
 
     --fs-mult: 1;
+    color-scheme: dark;      /* ciemne paski przewijania i natywne kontrolki */
 
     /* Systemowy stack czcionek — zero zapytań sieciowych */
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -64,6 +65,7 @@
     background-image: var(--bg-grad);
     color: var(--text-light);
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   body {
@@ -71,6 +73,7 @@
     margin: 0 auto;
     padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
   }
@@ -81,7 +84,7 @@
     text-align: center;
     padding: 16px 0;
     font-weight: 900;
-    background: linear-gradient(135deg, #ffffff 0%, var(--silver-light) 50%, var(--silver) 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 50%, #c084fc 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
@@ -114,7 +117,6 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
-    backdrop-filter: blur(16px);
     transition: border-color 0.2s;
   }
 
@@ -124,17 +126,17 @@
   .btn {
     display: block;
     width: 100%;
-    border: 1px solid var(--silver);
+    border: 1px solid #c084fc;
     padding: 14px;
     font-size: calc(14px * var(--fs-mult));
     font-weight: 800;
     letter-spacing: 1.5px;
     background: var(--silver-grad);
-    color: var(--ink);
+    color: #ffffff;
     cursor: pointer;
     transition: transform .1s, filter .15s, box-shadow .15s;
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(226, 232, 240, 0.15);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
     text-transform: uppercase;
   }
   .btn:active { transform: scale(.98); }
@@ -149,7 +151,7 @@
     min-height: var(--tap);
     background: var(--surface);
     border: 1px solid var(--border);
-    color: var(--silver);
+    color: var(--text-light);
     font-weight: 700;
     padding: 0 14px;
     font-size: calc(13px * var(--fs-mult));
@@ -166,7 +168,7 @@
 
   input[type=text], input[type=tel] {
     width: 100%;
-    background: rgba(7, 10, 18, 0.8);
+    background: rgba(13, 11, 18, 0.85);
     border: 1px solid var(--border);
     color: #fff;
     padding: 12px;
@@ -177,11 +179,11 @@
     border-radius: 8px;
     transition: border-color 0.2s;
   }
-  input[type=text]:focus, input[type=tel]:focus { border-color: var(--silver); box-shadow: 0 0 10px rgba(226, 232, 240, 0.2); }
+  input[type=text]:focus, input[type=tel]:focus { border-color: var(--silver-dark); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
 
   .colors { display:grid; grid-template-columns:repeat(4, 1fr); justify-items:center; gap:8px; margin-top:10px; }
   .dot { width:var(--tap); height:var(--tap); background:var(--pc); border:2px solid var(--bg); border-radius:50%; cursor:pointer; flex-shrink:0; transition:transform .15s; padding:0; }
-  .dot.sel { border-color:#fff; transform:scale(1.1); box-shadow: 0 0 12px var(--silver); }
+  .dot.sel { border-color:#fff; transform:scale(1.1); box-shadow: 0 0 12px var(--silver-dark); }
   .dot:disabled { opacity:.2; pointer-events:none; }
 
   .avatar { width:16px; height:16px; border-radius:50%; flex-shrink:0; background:var(--pc); border: 1px solid rgba(255,255,255,0.2); }
@@ -194,23 +196,24 @@
     border: 1px solid var(--border);
     padding: 12px 14px;
     margin-bottom: 8px;
-    border-left: 4px solid var(--silver);
+    border-left: 4px solid var(--silver-dark);
     border-radius: 8px;
   }
   .name { font-size: calc(15px * var(--fs-mult)); color: var(--text-light); font-weight: 600; }
-  .scroll { flex:1; overflow-y:auto; margin-top:4px; }
+  .scroll { flex:1; overflow-y:auto; margin-top:4px; overflow-anchor:none; }
+  body { overflow-anchor:none; }
 
   .score-num {
     font-size: clamp(40px, calc(56px * var(--fs-mult)), 84px);
     font-weight: 900;
     text-align: center;
     line-height: 1;
-    background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #e9d5ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     transition: transform .18s ease;
   }
-  .score-num.bump { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--silver)); }
+  .score-num.bump { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--silver-dark)); }
   .pending { font-size: calc(22px * var(--fs-mult)); font-weight: 800; }
 
   .score-btns { display:flex; flex-wrap:nowrap; gap:6px; margin-top:14px; }
@@ -220,7 +223,7 @@
     min-height: var(--tap);
     padding: 10px 2px;
     background: var(--surface-2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
     color: var(--text-light);
     font-size: calc(var(--btn-fs, 14px) * var(--fs-mult));
     font-weight: 700;
@@ -230,10 +233,12 @@
     white-space: nowrap;
     overflow: hidden;
   }
-  .score-btns button:active { background: rgba(226, 232, 240, 0.2); border-color: var(--silver); }
+  .score-btns button:active { background: rgba(168, 85, 247, 0.3); border-color: var(--silver-dark); }
   .score-btns button.amount-btn { border-style: dashed; border-color: var(--border-glow); background: rgba(255,255,255,0.02); color: var(--silver); }
 
   .confirm-row { display:flex; gap:10px; margin-top:12px; }
+  /* miejsce na ✕/✓ jest zarezerwowane zawsze — układ nie skacze po kliknięciu +/− */
+  .confirm-row.idle { visibility:hidden; }
   .confirm-row button {
     flex:1;
     padding:12px 0;
@@ -254,7 +259,7 @@
   }
   .confirm-row button.btn-apply {
     background: var(--green-grad);
-    color: var(--ink);
+    color: #ffffff;
     border: 1px solid rgba(16, 185, 129, 0.8);
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
   }
@@ -278,12 +283,12 @@
     align-items:center;
     justify-content:center;
   }
-  .history-chips .chip:hover { border-color: var(--silver); background: rgba(226,232,240,0.08); }
+  .history-chips .chip:hover { border-color: var(--silver-dark); background: rgba(168,85,247,0.12); }
   .history-chips .chip:active { transform: scale(.94); }
   .history-chips .chip.empty { opacity:.25; pointer-events:none; font-weight:600; color:var(--text-muted); }
 
-  .dialog-back { position:fixed; inset:0; background:rgba(7, 10, 18, 0.85); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; }
-  .dialog { background:var(--card-inner); border:1px solid var(--silver); padding:24px; width:100%; max-width:340px; margin:0 auto; animation:dialogIn .18s ease-out; box-shadow:0 20px 50px rgba(0,0,0,0.9), 0 0 30px var(--surface-hover); border-radius:12px; max-height: calc(100vh - 40px); overflow-y:auto; }
+  .dialog-back { position:fixed; inset:0; background:rgba(13, 11, 18, 0.88); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; }
+  .dialog { background:var(--card-inner); border:1px solid var(--silver-dark); padding:24px; width:100%; max-width:340px; margin:0 auto; animation:dialogIn .18s ease-out; box-shadow:0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(168, 85, 247, 0.2); border-radius:12px; max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y:auto; }
   .dialog h3 { font-size: calc(20px * var(--fs-mult)); margin-bottom:12px; color:var(--text-light); text-align:center; border-bottom:1px solid var(--border); padding-bottom:8px; font-weight:800; }
   .dialog-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
   .dialog-actions.stack { flex-direction:column; align-items:stretch; }
@@ -291,7 +296,7 @@
 
   .empty { text-align:center; color:var(--text-muted); font-size: calc(14px * var(--fs-mult)); padding:36px 12px; line-height:1.6; font-style:italic; }
   .header-row { display:flex; align-items:center; gap:4px; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; }
-  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--slate-800); border:1px solid var(--silver); color:#fff; font-size: calc(12px * var(--fs-mult)); font-weight:600; padding:10px 20px; z-index:99; animation:toastIn .22s ease-out; box-shadow:0 10px 25px rgba(0,0,0,0.8); border-radius:30px; letter-spacing:0.5px; max-width: 90vw; text-align:center; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--slate-800); border:1px solid var(--silver-dark); color:#fff; font-size: calc(12px * var(--fs-mult)); font-weight:600; padding:10px 20px; z-index:99; animation:toastIn .22s ease-out; box-shadow:0 10px 25px rgba(0,0,0,0.8); border-radius:30px; letter-spacing:0.5px; max-width: 90vw; text-align:center; }
   .tiny { font-size: calc(11px * var(--fs-mult)); color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px; }
   .mt { margin-top:12px; }
   .winner { font-size: calc(32px * var(--fs-mult)); font-weight:900; background:linear-gradient(135deg, #fff 0%, var(--silver) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; padding:8px 0; }
@@ -299,34 +304,44 @@
   .dlg-btn { flex:1; min-height:var(--tap); padding:12px 0; font-size: calc(13px * var(--fs-mult)); font-weight:800; cursor:pointer; border:1px solid var(--border); border-radius:8px; transition:transform .05s; text-transform:uppercase; letter-spacing:0.5px; background:transparent; color:var(--text-light); }
   .dlg-btn:active { transform:scale(.98); }
   .dlg-btn.secondary { background:transparent; color:var(--text-light); }
-  .dlg-btn.green { background:var(--green-grad); color:var(--ink); border-color:var(--green); box-shadow:0 4px 15px rgba(16, 185, 129, 0.2); }
+  .dlg-btn.green { background:var(--green-grad); color:#fff; border-color:var(--green); box-shadow:0 4px 15px rgba(16, 185, 129, 0.2); }
   .dlg-btn.red { background:var(--red-grad); color:#fff; border-color:var(--red); box-shadow:0 4px 15px rgba(244, 63, 94, 0.2); }
   .dlg-btn.neutral { background:var(--slate-700); color:#fff; border-color:var(--slate-600); }
-  .dlg-btn.solid { background:var(--silver-grad); color:var(--ink); border-color:var(--silver); box-shadow:0 4px 15px rgba(226, 232, 240, 0.15); }
+  .dlg-btn.solid { background:var(--silver-grad); color:#fff; border-color:var(--silver-dark); box-shadow:0 4px 15px rgba(168, 85, 247, 0.25); }
 
-  .lang-btn { flex:1; height:44px; background:var(--surface); border:1px solid var(--border); color:var(--silver); font-weight:800; font-size:calc(13px * var(--fs-mult)); letter-spacing:1px; border-radius:8px; cursor:pointer; transition:all .15s; }
-  .lang-btn.sel { background:var(--silver-grad); color:var(--ink); border-color:var(--silver); box-shadow:0 4px 15px rgba(226, 232, 240, 0.15); }
+  .lang-btn { flex:1; height:44px; background:var(--surface); border:1px solid var(--border); color:var(--text-light); font-weight:800; font-size:calc(13px * var(--fs-mult)); letter-spacing:1px; border-radius:8px; cursor:pointer; transition:all .15s; }
+  .lang-btn.sel { background:var(--silver-grad); color:#fff; border-color:var(--silver-dark); box-shadow:0 4px 15px rgba(168, 85, 247, 0.25); }
   .lang-btn:active { transform:scale(.97); }
 
   .rank-list { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
   .rank-row { display:flex; align-items:center; gap:12px; border:1px solid var(--border); padding:10px 14px; background:rgba(255,255,255,0.02); border-radius:8px; }
-  .rank-row.first { border-color:var(--silver); background:var(--surface-hover); box-shadow:0 0 15px rgba(226, 232, 240, 0.15); }
+  .rank-row.first { border-color:var(--silver-dark); background:var(--surface-hover); box-shadow:0 0 15px rgba(168, 85, 247, 0.25); }
   .rank-pos { width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--slate-800); color:var(--silver); font-weight:800; font-size:12px; border-radius:50%; border:1px solid var(--border); }
-  .rank-row.first .rank-pos { color:var(--ink); background:var(--silver); border-color:var(--silver); }
+  .rank-row.first .rank-pos { color:#fff; background:var(--silver-dark); border-color:var(--silver-dark); }
   .rank-name { flex:1; display:flex; align-items:center; gap:10px; font-size: calc(15px * var(--fs-mult)); color:var(--text-light); min-width:0; font-weight:600; }
   .rank-name .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .rank-score { flex-shrink:0; min-width:48px; text-align:right; font-size: calc(22px * var(--fs-mult)); font-weight:800; color:var(--text-light); }
 
   .icon-btn { display:flex; align-items:center; justify-content:center; width:var(--tap); height:var(--tap); background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; flex-shrink:0; padding:0; transition:all .15s; }
-  .icon-btn:hover { border-color:var(--silver); background:var(--surface-hover); }
+  .icon-btn:hover { border-color:var(--silver-dark); background:var(--surface-hover); }
   .icon-btn:active { transform:scale(.93); }
   .icon-btn svg { width:18px; height:18px; display:block; }
   .icon-btn:disabled { opacity:.2; pointer-events:none; }
   .icon-btn.gear { width:48px; height:48px; }
   .icon-btn.gear svg { width:20px; height:20px; }
 
+  /* Podświetlenie po najechaniu — tylko urządzenia z myszą (bez „przyklejonego” hover na dotyku) */
+  @media (hover:hover) {
+    .score-btns button:hover { background:rgba(168,85,247,.18); border-color:var(--silver-dark); }
+    .btn:hover:not(:disabled) { filter:brightness(1.1); box-shadow:0 4px 24px rgba(168,85,247,.45); }
+    .dlg-btn:hover { filter:brightness(1.12); border-color:var(--silver-dark); }
+    .dlg-btn.secondary:hover { background:var(--surface-hover); }
+    .lang-btn:hover:not(.sel) { border-color:var(--silver-dark); background:var(--surface-hover); }
+    .confirm-row button:hover { filter:brightness(1.1); }
+  }
+
   /* WIDOCZNY FOCUS DLA NAWIGACJI KLAWIATURĄ (dostępność) */
-  :focus-visible { outline: 2px solid var(--silver-light); outline-offset: 2px; }
+  :focus-visible { outline: 2px solid #c084fc; outline-offset: 2px; }
   .dot:focus-visible, .chip:focus-visible { outline-offset: 1px; }
 
   @keyframes dialogIn{
@@ -354,6 +369,8 @@
   .actions-row { gap:10px; margin-bottom:16px; align-items:stretch; }
   .counter { text-align:center; color:var(--silver); }
   .header-row.between { justify-content:space-between; }
+  /* nagłówek ekranu gry zostaje na wierzchu podczas przewijania listy graczy */
+  .header-row.sticky { position:sticky; top:0; z-index:10; margin:0 -16px 8px; padding:8px 16px; background:rgba(13,11,18,.88); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); }
   .row-left.tools { gap:8px; margin-left:auto; }
   .row-left.col { flex-direction:column; align-items:flex-start; gap:2px; }
   .btn-pair { display:flex; gap:8px; }
@@ -362,6 +379,11 @@
   .score-wrap { flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:8px; }
   .score-btns.s14 { --btn-fs:14px; } .score-btns.s12 { --btn-fs:12px; }
   .score-btns.s11 { --btn-fs:11px; } .score-btns.s10 { --btn-fs:10px; }
+  .resume-list { margin-top:10px; }
+  .resume-row { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); }
+  .resume-row:last-child { border-bottom:0; }
+  .resume-row .name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .resume-score { flex-shrink:0; font-weight:800; font-size:calc(18px * var(--fs-mult)); }
   .save-meta { font-size:calc(11px * var(--fs-mult)); color:var(--text-muted); }
   .font-ctl { justify-content:center; gap:16px; }
   .font-btn { width:48px; padding:0; font-size:16px; }
@@ -379,7 +401,7 @@
 
   /* ===== Przeciąganie kart ===== */
   .drag-handle { touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
-  .card.dragging { z-index:5; cursor:grabbing; transition:none; border-color:var(--silver); box-shadow:0 18px 40px rgba(0,0,0,.8), 0 0 0 1px var(--silver); }
+  .card.dragging { z-index:5; cursor:grabbing; transition:none; border-color:var(--silver-dark); box-shadow:0 18px 40px rgba(0,0,0,.9), 0 0 0 1px var(--silver-dark); }
 
   /* ===== Dostępność: ograniczony ruch ===== */
   @media (prefers-reduced-motion: reduce) {
@@ -389,6 +411,7 @@
 </head>
 <body>
 <main id="app"></main>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script>
 "use strict";
 
@@ -406,7 +429,7 @@ const STR = {
     addPlayer: "DODAJ GRACZA", addAtLeastOne: "Dodaj przynajmniej 1 gracza…",
     players: "Gracze", letsGo: "DO BOJU!", scoring: "PUNKTACJA",
     backToMenu: "Wróć do menu głównego", back: "Wróć", undo: "Cofnij punktację",
-    saveState: "Zapisz stan gry", editLineupBtn: "Edytuj skład", end: "Koniec",
+    editLineupBtn: "Edytuj skład", end: "Koniec",
     removePlayer: "Usuń gracza", editPlayerBtn: "Edytuj gracza",
     firstPlayer: "Pierwszy gracz", drawAsk: "Czy wylosować pierwszego gracza?",
     no: "Nie", draw: "Losuj", starts: "ZACZYNA", letsPlay: "Gramy!",
@@ -417,11 +440,12 @@ const STR = {
     addPoints: "Dodaj punkty", subtractPoints: "Odejmij punkty",
     enterNumber: "Wpisz liczbę punktów", numberPlaceholder: "np. 25",
     add: "Dodaj", subtract: "Odejmij", editEntryTitle: "Edytuj wpis",
-    editEntryHint: "Zmodyfikuj lub usuń ten wpis", saveGameTitle: "Zapisz stan gry",
-    saveName: "Nazwa zapisu", saveWord: "Zapis", exitQ: "Wyjść z gry?",
-    unsavedProgress: "Masz niezapisany postęp w tej grze.",
-    saveAndExit: "Zapisz i wyjdź", exitNoSave: "Wyjdź bez zapisywania",
-    loadSaveQ: "Wczytać zapis?", loadWarn: "Bieżąca gra w toku zostanie zastąpiona (jeśli chcesz ją zachować, najpierw wróć i zapisz ją).",
+    editEntryHint: "Zmodyfikuj lub usuń ten wpis",
+    saveWord: "Zapis", exitQ: "Wyjść do menu?",
+    exitInfo: "Stan gry zostanie zapisany. Wznowisz ją przyciskiem „WZNÓW GRĘ” na ekranie głównym.",
+    exitPending: "Niezatwierdzone punkty (te przed kliknięciem ✓) nie zostaną zapisane.",
+    exitBtn: "Wyjdź",
+    loadSaveQ: "Wczytać zapis?", loadWarn: "Gra w toku z ekranu głównego zostanie przeniesiona do zapisanych gier (Autozapis).",
     load: "Wczytaj", deleteSaveQ: "Usunąć zapis?", importQ: "Zaimportować dane?",
     importFoundPrefix: "Znaleziono w pliku: ", lineupsWord: "składów", savesWord: "zapisanych gier",
     importWarn: "Obecne dane i ustawienia zostaną nadpisane tymi z pliku.",
@@ -442,7 +466,7 @@ const STR = {
     errSave: "Błąd zapisu danych",
     nameEmpty: "Imię nie może być puste", numPositive: "Podaj liczbę większą od zera",
     maxPairs: "Maksymalnie {n} pary przycisków", numRange: "Podaj liczbę od 1 do 9999",
-    valueExists: "Taka wartość już istnieje", gameSaved: "Zapisano stan gry",
+    valueExists: "Taka wartość już istnieje",
     exported: "Wyeksportowano dane", exportErr: "Błąd eksportu",
     badFile: "Nieprawidłowy plik", fileReadErr: "Nie udało się odczytać pliku",
     imported: "Zaimportowano dane",
@@ -454,7 +478,11 @@ const STR = {
     dragHandle: "Przenieś gracza (strzałki góra/dół)", colorTaken: "zajęty",
     colorNames: ["srebrny","niebieski","zielony","czerwony","pomarańczowy","fioletowy","różowy","żółty"],
     importSkipped: "Pominięto uszkodzone lub nadmiarowe wpisy: {n}.",
-    testsOk: "Testy: {p}/{t} OK", testsFail: "TESTY NIE PRZESZŁY: {p}/{t}"
+    testsOk: "Testy: {p}/{t} OK", testsFail: "TESTY NIE PRZESZŁY: {p}/{t}",
+    resumeTitle: "GRA W TOKU", resumeBtn: "WZNÓW GRĘ", resumeMeta: "Zapisano {d} • wpisów punktacji: {n}", discardResume: "Odrzuć niedokończoną grę",
+    discardResumeQ: "Odrzucić niedokończoną grę?", discardResumeWarn: "Wyniki z tej gry zostaną usunięte.",
+    discard: "Odrzuć", autosaveName: "Autozapis",
+    resumeArchived: "Poprzednia gra trafiła do zapisanych gier (Autozapis)"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME",
@@ -466,7 +494,7 @@ const STR = {
     addPlayer: "ADD PLAYER", addAtLeastOne: "Add at least 1 player…",
     players: "Players", letsGo: "LET'S GO!", scoring: "SCORE",
     backToMenu: "Back to main menu", back: "Back", undo: "Undo score change",
-    saveState: "Save game state", editLineupBtn: "Edit lineup", end: "End",
+    editLineupBtn: "Edit lineup", end: "End",
     removePlayer: "Remove player", editPlayerBtn: "Edit player",
     firstPlayer: "First player", drawAsk: "Draw the first player?",
     no: "No", draw: "Draw", starts: "STARTS", letsPlay: "Let's play!",
@@ -477,11 +505,12 @@ const STR = {
     addPoints: "Add points", subtractPoints: "Subtract points",
     enterNumber: "Enter the number of points", numberPlaceholder: "e.g. 25",
     add: "Add", subtract: "Subtract", editEntryTitle: "Edit entry",
-    editEntryHint: "Modify or delete this entry", saveGameTitle: "Save game state",
-    saveName: "Save name", saveWord: "Save", exitQ: "Leave the game?",
-    unsavedProgress: "You have unsaved progress in this game.",
-    saveAndExit: "Save and exit", exitNoSave: "Exit without saving",
-    loadSaveQ: "Load this save?", loadWarn: "The current game in progress will be replaced (go back and save it first if you want to keep it).",
+    editEntryHint: "Modify or delete this entry",
+    saveWord: "Save", exitQ: "Back to menu?",
+    exitInfo: "The game state will be saved. You can resume it with the “RESUME GAME” button on the home screen.",
+    exitPending: "Unconfirmed points (before tapping ✓) will not be saved.",
+    exitBtn: "Leave",
+    loadSaveQ: "Load this save?", loadWarn: "The game in progress on the home screen will be moved to saved games (Autosave).",
     load: "Load", deleteSaveQ: "Delete save?", importQ: "Import data?",
     importFoundPrefix: "Found in the file: ", lineupsWord: "lineups", savesWord: "saved games",
     importWarn: "Current data and settings will be overwritten with the contents of this file.",
@@ -502,7 +531,7 @@ const STR = {
     errSave: "Error saving data",
     nameEmpty: "Name cannot be empty", numPositive: "Enter a number greater than zero",
     maxPairs: "Maximum of {n} button pairs", numRange: "Enter a number from 1 to 9999",
-    valueExists: "This value already exists", gameSaved: "Game state saved",
+    valueExists: "This value already exists",
     exported: "Data exported", exportErr: "Export error",
     badFile: "Invalid file", fileReadErr: "Could not read the file",
     imported: "Data imported",
@@ -513,7 +542,11 @@ const STR = {
     dragHandle: "Move player (up/down arrow keys)", colorTaken: "taken",
     colorNames: ["silver","blue","green","red","orange","purple","pink","yellow"],
     importSkipped: "Skipped damaged or surplus entries: {n}.",
-    testsOk: "Tests: {p}/{t} OK", testsFail: "TESTS FAILED: {p}/{t}"
+    testsOk: "Tests: {p}/{t} OK", testsFail: "TESTS FAILED: {p}/{t}",
+    resumeTitle: "GAME IN PROGRESS", resumeBtn: "RESUME GAME", resumeMeta: "Saved {d} • score entries: {n}", discardResume: "Discard unfinished game",
+    discardResumeQ: "Discard unfinished game?", discardResumeWarn: "Scores from this game will be deleted.",
+    discard: "Discard", autosaveName: "Autosave",
+    resumeArchived: "The previous game was moved to saved games (Autosave)"
   }
 };
 
@@ -521,14 +554,13 @@ const STR = {
    2. IKONY
    ================================================================ */
 const ICONS = {
-  grip:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 V20"/><path d="M8 8 L12 4 L16 8"/><path d="M8 16 L12 20 L16 16"/></svg>',
-  back:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>',
-  undo:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10 h9 a5 5 0 0 1 0 10 h-3"/><path d="M4 10 L8 6 M4 10 L8 14"/></svg>',
-  pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
-  trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
-  save:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h8V4"/><path d="M7 14h10v6H7z"/></svg>',
-  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
-  load: '<svg viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>'
+  grip:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 V20"/><path d="M8 8 L12 4 L16 8"/><path d="M8 16 L12 20 L16 16"/></svg>',
+  back:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>',
+  undo:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10 h9 a5 5 0 0 1 0 10 h-3"/><path d="M4 10 L8 6 M4 10 L8 14"/></svg>',
+  pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
+  trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  load: '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>'
 };
 
 /* ================================================================
@@ -539,6 +571,7 @@ const ICONS = {
    ================================================================ */
 const PLAYER_COLORS = ["#e2e8f0","#38bdf8","#34d399","#f43f5e","#fb923c","#a78bfa","#f472b6","#facc15"];
 const MAX_BUTTON_PAIRS = 4;
+const FONT_MIN = 0.8, FONT_MAX = 1.6;
 const SCHEMA_VERSION = 2;
 
 /* Limity bezpieczeństwa (import + zapisy lokalne) */
@@ -556,6 +589,7 @@ const LIMITS = {
 const LS_KEY = "licznik_punktow_v1";
 const LS_SETTINGS_KEY = "licznik_punktow_settings_v1";
 const LS_SAVES_KEY = "licznik_punktow_saves_v1";
+const LS_GAME_KEY = "licznik_punktow_game_v1"; // autozapis trwającej gry
 
 const STORE = { recovered: false, recoveredFromBak: false };
 
@@ -640,7 +674,7 @@ function sanitizeSettings(d, fallbackLang) {
     if (clean.length) bv = clean;
   }
   const lang = (d.lang === "pl" || d.lang === "en") ? d.lang : (fallbackLang || detectLang());
-  return { fontScale: Math.max(0.8, Math.min(1.6, fs)), buttonValues: bv, lang: lang };
+  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang };
 }
 
 /* Dane z localStorage przechodzą TĘ SAMĄ sanityzację co import (ochrona przed
@@ -656,12 +690,10 @@ const S = {
   setupColor: null,
   pending: {},          // pending[playerId] = suma niezatwierdzonych zmian
   dialog: null,
-  toast: null,
-  toastTimer: null,
   animScore: null,
   editDraft: null,
   pendingImport: null,  // ZAWSZE dane po sanityzacji (validateImport)
-  busy: false,          // blokada podwójnego zatwierdzenia (tylko pendApply — obejmuje setTimeout)
+  resume: loadResume(), // niedokończona gra odzyskana z autozapisu (albo null)
   lastFocus: null,      // element, do którego wraca fokus po zamknięciu dialogu
   lastScreen: null,     // do wykrywania, czy można zrobić render cząstkowy
   cardCache: null       // cache HTML kart graczy (keyed diff na ekranie gry)
@@ -693,11 +725,57 @@ function saveSaves(list) { writeStore(LS_SAVES_KEY, list); }
 function applyFontScale() { document.documentElement.style.setProperty("--fs-mult", S.settings.fontScale); }
 function applyLang() { document.documentElement.lang = S.settings.lang; }
 
+/* Toast to osobny element poza #app: nie wywołuje render(), więc nie przebudowuje widoku ani dialogów. */
+let toastTimer = 0;
 function toast(msg) {
-  S.toast = msg;
-  if (S.toastTimer) clearTimeout(S.toastTimer);
-  render();
-  S.toastTimer = setTimeout(() => { S.toast = null; render(); }, 2600);
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; // restart animacji
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+/* Wartości szybkich przycisków, zawsze posortowane rosnąco (kopia) */
+function buttonValues() { return S.settings.buttonValues.slice().sort((a, b) => a - b); }
+
+/* --- Autozapis trwającej gry (przeżywa odświeżenie i ubicie karty przez system) ---
+   Zapisujemy tylko grę z co najmniej jednym wpisem w historii. Przy starcie dane przechodzą
+   tę samą sanityzację co zapisy/import. Zapis bez zmian (identyczny JSON) jest pomijany. */
+let lastPersist = "", lastPersistAt = 0;
+function loadResume() {
+  const d = readStore(LS_GAME_KEY);
+  if (!d || typeof d !== "object") return null;
+  const e = sanitizeSaves([{ name: "x", players: d.players, history: d.history, savedAt: d.savedAt }])[0];
+  return e && e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt } : null;
+}
+function persistGame() {
+  if (S.screen !== "game") return;
+  if (!S.players.length || !S.history.length) { clearPersistedGame(); return; }
+  const snap = JSON.stringify({ players: S.players, history: S.history });
+  if (snap === lastPersist) return;
+  const savedAt = Date.now();
+  if (writeStore(LS_GAME_KEY, { players: S.players, history: S.history, savedAt }, false)) { lastPersist = snap; lastPersistAt = savedAt; }
+}
+function clearPersistedGame() {
+  lastPersist = ""; lastPersistAt = 0;
+  try { localStorage.removeItem(LS_GAME_KEY); } catch (e) {}
+}
+/* Gdy zaczynamy inną grę, niedokończona gra nie przepada — trafia do zapisanych gier. Zwraca true, jeśli coś przeniesiono. */
+function archiveResume() {
+  if (!S.resume) return false;
+  const entry = sanitizeSaves([{
+    id: newId(), name: t("autosaveName") + " – " + new Date().toLocaleDateString(locale()),
+    savedAt: S.resume.savedAt || Date.now(), players: S.resume.players, history: S.resume.history
+  }])[0];
+  S.resume = null;
+  clearPersistedGame();
+  if (!entry) return false;
+  S.saves.unshift(entry);
+  if (S.saves.length > LIMITS.saves) S.saves.length = LIMITS.saves;
+  saveSaves(S.saves);
+  return true;
 }
 
 /* ================================================================
@@ -810,7 +888,7 @@ function sanitizeSaves(raw) {
     const players = sanitizePlayers(s.players);
     if (!players) continue;
     /* mapa starych id graczy -> nowe id (indeksy) */
-    const idMap = {};
+    const idMap = Object.create(null); // bez prototypu: id typu "toString" nie przejdzie walidacji
     s.players.forEach((p, i) => { if (p && typeof p === "object" && p.id !== undefined) idMap[String(p.id)] = String(i); });
     const history = [];
     let okHist = true;
@@ -913,6 +991,8 @@ function runSelfTests() {
   check("grupy: uszkodzone wpisy pominięte", sanitizeGroups([null, { players: "x" }, { players: [{ name: "A", color: "#e2e8f0" }] }]).length === 1);
   check("grupy: obcy kolor zastąpiony kolorem z palety", sanitizeGroups([{ players: [{ name: "A", color: "red;x" }] }])[0].players[0].color === PLAYER_COLORS[0]);
   check("import: licznik pominiętych wpisów", validateImport({ groups: [null, { players: [{ name: "A", color: "#e2e8f0" }] }] }).skipped === 1);
+  check("import: id równe nazwie z prototypu Object odrzucone", sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ id: "toString", delta: 5 }] }]).length === 0);
+  check("autozapis: savedAt przechodzi sanityzację", sanitizeSaves([{ name: "x", savedAt: 12345, players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [] }])[0].savedAt === 12345);
   check("esc: apostrof i cudzysłów", esc("'\"") === "&#39;&quot;");
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
@@ -969,11 +1049,22 @@ function viewHome() {
     </div>`).join("")
     : `<p class="empty">${t("noLineups")}</p>`;
 
+  const resumeHtml = S.resume ? `<p class="sub">${t("resumeTitle")}</p>
+    <div class="card">
+      <div class="row">
+        <span class="save-meta">${t("resumeMeta").replace("{d}", new Date(S.resume.savedAt).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })).replace("{n}", S.resume.history.length)}</span>
+        <button class="icon-btn" aria-label="${t("discardResume")}" data-a="askDiscardResume">${ICONS.trash}</button>
+      </div>
+      <div class="resume-list">${S.resume.players.map(p => `<div class="resume-row"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span><span class="resume-score">${p.score}</span></div>`).join("")}</div>
+      <button class="btn mt" data-a="resumeGame">${t("resumeBtn")}</button>
+    </div>` : "";
+
   return `<h1>${t("title")}</h1>
     <div class="row actions-row">
       <button class="btn btn-main grow" data-a="newGame">${t("newGame")}</button>
       <button class="icon-btn gear" aria-label="${t("settings")}" data-a="openSettings">${ICONS.settings}</button>
     </div>
+    ${resumeHtml}
     <p class="sub">${t("savedLineups")}</p>
     <div class="scroll">${groupsHtml}</div>`;
 }
@@ -1004,7 +1095,7 @@ function viewSetup() {
 }
 
 function scoreButtonsHtml(id) {
-  const vals = S.settings.buttonValues.slice().sort((a, b) => a - b);
+  const vals = buttonValues();
   const count = vals.length * 2 + 2;
   const size = count > 10 ? 10 : count > 8 ? 11 : count > 6 ? 12 : 14;
   const btn = v => {
@@ -1042,27 +1133,28 @@ function playerCardHtml(p) {
       <div class="history-chips">${chips}</div>
     </div>
     ${scoreButtonsHtml(p.id)}
-    ${pend ? `<div class="confirm-row">
+    <div class="confirm-row${pend ? "" : " idle"}">
       <button class="btn-cancel" aria-label="${t("cancelShort")}" ${act("pendCancel", { id: p.id })}>✕</button>
       <button class="btn-apply" aria-label="OK" ${act("pendApply", { id: p.id })}>✓</button>
-    </div>` : ""}
+    </div>
   </div>`;
 }
 
 function viewGame() {
-  return `<div class="header-row between">
+  const cards = S.players.map(playerCardHtml);
+  cacheCards(cards);
+  return `<div class="header-row between sticky">
     <span class="row-left">
       <button class="icon-btn" aria-label="${t("backToMenu")}" data-a="askExitGame">${ICONS.back}</button>
       <h2>${t("scoring")}</h2>
     </span>
     <span class="row-left tools">
       <button class="icon-btn" aria-label="${t("undo")}"${S.history.length ? "" : " disabled"} data-a="undo">${ICONS.undo}</button>
-      <button class="icon-btn" aria-label="${t("saveState")}" ${act("openSaveDialog", { v: 0 })}>${ICONS.save}</button>
       <button class="icon-btn" aria-label="${t("editLineupBtn")}" data-a="openEdit">${ICONS.pencil}</button>
       <button class="btn-outline" data-a="openFinish">${t("end")}</button>
     </span>
   </div>
-  <div class="scroll">${S.players.map(playerCardHtml).join("")}</div>`;
+  <div class="scroll">${cards.join("")}</div>`;
 }
 
 function viewSettings() {
@@ -1079,12 +1171,12 @@ function viewSettings() {
 
   const fs = S.settings.fontScale;
   const fontHtml = `<div class="row font-ctl">
-    <button class="btn-outline font-btn" aria-label="${t("fontSmaller")}"${fs <= 0.8 ? " disabled" : ""} ${act("changeFontScale", { v: -0.1 })}>A−</button>
+    <button class="btn-outline font-btn" aria-label="${t("fontSmaller")}"${fs <= FONT_MIN ? " disabled" : ""} ${act("changeFontScale", { v: -0.1 })}>A−</button>
     <span class="tiny pct">${Math.round(fs * 100)}%</span>
-    <button class="btn-outline font-btn" aria-label="${t("fontBigger")}"${fs >= 1.6 ? " disabled" : ""} ${act("changeFontScale", { v: 0.1 })}>A+</button>
+    <button class="btn-outline font-btn" aria-label="${t("fontBigger")}"${fs >= FONT_MAX ? " disabled" : ""} ${act("changeFontScale", { v: 0.1 })}>A+</button>
   </div>`;
 
-  const vals = S.settings.buttonValues.slice().sort((a, b) => a - b);
+  const vals = buttonValues();
   const btnRows = vals.map((v, i) => `<div class="row pair-row">
       <span class="tiny">${t("pair")} #${i + 1} (\u2212${v} / +${v})</span>
       <span class="pair-actions">
@@ -1237,22 +1329,13 @@ function dialogHtml() {
         </span>
       </div>`;
   }
-  else if (d.type === "saveGame") {
-    inner = `${title(t("saveGameTitle"))}
-      <label class="tiny block mt8" for="saveGameName">${t("saveName")}</label>
-      <input type="text" id="saveGameName" maxlength="${LIMITS.saveName}" value="${esc(d.name)}" autocomplete="off">
-      <div class="dialog-actions mt">
-        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
-        <button class="dlg-btn solid" data-a="doSaveGame">${t("save")}</button>
-      </div>`;
-  }
   else if (d.type === "exitGame") {
     inner = `${title(t("exitQ"))}
-      <p class="tiny tc note mt8">${t("unsavedProgress")}</p>
-      <div class="dialog-actions stack">
-        <button class="dlg-btn solid" ${act("openSaveDialog", { v: 1 })}>${t("saveAndExit")}</button>
-        <button class="dlg-btn red" data-a="finishGame">${t("exitNoSave")}</button>
+      <p class="tiny tc note mt8">${t("exitInfo")}</p>
+      ${d.pending ? `<p class="tiny tc note mt8">${t("exitPending")}</p>` : ""}
+      <div class="dialog-actions tight">
         <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn solid" data-a="exitToMenu">${t("exitBtn")}</button>
       </div>`;
   }
   else if (d.type === "confirmLoadSave") {
@@ -1261,6 +1344,14 @@ function dialogHtml() {
       <div class="dialog-actions tight">
         <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
         <button class="dlg-btn solid" ${act("doLoadSave", { id: d.id })}>${t("load")}</button>
+      </div>`;
+  }
+  else if (d.type === "confirmDiscardResume") {
+    inner = `${title(t("discardResumeQ"))}
+      <p class="tiny tc note mt8">${t("discardResumeWarn")}</p>
+      <div class="dialog-actions tight">
+        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn red" data-a="confirmDiscardResume">${t("discard")}</button>
       </div>`;
   }
   else if (d.type === "confirmDeleteSave") {
@@ -1297,11 +1388,6 @@ function updateOverlay() {
     focusDialog();
   } else if (dlgEl) dlgEl.remove();
 
-  const toastEl = app.querySelector(".toast");
-  if (S.toast) {
-    if (toastEl) toastEl.remove();
-    app.insertAdjacentHTML("beforeend", '<div class="toast" role="status" aria-live="polite">' + esc(S.toast) + "</div>");
-  } else if (toastEl) toastEl.remove();
 }
 
 function focusDialog() {
@@ -1309,11 +1395,15 @@ function focusDialog() {
   if (!dlg) return;
   const first = dlg.querySelector("input") || dlg.querySelector("button:not(:disabled)");
   if (first) first.focus();
-  if (first && first.id === "saveGameName" && typeof first.select === "function") first.select();
 }
 
 /* RENDER CZĄSTKOWY (ekran gry): przebudowywane są TYLKO karty, których HTML się zmienił.
    Gdy kolejność kart w DOM różni się od S.players (np. po zmianie kolejności) — pełna przebudowa listy. */
+function cacheCards(cards) {
+  S.cardCache = {};
+  S.players.forEach((p, i) => { S.cardCache[p.id] = cards[i]; });
+}
+
 function partialRenderGame() {
   const undoBtn = app.querySelector('[data-a="undo"]');
   if (undoBtn) undoBtn.disabled = !S.history.length;
@@ -1335,8 +1425,7 @@ function partialRenderGame() {
     } else {
       scroll.innerHTML = cards.join("");
     }
-    S.cardCache = {};
-    S.players.forEach((p, i) => { S.cardCache[p.id] = cards[i]; });
+    cacheCards(cards);
   }
   updateOverlay();
 }
@@ -1361,13 +1450,7 @@ function render() {
   else html = viewGame();
 
   html += dialogHtml();
-  if (S.toast) html += '<div class="toast" role="status" aria-live="polite">' + esc(S.toast) + "</div>";
   app.innerHTML = html;
-
-  if (S.screen === "game") {
-    S.cardCache = {};
-    S.players.forEach(p => { S.cardCache[p.id] = playerCardHtml(p); });
-  }
 
   /* Przywrócenie fokusu aktywnego pola (np. podczas pisania) */
   if (activeId) {
@@ -1401,20 +1484,22 @@ function openDialogFn(d) {
 function addGroupIfNew(players) {
   const sig = Logic.signature(players);
   if (players.length && !S.groups.some(g => Logic.signature(g.players) === sig)) {
+    while (S.groups.length >= LIMITS.groups) S.groups.shift(); // limit jak przy wczytywaniu: wypada najstarszy, nie najnowszy
     S.groups.push({ id: newId(), players: players.map(p => ({ name: p.name, color: p.color })) });
     saveGroups(S.groups);
   }
 }
 
 function startGame(players) {
+  const archived = archiveResume();
   S.players = players.map((p, i) => ({ id: String(i), name: p.name, color: p.color, score: 0 }));
   S.pending = {};
   S.history = [];
-  S.busy = false;
   S.cardCache = null;
   S.dialog = { type: "drawAsk" };
   S.screen = "game";
   render(); window.scrollTo(0, 0);
+  if (archived) toast(t("resumeArchived"));
 }
 
 /* Zmiana kolejności graczy (klawiatura: strzałki góra/dół na uchwycie) */
@@ -1423,6 +1508,7 @@ function movePlayer(id, dir) {
   if (i < 0 || j < 0 || j >= S.players.length) return;
   [S.players[i], S.players[j]] = [S.players[j], S.players[i]];
   render();
+  persistGame();
   const h = app.querySelector('[data-card="' + CSS.escape(id) + '"] [data-drag]');
   if (h) h.focus();
 }
@@ -1481,14 +1567,13 @@ const ACTIONS = {
   pendCancel(id) { delete S.pending[id]; render(); },
   pendApply(id) {
     const d = S.pending[id] || 0;
-    if (!d || S.busy) return; // blokada wielokrotnego zatwierdzenia / pustej operacji
-    S.busy = true;
+    if (!d) return; // podwójne ✓ jest bezpieczne: pierwsze kliknięcie zeruje oczekujące punkty
     Logic.applyPoints(S, id, d);
     delete S.pending[id];
     S.animScore = id;
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
     render();
-    setTimeout(() => { S.animScore = null; S.busy = false; render(); }, 180);
+    setTimeout(() => { if (S.animScore === id) { S.animScore = null; render(); } }, 180);
   },
   undo() { Logic.undo(S); render(); },
   openCustomAmount(id, sign) { openDialogFn({ type: "customAmount", id: id, sign: Number(sign), value: "" }); },
@@ -1558,42 +1643,42 @@ const ACTIONS = {
     render();
   },
   openFinish() { openDialogFn({ type: "finish" }); },
-  finishGame() { S.players = []; S.pending = {}; S.history = []; S.cardCache = null; setScreen("home"); restoreFocus(); },
+  finishGame() { S.players = []; S.pending = {}; S.history = []; S.cardCache = null; clearPersistedGame(); setScreen("home"); restoreFocus(); },
+  resumeGame() {
+    const r = S.resume; if (!r) return;
+    S.players = clone(r.players); S.history = clone(r.history);
+    S.pending = {}; S.cardCache = null; S.resume = null; S.dialog = null; S.screen = "game";
+    render(); window.scrollTo(0, 0);
+  },
+  askDiscardResume() { openDialogFn({ type: "confirmDiscardResume" }); },
+  confirmDiscardResume() { S.resume = null; clearPersistedGame(); closeDialog(); },
   drawFirst() {
     if (!S.players.length) { S.dialog = null; render(); return; }
     const p = S.players[Math.floor(Math.random() * S.players.length)];
     S.dialog = { type: "drawResult", name: p.name };
     render();
   },
+  /* Wyjście do menu: gra (jeśli ma wpisy punktacji) jest zapisywana i czeka pod przyciskiem „WZNÓW GRĘ” */
   askExitGame() {
-    const hasProgress = S.history.length > 0 || Object.keys(S.pending).length > 0;
-    if (!S.players.length || !hasProgress) { setScreen("home"); return; }
-    openDialogFn({ type: "exitGame" });
+    if (!S.players.length || !S.history.length) { setScreen("home"); return; }
+    openDialogFn({ type: "exitGame", pending: Object.keys(S.pending).length > 0 });
+  },
+  exitToMenu() {
+    persistGame();
+    const e = S.history.length
+      ? sanitizeSaves([{ name: "x", players: S.players, history: S.history, savedAt: lastPersistAt || Date.now() }])[0] : null;
+    S.resume = e ? { players: e.players, history: e.history, savedAt: e.savedAt } : null;
+    S.players = []; S.pending = {}; S.history = []; S.cardCache = null;
+    setScreen("home");
+    restoreFocus();
   },
 
-  /* zapis / odczyt stanu gry */
-  openSaveDialog(goHome) {
-    const suggested = S.players.map(p => p.name).join(", ") + " – " + new Date().toLocaleDateString(locale());
-    openDialogFn({ type: "saveGame", goHome: String(goHome) === "1", name: suggested });
-  },
-  doSaveGame() {
-    const d = S.dialog;
-    if (!d || d.type !== "saveGame") return;
-    const name = (d.name || "").trim().slice(0, LIMITS.saveName) || (t("saveWord") + " " + new Date().toLocaleString(locale()));
-    /* Zapis przechodzi przez sanitizeSaves: ID graczy są przenumerowane (0..n-1),
-       a historia mapowana na nowe ID — również po usunięciu gracza w trakcie gry. */
-    const entry = sanitizeSaves([{ id: newId(), name: name, savedAt: Date.now(), players: S.players, history: S.history }])[0];
-    if (!entry) { toast(t("invalidData")); return; }
-    S.saves.unshift(entry);
-    if (S.saves.length > LIMITS.saves) S.saves.length = LIMITS.saves;
-    saveSaves(S.saves);
-    toast(t("gameSaved"));
-    if (d.goHome) ACTIONS.finishGame(); else { S.dialog = null; render(); restoreFocus(); }
-  },
-  askLoadSave(id) { openDialogFn({ type: "confirmLoadSave", id: id, warn: S.players.length > 0 }); },
+  /* wczytywanie zapisanych gier (z Ustawień) */
+  askLoadSave(id) { openDialogFn({ type: "confirmLoadSave", id: id, warn: !!S.resume }); },
   doLoadSave(id) {
     const s = S.saves.find(x => x.id === id);
     if (!s) { closeDialog(); return; }
+    const archived = archiveResume();
     S.players = clone(s.players);   // zapisy są już po sanityzacji (spójne ID graczy i historii)
     S.history = clone(s.history);
     S.pending = {};
@@ -1601,6 +1686,7 @@ const ACTIONS = {
     S.dialog = null;
     S.screen = "game";
     render(); window.scrollTo(0, 0);
+    if (archived) toast(t("resumeArchived"));
   },
   askDeleteSave(id) {
     const s = S.saves.find(x => x.id === id);
@@ -1615,7 +1701,7 @@ const ACTIONS = {
 
   /* ustawienia */
   changeFontScale(delta) {
-    S.settings.fontScale = Math.max(0.8, Math.min(1.6, Math.round((S.settings.fontScale + Number(delta)) * 10) / 10));
+    S.settings.fontScale = Math.max(FONT_MIN, Math.min(FONT_MAX, Math.round((S.settings.fontScale + Number(delta)) * 10) / 10));
     applyFontScale();
     saveSettings();
     render();
@@ -1636,13 +1722,13 @@ const ACTIONS = {
     saveSettings(); render();
   },
   removeButtonValue(index) {
-    const vals = S.settings.buttonValues.slice().sort((a, b) => a - b);
+    const vals = buttonValues();
     if (vals.length <= 1) return;
     S.settings.buttonValues = vals.filter((_, i) => i !== Number(index));
     saveSettings(); render();
   },
   updateButtonValue(index, raw) {
-    const vals = S.settings.buttonValues.slice().sort((a, b) => a - b);
+    const vals = buttonValues();
     const s = String(raw == null ? "" : raw).trim();
     const n = /^\d+$/.test(s) ? parseInt(s, 10) : 0;
     if (n < 1 || n > 9999) { toast(t("numRange")); render(); return; }
@@ -1754,7 +1840,7 @@ function dragEnd() {
   Drag.el = null;
   const order = Array.from(card.parentNode.querySelectorAll("[data-card]")).map(c => c.dataset.card);
   const byId = new Map(S.players.map(p => [p.id, p]));
-  if (order.length === S.players.length && order.every(id => byId.has(id))) S.players = order.map(id => byId.get(id));
+  if (order.length === S.players.length && order.every(id => byId.has(id))) { S.players = order.map(id => byId.get(id)); persistGame(); }
 }
 
 document.addEventListener("pointerdown", function (e) {
@@ -1776,6 +1862,7 @@ document.addEventListener("click", function (e) {
   if ("id" in el.dataset) args.push(el.dataset.id);
   if ("v" in el.dataset) args.push(el.dataset.v);
   fn.call(ACTIONS, ...args, el, e);
+  persistGame(); // autozapis po każdej akcji w grze (identyczny stan jest pomijany)
 });
 
 document.addEventListener("input", function (e) {
@@ -1783,7 +1870,6 @@ document.addEventListener("input", function (e) {
   if (id === "nameInput") { S.setupName = e.target.value; syncAddPlayerBtn(); }
   else if (id === "editName" && S.editDraft) { S.editDraft.name = e.target.value; }
   else if ((id === "customAmountInput" || id === "editHistoryInput") && S.dialog) { S.dialog.value = e.target.value.replace(/[^0-9]/g, ""); }
-  else if (id === "saveGameName" && S.dialog) { S.dialog.name = e.target.value; }
 });
 
 document.addEventListener("change", function (e) {
@@ -1807,8 +1893,8 @@ document.addEventListener("keydown", function (e) {
   /* Enter zatwierdza w polach tekstowych */
   if (e.key === "Enter") {
     const id = e.target.id;
-    const submit = { nameInput: "addSetupPlayer", customAmountInput: "confirmCustomAmount", editHistoryInput: "saveHistoryEdit", saveGameName: "doSaveGame" }[id];
-    if (submit) { e.preventDefault(); ACTIONS[submit](); }
+    const submit = { nameInput: "addSetupPlayer", customAmountInput: "confirmCustomAmount", editHistoryInput: "saveHistoryEdit" }[id];
+    if (submit) { e.preventDefault(); ACTIONS[submit](); persistGame(); }
     return;
   }
 

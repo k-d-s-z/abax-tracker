@@ -1,8 +1,10 @@
 /* Abax Tracker — service worker.
    Zmień numer w CACHE przy każdej publikacji nowej wersji plików. */
-const CACHE = "abax-tracker-v3";
+const CACHE = "abax-tracker-v7";
 const CORE = ["./", "./index.html", "./manifest.webmanifest"];
 const OPTIONAL = ["./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
+const NAV_TIMEOUT = 3000;              // po tylu ms bez odpowiedzi sieci pokazujemy wersję z cache
+const MATCH = { ignoreSearch: true };  // ?test itp. nie tworzy osobnych wpisów w cache
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -24,9 +26,15 @@ self.addEventListener("activate", (e) => {
 function store(req, res) {
   if (res && res.ok && res.type === "basic") {
     const copy = res.clone();
-    caches.open(CACHE).then((c) => c.put(req, copy));
+    const url = new URL(req.url);
+    url.search = ""; // jeden wpis na zasób, niezależnie od parametrów w adresie
+    caches.open(CACHE).then((c) => c.put(url.href, copy));
   }
   return res;
+}
+
+function timeout(ms) {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
 }
 
 self.addEventListener("fetch", (e) => {
@@ -34,14 +42,17 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
 
   if (req.mode === "navigate") {
-    /* strony: najpierw sieć (świeża wersja), w razie braku internetu — cache */
+    /* strony: najpierw sieć (świeża wersja), ale max NAV_TIMEOUT ms — przy słabym zasięgu
+       aplikacja startuje od razu z cache, a pobieranie kończy się w tle i odświeża cache */
+    const net = fetch(req).then((res) => store(req, res));
+    e.waitUntil(net.catch(() => {}));
     e.respondWith(
-      fetch(req).then((res) => store(req, res)).catch(() =>
-        caches.match(req).then((hit) => hit || caches.match("./index.html"))
+      Promise.race([net, timeout(NAV_TIMEOUT)]).catch(() =>
+        caches.match(req, MATCH).then((hit) => hit || caches.match("./index.html"))
       )
     );
     return;
   }
   /* pozostałe zasoby: najpierw cache */
-  e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => store(req, res))));
+  e.respondWith(caches.match(req, MATCH).then((hit) => hit || fetch(req).then((res) => store(req, res))));
 });
