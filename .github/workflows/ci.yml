@@ -7,7 +7,10 @@
 #   2. lighthouse — Lighthouse CI na statycznej stronie (bez builda)
 #   3. a11y-axe   — skan dostępności axe (WCAG 2.x AA)
 #
-# Po migracji na moduły ES można dodać krok `node --test js/` (testy warstw czystych w Node).
+# Uwaga: Playwright i http-server instalujemy LOKALNIE w katalogu ci-workdir
+# (npm install -g + import w .mjs nie działa — Node nie widzi globalnych pakietów
+# przy importach ES). Serwowanie aplikacji i uruchamianie testu w jednym kroku,
+# bo proces w tle nie przeżywa końca kroku, gdy katalog zostanie sprzątnięty.
 
 name: CI
 
@@ -27,57 +30,68 @@ jobs:
         with:
           node-version: '20'
 
-      # Po migracji na moduły ES odkomentuj:
-      # - name: Unit tests (czyste moduły: logic/storage/validation)
-      #   run: node --test js/
-
-      - name: Install deps
+      - name: Install deps (lokalnie, nie globalnie)
+        working-directory: ci-workdir
         run: |
-          npm install -g playwright http-server
-          npx playwright install --with-deps chromium
+          npm init -y >/dev/null
+          npm install --no-fund --no-audit playwright http-server
 
-      - name: Serve app
-        run: http-server . -p 8000 --silent &
+      - name: Install Chromium for Playwright
+        working-directory: ci-workdir
+        run: npx playwright install --with-deps chromium
 
       - name: Smoke test + wbudowany harness ?test
+        working-directory: ci-workdir
+        env:
+          APP_DIR: ${{ github.workspace }}
         run: |
           cat > smoke.mjs <<'EOF'
           import { chromium } from 'playwright';
+          import { spawn } from 'child_process';
 
           const BASE = 'http://127.0.0.1:8000';
-          const browser = await chromium.launch();
-          const page = await browser.newPage();
 
-          const errors = [];
-          page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
-          page.on('pageerror', err => errors.push(String(err)));
+          // start serwera w tle Z TEGO SAMEGO procesu testu — nie może zginąć między krokami
+          const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
+          await new Promise(r => setTimeout(r, 2000)); // chwila na start serwera
 
-          // 1. Aplikacja ładuje się bez błędów konsoli
-          await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
-          if (errors.length) {
-            console.error('Błędy konsoli przy starcie:', errors);
-            process.exit(1);
-          }
+          try {
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
 
-          // 2. Kluczowa struktura: kontener aplikacji + toast
-          for (const sel of ['#app', '#toast']) {
-            if (!(await page.locator(sel).count())) {
-              console.error('Brak elementu: ' + sel);
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            page.on('pageerror', err => errors.push(String(err)));
+
+            // 1. Aplikacja ładuje się bez błędów konsoli
+            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+            if (errors.length) {
+              console.error('Błędy konsoli przy starcie:', errors);
               process.exit(1);
             }
-          }
 
-          // 3. Wbudowany harness ?test — runSelfTests() loguje "[OK ] nazwa" / "[FAIL] nazwa"
-          await page.goto(BASE + '/index.html?test', { waitUntil: 'networkidle' });
-          await page.waitForTimeout(2000);
-          const fails = errors.filter(e => /\[FAIL\]/.test(e));
-          if (fails.length) {
-            console.error('Wbudowany harness zgłosił błędy:\n' + fails.join('\n'));
-            process.exit(1);
-          }
+            // 2. Kluczowa struktura: kontener aplikacji + toast
+            for (const sel of ['#app', '#toast']) {
+              if (!(await page.locator(sel).count())) {
+                console.error('Brak elementu: ' + sel);
+                process.exit(1);
+              }
+            }
 
-          console.log('OK: smoke + harness ?test');
-          await browser.close();
+            // 3. Wbudowany harness ?test — runSelfTests() loguje "[OK ] nazwa" / "[FAIL] nazwa"
+            await page.goto(BASE + '/index.html?test', { waitUntil: 'networkidle' });
+            await page.waitForTimeout(2000);
+            const fails = errors.filter(e => /\[FAIL\]/.test(e));
+            if (fails.length) {
+              console.error('Wbudowany harness zgłosił błędy:\n' + fails.join('\n'));
+              process.exit(1);
+            }
+
+            console.log('OK: smoke + harness ?test');
+            await browser.close();
+          } finally {
+            server.kill();
+          }
           EOF
           node smoke.mjs
 
@@ -106,15 +120,21 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install deps
+      - name: Install deps (lokalnie)
+        working-directory: ci-workdir
         run: |
-          npm install -g playwright http-server @axe-core/cli
-          npx playwright install --with-deps chromium
-
-      - name: Serve app
-        run: |
-          http-server . -p 8000 --silent &
-          sleep 2
+          npm init -y >/dev/null
+          npm install --no-fund --no-audit @axe-core/cli http-server
 
       - name: axe scan (ekran główny)
-        run: npx axe http://127.0.0.1:8000/index.html --exit --tags wcag2a,wcag2aa,wcag21a,wcag21aa
+        working-directory: ci-workdir
+        env:
+          APP_DIR: ${{ github.workspace }}
+        run: |
+          node ./node_modules/http-server/bin/http-server "$APP_DIR" -p 8000 --silent &
+          SERVER_PID=$!
+          sleep 2
+          npx axe http://127.0.0.1:8000/index.html --exit --tags wcag2a,wcag2aa,wcag21a,wcag21aa
+          RC=$?
+          kill $SERVER_PID
+          exit $RC
