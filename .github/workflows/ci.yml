@@ -31,20 +31,22 @@ jobs:
           node-version: '20'
 
       - name: Install deps (lokalnie, nie globalnie)
-        working-directory: ci-workdir
         run: |
+          mkdir -p ci-workdir
+          cd ci-workdir
           npm init -y >/dev/null
           npm install --no-fund --no-audit playwright http-server
 
       - name: Install Chromium for Playwright
-        working-directory: ci-workdir
-        run: npx playwright install --with-deps chromium
+        run: |
+          cd ci-workdir
+          npx playwright install --with-deps chromium
 
       - name: Smoke test + wbudowany harness ?test
-        working-directory: ci-workdir
         env:
           APP_DIR: ${{ github.workspace }}
         run: |
+          cd ci-workdir
           cat > smoke.mjs <<'EOF'
           import { chromium } from 'playwright';
           import { spawn } from 'child_process';
@@ -121,16 +123,17 @@ jobs:
           node-version: '20'
 
       - name: Install deps (lokalnie)
-        working-directory: ci-workdir
         run: |
+          mkdir -p ci-workdir
+          cd ci-workdir
           npm init -y >/dev/null
           npm install --no-fund --no-audit @axe-core/cli http-server
 
       - name: axe scan (ekran główny)
-        working-directory: ci-workdir
         env:
           APP_DIR: ${{ github.workspace }}
         run: |
+          cd ci-workdir
           node ./node_modules/http-server/bin/http-server "$APP_DIR" -p 8000 --silent &
           SERVER_PID=$!
           sleep 2
