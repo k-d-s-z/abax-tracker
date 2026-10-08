@@ -28,7 +28,7 @@ The app is optimized for seamless offline functionality across mobile devices an
 ### Local Setup
 1. Clone or download this repository:
    ```bash
-   git clone https://k-d-s-z.github.io/abax-tracker/
+   git clone https://github.com/k-d-s-z/abax-tracker.git
    ```
 2. Open `index.html` in your preferred web browser.
 
@@ -37,7 +37,7 @@ The app is optimized for seamless offline functionality across mobile devices an
 2. Go to the **Pages** section on the left sidebar.
 3. Under **Source**, select the `main` (or `master`) branch and set the folder to `/ (root)`.
 4. Click **Save**. Your app will be published at:
-   `https://k-d-s-z.github.io/abax-tracker/`
+   `https://github.com/k-d-s-z/abax-tracker.git`
 
 ---
 
