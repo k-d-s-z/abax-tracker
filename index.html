@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0d0b12" />
+<meta name="theme-color" content="#130e0a" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Abax Tracker" />
@@ -24,34 +24,40 @@
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   /* touch-action:manipulation wyłącza opóźnienie 300ms i double-tap zoom na mobilkach */
   :root {
-    --ink: #0d0b12;            /* tekst na jasnych przyciskach */
+    --ink: #130e0a;            /* ciemny brąz: tło oraz tekst na jasnych przyciskach */
+    --ink-rgb: 19, 14, 10;
     --bg: var(--ink);
-    --bg-grad: radial-gradient(circle at 50% 0%, #1e172a 0%, var(--bg) 80%);
-    --surface: rgba(255, 255, 255, 0.04);
-    --surface-2: rgba(255, 255, 255, 0.06);
-    --surface-hover: rgba(168, 85, 247, 0.15);
-    --slate-800: #1a1625; --slate-700: #2a243a; --slate-600: #3c3452; --slate-500: #6b5c82;
+    --bg-grad: radial-gradient(circle at 50% 0%, #2b1f16 0%, var(--bg) 80%);
+    --surface: rgba(255, 244, 230, 0.04);
+    --surface-2: rgba(255, 244, 230, 0.07);
+    --surface-hover: rgba(var(--accent-rgb), 0.15);
+    --brown-800: #241a13; --brown-700: #35271c; --brown-600: #4f3a29; --brown-500: #8c7358;
     --tap: 44px;               /* minimalny cel dotyku */
-    --pc: var(--silver);       /* kolor gracza (ustawiany klasami .c0–.c7) */
-    --card-bg: rgba(26, 22, 37, 0.8);
-    --card-inner: #161220;
+    --pc: var(--accent-text);  /* kolor gracza (ustawiany klasami .c0–.c7) */
+    --card-bg: rgba(36, 26, 19, 0.82);
+    --card-inner: #1c140e;
 
-    --silver: #e9d5ff;
-    --silver-light: #ffffff;
-    --silver-dark: #a855f7;
-    --silver-grad: linear-gradient(135deg, #a855f7 0%, #c084fc 50%, #7e22ce 100%);
+    /* Teal = akcent (przyciski, zaznaczenia, fokus), brąz = tło, obramowania, tekst pomocniczy.
+       Tekst na jasnych gradientach przycisków jest ciemny (--ink): kontrast min. 5:1. */
+    --accent-rgb: 45, 212, 191;
+    --accent: #2dd4bf;
+    --accent-light: #5eead4;
+    --accent-dark: #14b8a6;
+    --accent-text: #99f6e4;    /* etykiety i ikony na ciemnym tle */
+    --accent-grad: linear-gradient(135deg, #5eead4 0%, #2dd4bf 50%, #14b8a6 100%);
+    --tan-rgb: 212, 163, 115;
 
-    --green-grad: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
-    --red-grad: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #fb7185 100%);
+    --green-grad: linear-gradient(135deg, #86efac 0%, #4ade80 50%, #22c55e 100%);
+    --red-grad: linear-gradient(135deg, #fda4af 0%, #fb7185 50%, #f43f5e 100%);
 
-    --border: rgba(168, 85, 247, 0.25);
-    --border-glow: rgba(168, 85, 247, 0.12);
+    --border: rgba(var(--tan-rgb), 0.28);
+    --border-glow: rgba(var(--tan-rgb), 0.14);
 
-    --green: #10b981;
-    --red: #f43f5e;
-    --text-light: #f5f3ff;
+    --green: #4ade80;
+    --red: #fb7185;
+    --text-light: #fbf4ea;
     /* Podbity kontrast tekstu pomocniczego (WCAG AA na ciemnym tle) */
-    --text-muted: #c4b5fd;
+    --text-muted: #d9c3a8;
 
     --fs-mult: 1;
     color-scheme: dark;      /* ciemne paski przewijania i natywne kontrolki */
@@ -84,7 +90,7 @@
     text-align: center;
     padding: 16px 0;
     font-weight: 900;
-    background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 50%, #c084fc 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #ccfbf1 50%, #2dd4bf 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
@@ -101,7 +107,7 @@
 
   .sub {
     font-size: calc(11px * var(--fs-mult));
-    color: var(--silver);
+    color: var(--accent-text);
     letter-spacing: 2px;
     margin: 20px 0 10px;
     font-weight: 700;
@@ -126,21 +132,21 @@
   .btn {
     display: block;
     width: 100%;
-    border: 1px solid #c084fc;
+    border: 1px solid var(--accent-light);
     padding: 14px;
     font-size: calc(14px * var(--fs-mult));
     font-weight: 800;
     letter-spacing: 1.5px;
-    background: var(--silver-grad);
-    color: #ffffff;
+    background: var(--accent-grad);
+    color: var(--ink);
     cursor: pointer;
     transition: transform .1s, filter .15s, box-shadow .15s;
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.3);
     text-transform: uppercase;
   }
   .btn:active { transform: scale(.98); }
-  .btn:disabled { background: var(--slate-800); border-color: var(--slate-700); color: var(--slate-500); cursor: default; box-shadow: none; }
+  .btn:disabled { background: var(--brown-800); border-color: var(--brown-700); color: var(--brown-500); cursor: default; box-shadow: none; }
 
   .btn-main { padding: 11px; font-size: calc(12px * var(--fs-mult)); letter-spacing: 1px; }
 
@@ -160,7 +166,6 @@
     cursor: pointer;
     transition: all .15s;
   }
-  .btn-outline:hover { border-color: var(--silver); background: var(--surface-hover); }
   .btn-outline:active { transform: scale(.93); }
   .btn-outline:disabled { opacity:.35; pointer-events:none; }
 
@@ -168,7 +173,7 @@
 
   input[type=text], input[type=tel] {
     width: 100%;
-    background: rgba(13, 11, 18, 0.85);
+    background: rgba(var(--ink-rgb), 0.85);
     border: 1px solid var(--border);
     color: #fff;
     padding: 12px;
@@ -179,11 +184,11 @@
     border-radius: 8px;
     transition: border-color 0.2s;
   }
-  input[type=text]:focus, input[type=tel]:focus { border-color: var(--silver-dark); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+  input[type=text]:focus, input[type=tel]:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3); }
 
   .colors { display:grid; grid-template-columns:repeat(4, 1fr); justify-items:center; gap:8px; margin-top:10px; }
   .dot { width:var(--tap); height:var(--tap); background:var(--pc); border:2px solid var(--bg); border-radius:50%; cursor:pointer; flex-shrink:0; transition:transform .15s; padding:0; }
-  .dot.sel { border-color:#fff; transform:scale(1.1); box-shadow: 0 0 12px var(--silver-dark); }
+  .dot.sel { border-color:#fff; transform:scale(1.1); box-shadow: 0 0 12px var(--accent); }
   .dot:disabled { opacity:.2; pointer-events:none; }
 
   .avatar { width:16px; height:16px; border-radius:50%; flex-shrink:0; background:var(--pc); border: 1px solid rgba(255,255,255,0.2); }
@@ -196,11 +201,11 @@
     border: 1px solid var(--border);
     padding: 12px 14px;
     margin-bottom: 8px;
-    border-left: 4px solid var(--silver-dark);
+    border-left: 4px solid var(--accent);
     border-radius: 8px;
   }
   .name { font-size: calc(15px * var(--fs-mult)); color: var(--text-light); font-weight: 600; }
-  .scroll { flex:1; overflow-y:auto; margin-top:4px; overflow-anchor:none; }
+  .scroll { margin-top:4px; overflow-anchor:none; }
   body { overflow-anchor:none; }
 
   .score-num {
@@ -208,12 +213,12 @@
     font-weight: 900;
     text-align: center;
     line-height: 1;
-    background: linear-gradient(180deg, #ffffff 0%, #e9d5ff 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #ccfbf1 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     transition: transform .18s ease;
   }
-  .score-num.bump { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--silver-dark)); }
+  .score-num.bump { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--accent)); }
   .pending { font-size: calc(22px * var(--fs-mult)); font-weight: 800; }
 
   .score-btns { display:flex; flex-wrap:nowrap; gap:6px; margin-top:14px; }
@@ -223,7 +228,7 @@
     min-height: var(--tap);
     padding: 10px 2px;
     background: var(--surface-2);
-    border: 1px solid rgba(168, 85, 247, 0.2);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
     color: var(--text-light);
     font-size: calc(var(--btn-fs, 14px) * var(--fs-mult));
     font-weight: 700;
@@ -233,8 +238,8 @@
     white-space: nowrap;
     overflow: hidden;
   }
-  .score-btns button:active { background: rgba(168, 85, 247, 0.3); border-color: var(--silver-dark); }
-  .score-btns button.amount-btn { border-style: dashed; border-color: var(--border-glow); background: rgba(255,255,255,0.02); color: var(--silver); }
+  .score-btns button:active { background: rgba(var(--accent-rgb), 0.3); border-color: var(--accent); }
+  .score-btns button.amount-btn { border-style: dashed; border-color: var(--border-glow); background: rgba(255,255,255,0.02); color: var(--accent-text); }
 
   .confirm-row { display:flex; gap:10px; margin-top:12px; }
   /* miejsce na ✕/✓ jest zarezerwowane zawsze — układ nie skacze po kliknięciu +/− */
@@ -253,15 +258,15 @@
   }
   .confirm-row button.btn-cancel {
     background: var(--red-grad);
-    color: #ffffff;
+    color: var(--ink);
     border: 1px solid rgba(244, 63, 94, 0.8);
     box-shadow: 0 4px 15px rgba(244, 63, 94, 0.25);
   }
   .confirm-row button.btn-apply {
     background: var(--green-grad);
-    color: #ffffff;
-    border: 1px solid rgba(16, 185, 129, 0.8);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+    color: var(--ink);
+    border: 1px solid rgba(74, 222, 128, 0.8);
+    box-shadow: 0 4px 15px rgba(74, 222, 128, 0.25);
   }
   .confirm-row button:active { transform: scale(.96); filter: brightness(1.1); }
   .confirm-row button.off { opacity:.3; box-shadow:none; }
@@ -283,47 +288,42 @@
     align-items:center;
     justify-content:center;
   }
-  .history-chips .chip:hover { border-color: var(--silver-dark); background: rgba(168,85,247,0.12); }
   .history-chips .chip:active { transform: scale(.94); }
   .history-chips .chip.empty { opacity:.25; pointer-events:none; font-weight:600; color:var(--text-muted); }
 
-  .dialog-back { position:fixed; inset:0; background:rgba(13, 11, 18, 0.88); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; }
-  .dialog { background:var(--card-inner); border:1px solid var(--silver-dark); padding:24px; width:100%; max-width:340px; margin:0 auto; animation:dialogIn .18s ease-out; box-shadow:0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(168, 85, 247, 0.2); border-radius:12px; max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y:auto; }
+  .dialog-back { position:fixed; inset:0; background:rgba(var(--ink-rgb), 0.88); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; }
+  .dialog { background:var(--card-inner); border:1px solid var(--accent); padding:24px; width:100%; max-width:340px; margin:0 auto; animation:dialogIn .18s ease-out; box-shadow:0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(var(--accent-rgb), 0.2); border-radius:12px; max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y:auto; }
   .dialog h3 { font-size: calc(20px * var(--fs-mult)); margin-bottom:12px; color:var(--text-light); text-align:center; border-bottom:1px solid var(--border); padding-bottom:8px; font-weight:800; }
   .dialog-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
-  .dialog-actions.stack { flex-direction:column; align-items:stretch; }
-  .dialog-actions.stack .dlg-btn { width:100%; }
 
   .empty { text-align:center; color:var(--text-muted); font-size: calc(14px * var(--fs-mult)); padding:36px 12px; line-height:1.6; font-style:italic; }
   .header-row { display:flex; align-items:center; gap:4px; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; }
-  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--slate-800); border:1px solid var(--silver-dark); color:#fff; font-size: calc(12px * var(--fs-mult)); font-weight:600; padding:10px 20px; z-index:99; animation:toastIn .22s ease-out; box-shadow:0 10px 25px rgba(0,0,0,0.8); border-radius:30px; letter-spacing:0.5px; max-width: 90vw; text-align:center; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--brown-800); border:1px solid var(--accent); color:#fff; font-size: calc(12px * var(--fs-mult)); font-weight:600; padding:10px 20px; z-index:99; animation:toastIn .22s ease-out; box-shadow:0 10px 25px rgba(0,0,0,0.8); border-radius:30px; letter-spacing:0.5px; max-width: 90vw; text-align:center; }
   .tiny { font-size: calc(11px * var(--fs-mult)); color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px; }
   .mt { margin-top:12px; }
-  .winner { font-size: calc(32px * var(--fs-mult)); font-weight:900; background:linear-gradient(135deg, #fff 0%, var(--silver) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; padding:8px 0; }
+  .winner { font-size: calc(32px * var(--fs-mult)); font-weight:900; background:linear-gradient(135deg, #fff 0%, var(--accent-text) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; padding:8px 0; }
 
   .dlg-btn { flex:1; min-height:var(--tap); padding:12px 0; font-size: calc(13px * var(--fs-mult)); font-weight:800; cursor:pointer; border:1px solid var(--border); border-radius:8px; transition:transform .05s; text-transform:uppercase; letter-spacing:0.5px; background:transparent; color:var(--text-light); }
   .dlg-btn:active { transform:scale(.98); }
   .dlg-btn.secondary { background:transparent; color:var(--text-light); }
-  .dlg-btn.green { background:var(--green-grad); color:#fff; border-color:var(--green); box-shadow:0 4px 15px rgba(16, 185, 129, 0.2); }
-  .dlg-btn.red { background:var(--red-grad); color:#fff; border-color:var(--red); box-shadow:0 4px 15px rgba(244, 63, 94, 0.2); }
-  .dlg-btn.neutral { background:var(--slate-700); color:#fff; border-color:var(--slate-600); }
-  .dlg-btn.solid { background:var(--silver-grad); color:#fff; border-color:var(--silver-dark); box-shadow:0 4px 15px rgba(168, 85, 247, 0.25); }
+  .dlg-btn.green { background:var(--green-grad); color:var(--ink); border-color:var(--green); box-shadow:0 4px 15px rgba(74, 222, 128, 0.2); }
+  .dlg-btn.red { background:var(--red-grad); color:var(--ink); border-color:var(--red); box-shadow:0 4px 15px rgba(244, 63, 94, 0.2); }
+  .dlg-btn.solid { background:var(--accent-grad); color:var(--ink); border-color:var(--accent); box-shadow:0 4px 15px rgba(var(--accent-rgb), 0.25); }
 
   .lang-btn { flex:1; height:44px; background:var(--surface); border:1px solid var(--border); color:var(--text-light); font-weight:800; font-size:calc(13px * var(--fs-mult)); letter-spacing:1px; border-radius:8px; cursor:pointer; transition:all .15s; }
-  .lang-btn.sel { background:var(--silver-grad); color:#fff; border-color:var(--silver-dark); box-shadow:0 4px 15px rgba(168, 85, 247, 0.25); }
+  .lang-btn.sel { background:var(--accent-grad); color:var(--ink); border-color:var(--accent); box-shadow:0 4px 15px rgba(var(--accent-rgb), 0.25); }
   .lang-btn:active { transform:scale(.97); }
 
   .rank-list { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
   .rank-row { display:flex; align-items:center; gap:12px; border:1px solid var(--border); padding:10px 14px; background:rgba(255,255,255,0.02); border-radius:8px; }
-  .rank-row.first { border-color:var(--silver-dark); background:var(--surface-hover); box-shadow:0 0 15px rgba(168, 85, 247, 0.25); }
-  .rank-pos { width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--slate-800); color:var(--silver); font-weight:800; font-size:12px; border-radius:50%; border:1px solid var(--border); }
-  .rank-row.first .rank-pos { color:#fff; background:var(--silver-dark); border-color:var(--silver-dark); }
+  .rank-row.first { border-color:var(--accent); background:var(--surface-hover); box-shadow:0 0 15px rgba(var(--accent-rgb), 0.25); }
+  .rank-pos { width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--brown-800); color:var(--accent-text); font-weight:800; font-size:12px; border-radius:50%; border:1px solid var(--border); }
+  .rank-row.first .rank-pos { color:var(--ink); background:var(--accent); border-color:var(--accent); }
   .rank-name { flex:1; display:flex; align-items:center; gap:10px; font-size: calc(15px * var(--fs-mult)); color:var(--text-light); min-width:0; font-weight:600; }
   .rank-name .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .rank-score { flex-shrink:0; min-width:48px; text-align:right; font-size: calc(22px * var(--fs-mult)); font-weight:800; color:var(--text-light); }
 
-  .icon-btn { display:flex; align-items:center; justify-content:center; width:var(--tap); height:var(--tap); background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; flex-shrink:0; padding:0; transition:all .15s; }
-  .icon-btn:hover { border-color:var(--silver-dark); background:var(--surface-hover); }
+  .icon-btn { color:var(--accent-text); display:flex; align-items:center; justify-content:center; width:var(--tap); height:var(--tap); background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; flex-shrink:0; padding:0; transition:all .15s; }
   .icon-btn:active { transform:scale(.93); }
   .icon-btn svg { width:18px; height:18px; display:block; }
   .icon-btn:disabled { opacity:.2; pointer-events:none; }
@@ -332,16 +332,19 @@
 
   /* Podświetlenie po najechaniu — tylko urządzenia z myszą (bez „przyklejonego” hover na dotyku) */
   @media (hover:hover) {
-    .score-btns button:hover { background:rgba(168,85,247,.18); border-color:var(--silver-dark); }
-    .btn:hover:not(:disabled) { filter:brightness(1.1); box-shadow:0 4px 24px rgba(168,85,247,.45); }
-    .dlg-btn:hover { filter:brightness(1.12); border-color:var(--silver-dark); }
+    .btn-outline:hover { border-color: var(--accent-text); background: var(--surface-hover); }
+    .history-chips .chip:hover { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.12); }
+    .icon-btn:hover { border-color:var(--accent); background:var(--surface-hover); }
+    .score-btns button:hover { background:rgba(var(--accent-rgb), .18); border-color:var(--accent); }
+    .btn:hover:not(:disabled) { filter:brightness(1.1); box-shadow:0 4px 24px rgba(var(--accent-rgb), .45); }
+    .dlg-btn:hover { filter:brightness(1.12); border-color:var(--accent); }
     .dlg-btn.secondary:hover { background:var(--surface-hover); }
-    .lang-btn:hover:not(.sel) { border-color:var(--silver-dark); background:var(--surface-hover); }
+    .lang-btn:hover:not(.sel) { border-color:var(--accent); background:var(--surface-hover); }
     .confirm-row button:hover { filter:brightness(1.1); }
   }
 
   /* WIDOCZNY FOCUS DLA NAWIGACJI KLAWIATURĄ (dostępność) */
-  :focus-visible { outline: 2px solid #c084fc; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--accent-light); outline-offset: 2px; }
   .dot:focus-visible, .chip:focus-visible { outline-offset: 1px; }
 
   @keyframes dialogIn{
@@ -362,15 +365,14 @@
   .pos { color:var(--green); } .neg { color:var(--red); }
 
   /* ===== Pomocnicze klasy (zastępują style inline) ===== */
-  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-  .tc { text-align:center; } .block { display:block; } .full { width:100%; } .grow { flex:1; }
+  .tc { text-align:center; } .full { width:100%; } .grow { flex:1; }
   .pad { padding:12px; } .mt4 { margin-top:4px; } .mt8 { margin-top:8px; } .mt10 { margin-top:10px; }
   .note { text-transform:none; letter-spacing:0; line-height:1.5; }
   .actions-row { gap:10px; margin-bottom:16px; align-items:stretch; }
-  .counter { text-align:center; color:var(--silver); }
+  .counter { text-align:center; color:var(--accent-text); }
   .header-row.between { justify-content:space-between; }
   /* nagłówek ekranu gry zostaje na wierzchu podczas przewijania listy graczy */
-  .header-row.sticky { position:sticky; top:0; z-index:10; margin:0 -16px 8px; padding:8px 16px; background:rgba(13,11,18,.88); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); }
+  .header-row.sticky { position:sticky; top:0; z-index:10; margin:0 -16px 8px; padding:8px 16px; background:rgba(var(--ink-rgb), .88); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); }
   .row-left.tools { gap:8px; margin-left:auto; }
   .row-left.col { flex-direction:column; align-items:flex-start; gap:2px; }
   .btn-pair { display:flex; gap:8px; }
@@ -401,12 +403,15 @@
 
   /* ===== Przeciąganie kart ===== */
   .drag-handle { touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
-  .card.dragging { z-index:5; cursor:grabbing; transition:none; border-color:var(--silver-dark); box-shadow:0 18px 40px rgba(0,0,0,.9), 0 0 0 1px var(--silver-dark); }
+  .card.dragging { z-index:5; cursor:grabbing; transition:none; border-color:var(--accent); box-shadow:0 18px 40px rgba(0,0,0,.9), 0 0 0 1px var(--accent); }
 
   /* ===== Dostępność: ograniczony ruch ===== */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
   }
+  .check-row { display:flex; align-items:center; gap:12px; min-height:var(--tap); cursor:pointer; }
+  .check-row input { width:22px; height:22px; flex-shrink:0; margin:0; accent-color:var(--accent); cursor:pointer; }
+  .check-row span { font-size:calc(14px * var(--fs-mult)); font-weight:600; color:var(--text-light); }
 </style>
 </head>
 <body>
@@ -482,7 +487,11 @@ const STR = {
     resumeTitle: "GRA W TOKU", resumeBtn: "WZNÓW GRĘ", resumeMeta: "Zapisano {d} • wpisów punktacji: {n}", discardResume: "Odrzuć niedokończoną grę",
     discardResumeQ: "Odrzucić niedokończoną grę?", discardResumeWarn: "Wyniki z tej gry zostaną usunięte.",
     discard: "Odrzuć", autosaveName: "Autozapis",
-    resumeArchived: "Poprzednia gra trafiła do zapisanych gier (Autozapis)"
+    resumeArchived: "Poprzednia gra trafiła do zapisanych gier (Autozapis)",
+    pointsLimit: "Przekroczono limit punktów (±999 999)",
+    screenTitle: "EKRAN", keepAwake: "Nie wygaszaj ekranu podczas gry",
+    keepAwakeNote: "Ekran nie zgaśnie, dopóki jesteś na ekranie gry. Zwiększa zużycie baterii.",
+    keepAwakeUnsupported: "Ta przeglądarka nie obsługuje tej funkcji."
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME",
@@ -546,7 +555,11 @@ const STR = {
     resumeTitle: "GAME IN PROGRESS", resumeBtn: "RESUME GAME", resumeMeta: "Saved {d} • score entries: {n}", discardResume: "Discard unfinished game",
     discardResumeQ: "Discard unfinished game?", discardResumeWarn: "Scores from this game will be deleted.",
     discard: "Discard", autosaveName: "Autosave",
-    resumeArchived: "The previous game was moved to saved games (Autosave)"
+    resumeArchived: "The previous game was moved to saved games (Autosave)",
+    pointsLimit: "Points limit exceeded (±999,999)",
+    screenTitle: "SCREEN", keepAwake: "Keep the screen on during the game",
+    keepAwakeNote: "The screen will not turn off while you are on the game screen. Uses more battery.",
+    keepAwakeUnsupported: "This browser does not support this feature."
   }
 };
 
@@ -554,13 +567,13 @@ const STR = {
    2. IKONY
    ================================================================ */
 const ICONS = {
-  grip:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 V20"/><path d="M8 8 L12 4 L16 8"/><path d="M8 16 L12 20 L16 16"/></svg>',
-  back:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>',
-  undo:   '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10 h9 a5 5 0 0 1 0 10 h-3"/><path d="M4 10 L8 6 M4 10 L8 14"/></svg>',
-  pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
-  trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
-  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
-  load: '<svg viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>'
+  grip:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 V20"/><path d="M8 8 L12 4 L16 8"/><path d="M8 16 L12 20 L16 16"/></svg>',
+  back:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>',
+  undo:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10 h9 a5 5 0 0 1 0 10 h-3"/><path d="M4 10 L8 6 M4 10 L8 14"/></svg>',
+  pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
+  trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  load: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>'
 };
 
 /* ================================================================
@@ -660,7 +673,7 @@ function locale() { return (S.settings.lang === "en") ? "en-GB" : "pl-PL"; }
 /* Walidacja ustawień (używana przy ładowaniu i imporcie) */
 function sanitizeSettings(d, fallbackLang) {
   if (!d || typeof d !== "object") {
-    return { fontScale: 1, buttonValues: [1, 10], lang: fallbackLang || detectLang() };
+    return { fontScale: 1, buttonValues: [1, 10], lang: fallbackLang || detectLang(), keepAwake: false };
   }
   const fs = typeof d.fontScale === "number" && Number.isFinite(d.fontScale) ? d.fontScale : 1;
   let bv = [1, 10];
@@ -674,7 +687,7 @@ function sanitizeSettings(d, fallbackLang) {
     if (clean.length) bv = clean;
   }
   const lang = (d.lang === "pl" || d.lang === "en") ? d.lang : (fallbackLang || detectLang());
-  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang };
+  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang, keepAwake: d.keepAwake === true };
 }
 
 /* Dane z localStorage przechodzą TĘ SAMĄ sanityzację co import (ochrona przed
@@ -712,6 +725,14 @@ const act = (name, o = {}) =>
 
 const clone = typeof structuredClone === "function" ? structuredClone : x => JSON.parse(JSON.stringify(x));
 
+/* Krótki identyfikator wpisu historii (unikalny w obrębie listy) — UUID zajmował ponad 2× więcej miejsca.
+   Starsze, długie identyfikatory pozostają ważne: nigdzie nie są parsowane. */
+function newHid(list) {
+  let h;
+  do { h = Math.random().toString(36).slice(2, 8); } while (h.length < 6 || list.some(x => x.hid === h));
+  return h;
+}
+
 function newId() {
   try { if (crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
   try { return Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, "0")).join(""); } catch (e) {}
@@ -737,6 +758,22 @@ function toast(msg) {
   toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
 }
 
+/* --- Blokada wygaszania ekranu (Screen Wake Lock) — opcja w Ustawieniach, tylko na ekranie gry ---
+   syncWakeLock() jest idempotentne: porównuje stan pożądany z faktycznym i wykonuje co najwyżej
+   jedną operację naraz; po jej zakończeniu sprawdza się ponownie. Po błędzie (np. oszczędzanie
+   baterii) nie ponawia w pętli — próba wraca przy zmianie ustawienia lub widoczności strony. */
+let wakeLock = null, wakeBusy = false, wakeFailed = false;
+function syncWakeLock() {
+  if (!navigator.wakeLock || wakeBusy) return;
+  const want = S.settings.keepAwake && S.screen === "game" && document.visibilityState === "visible";
+  if (want === (wakeLock !== null) || (want && wakeFailed)) return;
+  wakeBusy = true;
+  const job = want
+    ? navigator.wakeLock.request("screen").then(l => { wakeLock = l; l.addEventListener("release", () => { if (wakeLock === l) wakeLock = null; }); })
+    : wakeLock.release().then(() => { wakeLock = null; });
+  job.catch(() => { if (want) wakeFailed = true; else wakeLock = null; }).then(() => { wakeBusy = false; syncWakeLock(); });
+}
+
 /* Wartości szybkich przycisków, zawsze posortowane rosnąco (kopia) */
 function buttonValues() { return S.settings.buttonValues.slice().sort((a, b) => a - b); }
 
@@ -744,11 +781,14 @@ function buttonValues() { return S.settings.buttonValues.slice().sort((a, b) => 
    Zapisujemy tylko grę z co najmniej jednym wpisem w historii. Przy starcie dane przechodzą
    tę samą sanityzację co zapisy/import. Zapis bez zmian (identyczny JSON) jest pomijany. */
 let lastPersist = "", lastPersistAt = 0;
+/* Migawka gry do wznowienia: dane przechodzą tę samą sanityzację co zapisy. null, gdy brak wpisów punktacji. */
+function toResume(players, history, savedAt) {
+  const e = sanitizeSaves([{ name: "x", players: players, history: history, savedAt: savedAt }])[0];
+  return e && e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt } : null;
+}
 function loadResume() {
   const d = readStore(LS_GAME_KEY);
-  if (!d || typeof d !== "object") return null;
-  const e = sanitizeSaves([{ name: "x", players: d.players, history: d.history, savedAt: d.savedAt }])[0];
-  return e && e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt } : null;
+  return d && typeof d === "object" ? toResume(d.players, d.history, d.savedAt) : null;
 }
 function persistGame() {
   if (S.screen !== "game") return;
@@ -762,20 +802,16 @@ function clearPersistedGame() {
   lastPersist = ""; lastPersistAt = 0;
   try { localStorage.removeItem(LS_GAME_KEY); } catch (e) {}
 }
-/* Gdy zaczynamy inną grę, niedokończona gra nie przepada — trafia do zapisanych gier. Zwraca true, jeśli coś przeniesiono. */
+/* Gdy zaczynamy inną grę, niedokończona gra nie przepada — trafia do zapisanych gier (dane są już po sanityzacji). */
 function archiveResume() {
-  if (!S.resume) return false;
-  const entry = sanitizeSaves([{
-    id: newId(), name: t("autosaveName") + " – " + new Date().toLocaleDateString(locale()),
-    savedAt: S.resume.savedAt || Date.now(), players: S.resume.players, history: S.resume.history
-  }])[0];
+  const r = S.resume;
+  if (!r) return;
   S.resume = null;
   clearPersistedGame();
-  if (!entry) return false;
-  S.saves.unshift(entry);
+  S.saves.unshift({ id: newId(), name: t("autosaveName") + " – " + new Date(r.savedAt).toLocaleDateString(locale()), savedAt: r.savedAt, players: r.players, history: r.history });
   if (S.saves.length > LIMITS.saves) S.saves.length = LIMITS.saves;
   saveSaves(S.saves);
-  return true;
+  toast(t("resumeArchived"));
 }
 
 /* ================================================================
@@ -799,8 +835,10 @@ const Logic = {
     if (!delta || Math.abs(delta) > LIMITS.scoreAbs) return false;
     const p = Logic.findPlayer(st, id);
     if (!p) return false;
-    p.score = Math.trunc(Number(p.score) || 0) + delta;
-    st.history.push({ hid: newId(), id: String(p.id), delta: delta });
+    const cur = Math.trunc(Number(p.score) || 0), next = cur + delta;
+    if (Math.abs(next) > LIMITS.scoreAbs && Math.abs(next) > Math.abs(cur)) return false; // wynik nie wychodzi poza ±limit (starsze wyniki można zmniejszać)
+    p.score = next;
+    st.history.push({ hid: newHid(st.history), id: String(p.id), delta: delta });
     if (st.history.length > LIMITS.history) st.history.shift();
     return true;
   },
@@ -817,7 +855,11 @@ const Logic = {
     const h = st.history.find(x => x.hid === hid);
     if (!h || !num) return false;
     const p = Logic.findPlayer(st, h.id);
-    if (p) p.score += (num - h.delta);
+    if (p) {
+      const next = p.score + (num - h.delta);
+      if (Math.abs(next) > LIMITS.scoreAbs && Math.abs(next) > Math.abs(p.score)) return false;
+      p.score = next;
+    }
     h.delta = num;
     return true;
   },
@@ -894,11 +936,14 @@ function sanitizeSaves(raw) {
     let okHist = true;
     if (Array.isArray(s.history)) {
       if (s.history.length > LIMITS.history) continue;
+      const usedHid = new Set();
       for (const h of s.history) {
         if (!h || typeof h !== "object" || idMap[String(h.id)] === undefined) { okHist = false; break; }
         const delta = Math.trunc(Number(h.delta));
         if (!Number.isFinite(delta) || delta === 0) { okHist = false; break; }
-        const hid = (typeof h.hid === "string" && h.hid) ? h.hid.slice(0, 64) : newId();
+        let hid = (typeof h.hid === "string" && h.hid) ? h.hid.slice(0, 64) : "";
+        if (!hid || usedHid.has(hid)) hid = newHid(history); // brak lub duplikat → nowy (edycja/usuwanie po hid musi trafiać w jeden wpis)
+        usedHid.add(hid);
         history.push({ hid: hid, id: idMap[String(h.id)], delta: delta });
       }
     }
@@ -993,6 +1038,17 @@ function runSelfTests() {
   check("import: licznik pominiętych wpisów", validateImport({ groups: [null, { players: [{ name: "A", color: "#e2e8f0" }] }] }).skipped === 1);
   check("import: id równe nazwie z prototypu Object odrzucone", sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ id: "toString", delta: 5 }] }]).length === 0);
   check("autozapis: savedAt przechodzi sanityzację", sanitizeSaves([{ name: "x", savedAt: 12345, players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [] }])[0].savedAt === 12345);
+  { const q = { players: [{ id: "0", score: 999990 }], history: [] };
+    check("limit: wynik nie wychodzi poza ±999999", Logic.applyPoints(q, "0", 20) === false && q.players[0].score === 999990 && q.history.length === 0);
+    q.players[0].score = 2999997;
+    check("limit: starszy wynik poza limitem można zmniejszać", Logic.applyPoints(q, "0", -10) === true && q.players[0].score === 2999987);
+    const r2 = { players: [{ id: "0", score: 999990 }], history: [{ hid: "a", id: "0", delta: 5 }] };
+    check("limit: edycja nie przekracza limitu", Logic.editEntry(r2, "a", 50) === false && r2.players[0].score === 999990 && r2.history[0].delta === 5); }
+  { const q = { players: [{ id: "0", score: 0 }], history: [] };
+    for (let i = 0; i < 100; i++) Logic.applyPoints(q, "0", 1);
+    check("hid: krótki (6 znaków) i unikalny", q.history.every(h => h.hid.length === 6) && new Set(q.history.map(h => h.hid)).size === 100); }
+  check("import: zduplikowany hid rozdzielony", (() => { const e = sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ hid: "x", id: "0", delta: 1 }, { hid: "x", id: "0", delta: 2 }, { id: "0", delta: 3 }] }])[0]; return e && new Set(e.history.map(h => h.hid)).size === 3 && e.history[0].hid === "x"; })());
+  check("ustawienia: keepAwake domyślnie false, tylko true włącza", sanitizeSettings(null).keepAwake === false && sanitizeSettings({ keepAwake: true }).keepAwake === true && sanitizeSettings({ keepAwake: "yes" }).keepAwake === false);
   check("esc: apostrof i cudzysłów", esc("'\"") === "&#39;&quot;");
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
@@ -1060,11 +1116,11 @@ function viewHome() {
     </div>` : "";
 
   return `<h1>${t("title")}</h1>
+    ${resumeHtml}
     <div class="row actions-row">
       <button class="btn btn-main grow" data-a="newGame">${t("newGame")}</button>
       <button class="icon-btn gear" aria-label="${t("settings")}" data-a="openSettings">${ICONS.settings}</button>
     </div>
-    ${resumeHtml}
     <p class="sub">${t("savedLineups")}</p>
     <div class="scroll">${groupsHtml}</div>`;
 }
@@ -1193,6 +1249,11 @@ function viewSettings() {
       <div class="card">${savesHtml}</div>
       <p class="sub">${t("fontSize")}</p>
       <div class="card">${fontHtml}</div>
+      <p class="sub">${t("screenTitle")}</p>
+      <div class="card">
+        <label class="check-row"><input type="checkbox" id="keepAwake"${S.settings.keepAwake ? " checked" : ""}${navigator.wakeLock ? "" : " disabled"}><span>${t("keepAwake")}</span></label>
+        <p class="tiny note mt8">${navigator.wakeLock ? t("keepAwakeNote") : t("keepAwakeUnsupported")}</p>
+      </div>
       <p class="sub">${t("quickButtons")}</p>
       <div class="card">
         ${btnRows}
@@ -1431,6 +1492,7 @@ function partialRenderGame() {
 }
 
 function render() {
+  syncWakeLock();
   if (Drag.el) return; // nie przebudowujemy DOM w trakcie przeciągania karty
   if (S.screen === "game" && S.lastScreen === "game" && app.dataset.screen === "game" && app.querySelector(".scroll")) {
     partialRenderGame();
@@ -1491,7 +1553,7 @@ function addGroupIfNew(players) {
 }
 
 function startGame(players) {
-  const archived = archiveResume();
+  archiveResume();
   S.players = players.map((p, i) => ({ id: String(i), name: p.name, color: p.color, score: 0 }));
   S.pending = {};
   S.history = [];
@@ -1499,7 +1561,6 @@ function startGame(players) {
   S.dialog = { type: "drawAsk" };
   S.screen = "game";
   render(); window.scrollTo(0, 0);
-  if (archived) toast(t("resumeArchived"));
 }
 
 /* Zmiana kolejności graczy (klawiatura: strzałki góra/dół na uchwycie) */
@@ -1568,7 +1629,7 @@ const ACTIONS = {
   pendApply(id) {
     const d = S.pending[id] || 0;
     if (!d) return; // podwójne ✓ jest bezpieczne: pierwsze kliknięcie zeruje oczekujące punkty
-    Logic.applyPoints(S, id, d);
+    if (!Logic.applyPoints(S, id, d)) { toast(t("pointsLimit")); return; } // punkty zostają w oczekujących — nic nie ginie po cichu
     delete S.pending[id];
     S.animScore = id;
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
@@ -1597,7 +1658,7 @@ const ACTIONS = {
     if (!d || d.type !== "editHistory") return;
     const n = Logic.parsePoints(d.value);
     if (!n) { toast(t("numPositive")); return; }
-    Logic.editEntry(S, d.hid, d.sign * n);
+    if (!Logic.editEntry(S, d.hid, d.sign * n)) { toast(t("pointsLimit")); return; }
     S.dialog = null;
     render();
     restoreFocus();
@@ -1646,7 +1707,7 @@ const ACTIONS = {
   finishGame() { S.players = []; S.pending = {}; S.history = []; S.cardCache = null; clearPersistedGame(); setScreen("home"); restoreFocus(); },
   resumeGame() {
     const r = S.resume; if (!r) return;
-    S.players = clone(r.players); S.history = clone(r.history);
+    S.players = r.players; S.history = r.history;
     S.pending = {}; S.cardCache = null; S.resume = null; S.dialog = null; S.screen = "game";
     render(); window.scrollTo(0, 0);
   },
@@ -1665,9 +1726,7 @@ const ACTIONS = {
   },
   exitToMenu() {
     persistGame();
-    const e = S.history.length
-      ? sanitizeSaves([{ name: "x", players: S.players, history: S.history, savedAt: lastPersistAt || Date.now() }])[0] : null;
-    S.resume = e ? { players: e.players, history: e.history, savedAt: e.savedAt } : null;
+    S.resume = toResume(S.players, S.history, lastPersistAt || Date.now());
     S.players = []; S.pending = {}; S.history = []; S.cardCache = null;
     setScreen("home");
     restoreFocus();
@@ -1678,7 +1737,7 @@ const ACTIONS = {
   doLoadSave(id) {
     const s = S.saves.find(x => x.id === id);
     if (!s) { closeDialog(); return; }
-    const archived = archiveResume();
+    archiveResume();
     S.players = clone(s.players);   // zapisy są już po sanityzacji (spójne ID graczy i historii)
     S.history = clone(s.history);
     S.pending = {};
@@ -1686,7 +1745,6 @@ const ACTIONS = {
     S.dialog = null;
     S.screen = "game";
     render(); window.scrollTo(0, 0);
-    if (archived) toast(t("resumeArchived"));
   },
   askDeleteSave(id) {
     const s = S.saves.find(x => x.id === id);
@@ -1706,6 +1764,7 @@ const ACTIONS = {
     saveSettings();
     render();
   },
+  setKeepAwake(on) { S.settings.keepAwake = !!on; wakeFailed = false; saveSettings(); render(); },
   setLang(lang) {
     if ((lang !== "pl" && lang !== "en") || S.settings.lang === lang) return;
     S.settings.lang = lang;
@@ -1874,6 +1933,7 @@ document.addEventListener("input", function (e) {
 
 document.addEventListener("change", function (e) {
   if (e.target.id === "importFile") { handleImportFile(e.target.files[0]); return; }
+  if (e.target.id === "keepAwake") { ACTIONS.setKeepAwake(e.target.checked); return; }
   if (e.target.dataset && e.target.dataset.change === "updateButtonValue") {
     ACTIONS.updateButtonValue(Number(e.target.dataset.v), e.target.value);
   }
@@ -1912,6 +1972,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 /* --- Inicjalizacja --- */
+document.addEventListener("visibilitychange", function () { wakeFailed = false; syncWakeLock(); });
 applyLang();
 applyFontScale();
 render();
