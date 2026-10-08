@@ -896,7 +896,9 @@ function sanitizePlayers(raw) {
     }
     used.add(color);
     const score = Number(p.score);
-    out.push({ id: String(i), name: name, color: color, score: Number.isFinite(score) ? Math.trunc(score) : 0 });
+    /* integralność danych: score z importu musi mieścić się w LIMITS.scoreAbs (jak przy punktacji) */
+    if (!Number.isFinite(score) || Math.abs(score) > LIMITS.scoreAbs) return null;
+    out.push({ id: String(i), name: name, color: color, score: Math.trunc(score) });
   }
   return out;
 }
@@ -940,7 +942,7 @@ function sanitizeSaves(raw) {
       for (const h of s.history) {
         if (!h || typeof h !== "object" || idMap[String(h.id)] === undefined) { okHist = false; break; }
         const delta = Math.trunc(Number(h.delta));
-        if (!Number.isFinite(delta) || delta === 0) { okHist = false; break; }
+        if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > LIMITS.scoreAbs) { okHist = false; break; }
         let hid = (typeof h.hid === "string" && h.hid) ? h.hid.slice(0, 64) : "";
         if (!hid || usedHid.has(hid)) hid = newHid(history); // brak lub duplikat → nowy (edycja/usuwanie po hid musi trafiać w jeden wpis)
         usedHid.add(hid);
@@ -1050,6 +1052,19 @@ function runSelfTests() {
   check("import: zduplikowany hid rozdzielony", (() => { const e = sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ hid: "x", id: "0", delta: 1 }, { hid: "x", id: "0", delta: 2 }, { id: "0", delta: 3 }] }])[0]; return e && new Set(e.history.map(h => h.hid)).size === 3 && e.history[0].hid === "x"; })());
   check("ustawienia: keepAwake domyślnie false, tylko true włącza", sanitizeSettings(null).keepAwake === false && sanitizeSettings({ keepAwake: true }).keepAwake === true && sanitizeSettings({ keepAwake: "yes" }).keepAwake === false);
   check("esc: apostrof i cudzysłów", esc("'\"") === "&#39;&quot;");
+
+  // limit score/delta w imporcie (integralność danych)
+  check("import: score poza ±999999 odrzucony",
+    sanitizePlayers([{ name: "A", color: "#e2e8f0", score: LIMITS.scoreAbs + 1 }]) === null);
+  check("import: score = -limit OK",
+    !!sanitizePlayers([{ name: "A", color: "#e2e8f0", score: -LIMITS.scoreAbs }]));
+  check("import: save z delta poza limitem pominięty",
+    sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0", score: 5 }],
+                     history: [{ hid: "x", id: "0", delta: LIMITS.scoreAbs * 10 }] }]).length === 0);
+  check("import: save z delta na granicy OK",
+    sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0", score: LIMITS.scoreAbs }],
+                     history: [{ hid: "x", id: "0", delta: LIMITS.scoreAbs }] }]).length === 1);
+
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
   const passed = results.filter(r => r.ok).length;
