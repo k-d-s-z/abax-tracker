@@ -137,7 +137,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install deps (lokalnie)
         run: |
@@ -151,11 +151,14 @@ jobs:
           APP_DIR: ${{ github.workspace }}
         run: |
           cd ci-workdir
+          # Chrome na runnerze (154) i ChromeDriver z @axe-core/cli (155) nie pasują
+          # do siebie — instalujemy zsynchronizowaną parę przez browser-driver-manager.
+          npx browser-driver-manager install chrome
           node ./node_modules/http-server/bin/http-server "$APP_DIR" -p 8000 --silent &
           SERVER_PID=$!
           sleep 2
           # Bez --exit: naruszenia są ZGŁASZANE w logu, ale nie ubijają jobu.
           # To celowe na starcie — najpierw ustal baseline, potem dodaj --exit,
           # żeby CI pilnował regresji dostępności.
-          npx axe http://127.0.0.1:8000/index.html --tags wcag2a,wcag2aa,wcag21a,wcag21aa --exit || echo "axe: znaleziono naruszenia (patrz log powyżej) — job nie jest ubijany"
+          npx axe http://127.0.0.1:8000/index.html --tags wcag2a,wcag2aa,wcag21a,wcag21aa || echo "axe: znaleziono naruszenia (patrz log powyżej) — job nie jest ubijany"
           kill $SERVER_PID
