@@ -1457,14 +1457,17 @@ function handleImportFile(file) {
 /* --- Przeciąganie kart graczy (uchwyt ⇕: mysz, dotyk, pióro) ---
    Karta podąża za palcem (transform), a sąsiedzi są przestawiani na żywo w DOM.
    Po upuszczeniu kolejność z DOM zapisuje się do S.players. Brzegi ekranu przewijają stronę. */
-const Drag = { el: null, grab: 0, ty: 0, y: 0, raf: 0 };
+const Drag = { el: null, grab: 0, grabX: 0, ty: 0, tx: 0, y: 0, x: 0, raf: 0 };
 
 function dragStart(e, handle) {
   const card = handle.closest("[data-card]");
   if (!card || Drag.el || (e.pointerType === "mouse" && e.button !== 0)) return;
   e.preventDefault();
   try { handle.setPointerCapture(e.pointerId); } catch (err) {}
-  Drag.el = card; Drag.grab = e.clientY - card.getBoundingClientRect().top; Drag.ty = 0; Drag.y = e.clientY;
+  Drag.el = card;
+  const cr = card.getBoundingClientRect();
+  Drag.grab = e.clientY - cr.top; Drag.grabX = e.clientX - cr.left;
+  Drag.ty = 0; Drag.tx = 0; Drag.y = e.clientY; Drag.x = e.clientX;
   card.classList.add("dragging");
   Drag.raf = requestAnimationFrame(dragTick);
 }
@@ -1473,16 +1476,24 @@ function dragTick() {
   if (!card) return;
   if (Drag.y < 70) window.scrollBy(0, -12); else if (Drag.y > window.innerHeight - 70) window.scrollBy(0, 12);
   const list = card.parentNode;
-  for (let moved = true, n = 0; moved && n < 4; n++) {
-    moved = false;
-    const sibs = Array.from(list.querySelectorAll("[data-card]"));
-    const i = sibs.indexOf(card), prev = sibs[i - 1], next = sibs[i + 1];
-    if (prev) { const r = prev.getBoundingClientRect(); if (Drag.y < r.top + r.height / 2) { list.insertBefore(card, prev); moved = true; } }
-    if (!moved && next) { const r = next.getBoundingClientRect(); if (Drag.y > r.top + r.height / 2) { list.insertBefore(card, next.nextSibling); moved = true; } }
+  /* Kolejność docelowa liczona po OBU osiach: działa w jednej kolumnie (mobile)
+     i w siatce desktop (ekran gry jest wówczas CSS gridem). Karta trafia tam,
+     gdzie jest kursor: w swoim rzędzie po kolumnie (X), poza rzędem po rzędzie (Y). */
+  const sibs = Array.from(list.querySelectorAll("[data-card]"));
+  const i = sibs.indexOf(card);
+  const others = sibs.filter(s => s !== card);
+  let target = 0;
+  for (const s of others) {
+    const r = s.getBoundingClientRect();
+    const cy = r.top + r.height / 2, cx = r.left + r.width / 2;
+    const sameRow = Math.abs(cy - Drag.y) <= r.height / 2; // kursor w paśmie pionowym karty
+    if (sameRow ? cx < Drag.x : cy < Drag.y) target++;
   }
-  const natural = card.getBoundingClientRect().top - Drag.ty; // pozycja bez transformacji
-  Drag.ty = Drag.y - Drag.grab - natural;
-  card.style.transform = "translateY(" + Drag.ty + "px)";
+  if (target !== i) list.insertBefore(card, target >= others.length ? null : others[target]);
+  const rect = card.getBoundingClientRect();   // pozycja z bieżącą transformacją
+  Drag.ty = Drag.y - Drag.grab - (rect.top - Drag.ty);   // pion: pozycja bez transformacji
+  Drag.tx = Drag.x - Drag.grabX - (rect.left - Drag.tx);  // poziom (siatka desktop)
+  card.style.transform = "translate(" + Drag.tx + "px," + Drag.ty + "px)";
   Drag.raf = requestAnimationFrame(dragTick);
 }
 function dragEnd() {
@@ -1501,7 +1512,7 @@ document.addEventListener("pointerdown", function (e) {
   const h = e.target.closest && e.target.closest("[data-drag]");
   if (h) dragStart(e, h);
 });
-document.addEventListener("pointermove", function (e) { if (Drag.el) Drag.y = e.clientY; });
+document.addEventListener("pointermove", function (e) { if (Drag.el) { Drag.y = e.clientY; Drag.x = e.clientX; } });
 document.addEventListener("pointerup", dragEnd);
 document.addEventListener("pointercancel", dragEnd);
 window.addEventListener("blur", dragEnd);

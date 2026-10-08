@@ -391,3 +391,21 @@
   .check-row { display:flex; align-items:center; gap:12px; min-height:var(--tap); cursor:pointer; }
   .check-row input { width:22px; height:22px; flex-shrink:0; margin:0; accent-color:var(--accent); cursor:pointer; }
   .check-row span { font-size:calc(14px * var(--fs-mult)); font-weight:600; color:var(--text-light); }
+
+  /* ===== DESKTOP (P2): szerszy układ + siatka kart (ekran gry i główny) ===== */
+  @media (min-width: 900px) {
+    body { max-width: 1100px; padding: 24px 24px calc(24px + env(safe-area-inset-bottom)); }
+    .header-row.sticky { margin: 0 -24px 8px; padding: 8px 24px; }
+
+    /* Ekran gry: karty graczy w siatce 2–3 kolumny. Drag & drop obsługuje siatkę:
+       dragTick liczy pozycję docelową po obu osiach (X w rzędzie, Y między rzędami). */
+    [data-screen="game"] .scroll { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; align-items: start; }
+    [data-screen="game"] .scroll .card { margin-bottom: 0; }
+
+    /* Ekran główny: zapisane składy w dwóch kolumnach */
+    [data-screen="home"] .scroll { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    [data-screen="home"] .scroll .card { margin-bottom: 0; }
+    [data-screen="home"] .scroll .empty { grid-column: 1 / -1; }
+
+    .dialog { max-width: 420px; }
+  }
