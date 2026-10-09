@@ -1,7 +1,7 @@
 /* Abax Tracker — service worker.
    Zmień numer w CACHE przy każdej publikacji, która zmienia plik z CORE (CI to wymusza:
    job "tests" zawodzi, gdy CORE się zmieniło, a linia CACHE nie). */
-const CACHE = "abax-tracker-v12";
+const CACHE = "abax-tracker-v13";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./css/app.css", "./js/app.js"];
 const OPTIONAL = ["./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
 const NAV_TIMEOUT = 3000;              // po tylu ms bez odpowiedzi sieci pokazujemy wersję z cache
