@@ -71,7 +71,8 @@ const STR = {
     pointsLimit: "Przekroczono limit punktów (±999 999)",
     screenTitle: "EKRAN", keepAwake: "Nie wygaszaj ekranu podczas gry",
     keepAwakeNote: "Ekran nie zgaśnie, dopóki jesteś na ekranie gry. Zwiększa zużycie baterii.",
-    keepAwakeUnsupported: "Ta przeglądarka nie obsługuje tej funkcji."
+    keepAwakeUnsupported: "Ta przeglądarka nie obsługuje tej funkcji.",
+    updateReady: "Zaktualizowano aplikację do nowej wersji"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME",
@@ -139,7 +140,8 @@ const STR = {
     pointsLimit: "Points limit exceeded (±999,999)",
     screenTitle: "SCREEN", keepAwake: "Keep the screen on during the game",
     keepAwakeNote: "The screen will not turn off while you are on the game screen. Uses more battery.",
-    keepAwakeUnsupported: "This browser does not support this feature."
+    keepAwakeUnsupported: "This browser does not support this feature.",
+    updateReady: "The app was updated to a new version"
   }
 };
 
@@ -475,7 +477,8 @@ function sanitizePlayers(raw) {
       color = free;
     }
     used.add(color);
-    const score = Number(p.score);
+    /* składy (groups) nie przechowują score — brak pola = 0; jawnie podane, ale niepoprawne → odrzucone */
+    const score = (p.score === undefined || p.score === null) ? 0 : Number(p.score);
     /* integralność danych: score z importu musi mieścić się w LIMITS.scoreAbs (jak przy punktacji) */
     if (!Number.isFinite(score) || Math.abs(score) > LIMITS.scoreAbs) return null;
     out.push({ id: String(i), name: name, color: color, score: Math.trunc(score) });
@@ -644,6 +647,10 @@ function runSelfTests() {
   check("import: save z delta na granicy OK",
     sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0", score: LIMITS.scoreAbs }],
                      history: [{ hid: "x", id: "0", delta: LIMITS.scoreAbs }] }]).length === 1);
+
+  check("grupy: round-trip zapisu (skład bez score przeżywa wczytanie)", sanitizeGroups(JSON.parse(JSON.stringify(
+    [{ id: "g1", players: [{ name: "A", color: "#e2e8f0" }, { name: "B", color: "#38bdf8" }] }]))).length === 1);
+  check("grupy: score null/brak = 0, tekst odrzucony", sanitizePlayers([{ name: "A", color: "#e2e8f0" }])[0].score === 0 && sanitizePlayers([{ name: "A", color: "#e2e8f0", score: "x" }]) === null);
 
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
@@ -1400,7 +1407,7 @@ const ACTIONS = {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "abax-tracker-kopia-zapasowa.json";
+      a.download = S.settings.lang === "en" ? "abax-tracker-backup.json" : "abax-tracker-kopia-zapasowa.json";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1586,6 +1593,11 @@ render();
 /* PWA: service worker tylko przez http(s) (nie działa z file://) */
 if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
   window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  /* Nowy worker przejął kontrolę (skipWaiting + claim) → informujemy. Przy pierwszej instalacji
+     (brak poprzedniego kontrolera) nic nie pokazujemy. Strona nie jest przeładowywana
+     automatycznie, żeby nie przerwać trwającej gry — nowy kod działa od kolejnego otwarcia. */
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", function () { if (hadController) toast(t("updateReady")); });
 }
 
 /* Komunikat po odzyskaniu uszkodzonych danych */
