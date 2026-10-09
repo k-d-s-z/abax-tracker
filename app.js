@@ -72,7 +72,17 @@ const STR = {
     screenTitle: "EKRAN", keepAwake: "Nie wygaszaj ekranu podczas gry",
     keepAwakeNote: "Ekran nie zgaśnie, dopóki jesteś na ekranie gry. Zwiększa zużycie baterii.",
     keepAwakeUnsupported: "Ta przeglądarka nie obsługuje tej funkcji.",
-    updateReady: "Zaktualizowano aplikację do nowej wersji"
+    updateReady: "Zaktualizowano aplikację do nowej wersji",
+    dice: "Rzut kostką", rollBtn: "RZUĆ", diceCountQ: "Iloma kośćmi rzucić?", diceTypeQ: "Typ kości",
+    diceMore: "Więcej kości", diceFewer: "Mniej kości",
+    diceNote: "Własne typy kości (liczby, napisy, kolory) dodasz w Ustawieniach.",
+    diceSum: "Suma", diceResult: "Wynik", diceSection: "KOŚCI", diceDefaultNote: "domyślna",
+    diceSettingsNote: "Własne kości pojawią się na liście przy rzucie na ekranie punktacji. Kość D6 (1–6) jest zawsze dostępna.",
+    addDie: "+ DODAJ KOŚĆ", newDieTitle: "Nowa kość", editDieTitle: "Edycja kości",
+    dieName: "Nazwa kości", dieNamePlaceholder: "np. Kość akcji", dieNameEmpty: "Podaj nazwę kości",
+    facesCount: "Liczba ścianek", facesWord: "ścianek", faceN: "Ścianka {n}", faceColor: "Kolor ścianki {n}", noColor: "brak koloru",
+    facesHint: "Wpisz liczby lub napisy (do 8 znaków). Kolor ścianki jest opcjonalny — dotknij pola koloru, aby go zmienić.",
+    editDieBtn: "Edytuj kość", deleteDieBtn: "Usuń kość", deleteDieQ: "Usunąć kość?", maxDice: "Maksymalnie {n} własnych kości"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME",
@@ -141,7 +151,17 @@ const STR = {
     screenTitle: "SCREEN", keepAwake: "Keep the screen on during the game",
     keepAwakeNote: "The screen will not turn off while you are on the game screen. Uses more battery.",
     keepAwakeUnsupported: "This browser does not support this feature.",
-    updateReady: "The app was updated to a new version"
+    updateReady: "The app was updated to a new version",
+    dice: "Roll dice", rollBtn: "ROLL", diceCountQ: "How many dice to roll?", diceTypeQ: "Dice type",
+    diceMore: "More dice", diceFewer: "Fewer dice",
+    diceNote: "You can add your own dice types (numbers, text, colors) in Settings.",
+    diceSum: "Total", diceResult: "Result", diceSection: "DICE", diceDefaultNote: "default",
+    diceSettingsNote: "Your own dice appear in the list when rolling on the scoring screen. The D6 (1–6) is always available.",
+    addDie: "+ ADD DIE", newDieTitle: "New die", editDieTitle: "Edit die",
+    dieName: "Die name", dieNamePlaceholder: "e.g. Action die", dieNameEmpty: "Enter a die name",
+    facesCount: "Number of faces", facesWord: "faces", faceN: "Face {n}", faceColor: "Color of face {n}", noColor: "no color",
+    facesHint: "Enter numbers or text (up to 8 characters). Face color is optional — tap the color box to change it.",
+    editDieBtn: "Edit die", deleteDieBtn: "Delete die", deleteDieQ: "Delete die?", maxDice: "Maximum of {n} custom dice"
   }
 };
 
@@ -155,6 +175,7 @@ const ICONS = {
   pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
   trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  dice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1" fill="currentColor" stroke="none"/></svg>',
   load: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>'
 };
 
@@ -178,8 +199,16 @@ const LIMITS = {
   name: 20,
   saveName: 40,
   history: 500,
-  scoreAbs: 999999
+  scoreAbs: 999999,
+  diceTypes: 10,        // własne typy kości (poza wbudowaną D6)
+  diceFacesMin: 2, diceFacesMax: 20,
+  diceCount: 6,         // ile kości naraz
+  dieName: 20, faceText: 8
 };
+
+/* Wbudowana, zawsze dostępna kość D6 (1–6). Własne kości: settings.dice = [{id, name, faces:[{t, c}]}],
+   gdzie t = napis na ściance (liczba lub tekst), c = kolor z PLAYER_COLORS albo "" (brak). */
+const DEFAULT_DIE = { id: "d6", name: "D6", faces: [1, 2, 3, 4, 5, 6].map(n => ({ t: String(n), c: "" })) };
 
 const LS_KEY = "licznik_punktow_v1";
 const LS_SETTINGS_KEY = "licznik_punktow_settings_v1";
@@ -255,7 +284,7 @@ function locale() { return (S.settings.lang === "en") ? "en-GB" : "pl-PL"; }
 /* Walidacja ustawień (używana przy ładowaniu i imporcie) */
 function sanitizeSettings(d, fallbackLang) {
   if (!d || typeof d !== "object") {
-    return { fontScale: 1, buttonValues: [1, 10], lang: fallbackLang || detectLang(), keepAwake: false };
+    return { fontScale: 1, buttonValues: [1, 10], lang: fallbackLang || detectLang(), keepAwake: false, dice: [], diceType: DEFAULT_DIE.id, diceCount: 1 };
   }
   const fs = typeof d.fontScale === "number" && Number.isFinite(d.fontScale) ? d.fontScale : 1;
   let bv = [1, 10];
@@ -269,7 +298,32 @@ function sanitizeSettings(d, fallbackLang) {
     if (clean.length) bv = clean;
   }
   const lang = (d.lang === "pl" || d.lang === "en") ? d.lang : (fallbackLang || detectLang());
-  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang, keepAwake: d.keepAwake === true };
+  const dice = sanitizeDice(d.dice);
+  const diceType = (typeof d.diceType === "string" && dice.some(x => x.id === d.diceType)) ? d.diceType : DEFAULT_DIE.id;
+  const dc = Math.trunc(Number(d.diceCount));
+  const diceCount = (dc >= 1 && dc <= LIMITS.diceCount) ? dc : 1;
+  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang, keepAwake: d.keepAwake === true, dice: dice, diceType: diceType, diceCount: diceCount };
+}
+
+/* Własne kości: 2–20 ścianek, napis do 8 znaków (pusty → numer ścianki), kolor tylko z palety. */
+function sanitizeDice(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [], seen = new Set([DEFAULT_DIE.id]); // id "d6" zarezerwowane dla kości wbudowanej
+  for (const x of raw) {
+    if (out.length >= LIMITS.diceTypes) break;
+    if (!x || typeof x !== "object" || !Array.isArray(x.faces)) continue;
+    if (x.faces.length < LIMITS.diceFacesMin || x.faces.length > LIMITS.diceFacesMax) continue;
+    const name = (typeof x.name === "string" ? x.name.trim() : "").slice(0, LIMITS.dieName);
+    if (!name) continue;
+    const faces = x.faces.map((f, i) => {
+      const o = (f && typeof f === "object") ? f : { t: f };
+      let tx = (typeof o.t === "string" || typeof o.t === "number") ? String(o.t).trim().slice(0, LIMITS.faceText) : "";
+      if (!tx) tx = String(i + 1);
+      return { t: tx, c: PLAYER_COLORS.indexOf(o.c) >= 0 ? o.c : "" };
+    });
+    out.push({ id: uniqueId(x.id, seen), name: name, faces: faces });
+  }
+  return out;
 }
 
 /* Dane z localStorage przechodzą TĘ SAMĄ sanityzację co import (ochrona przed
@@ -287,6 +341,7 @@ const S = {
   dialog: null,
   animScore: null,
   editDraft: null,
+  dieDraft: null,       // szkic edytowanej kości (Ustawienia → Kości)
   pendingImport: null,  // ZAWSZE dane po sanityzacji (validateImport)
   resume: loadResume(), // niedokończona gra odzyskana z autozapisu (albo null)
   lastFocus: null,      // element, do którego wraca fokus po zamknięciu dialogu
@@ -354,6 +409,37 @@ function syncWakeLock() {
     ? navigator.wakeLock.request("screen").then(l => { wakeLock = l; l.addEventListener("release", () => { if (wakeLock === l) wakeLock = null; }); })
     : wakeLock.release().then(() => { wakeLock = null; });
   job.catch(() => { if (want) wakeFailed = true; else wakeLock = null; }).then(() => { wakeBusy = false; syncWakeLock(); });
+}
+
+/* --- Kości ---
+   randInt(n): równomierne losowanie 0..n-1 (crypto + odrzucanie, bez obciążenia modulo). */
+function randInt(n) {
+  try {
+    const lim = Math.floor(0x100000000 / n) * n, buf = new Uint32Array(1);
+    do { crypto.getRandomValues(buf); } while (buf[0] >= lim);
+    return buf[0] % n;
+  } catch (e) { return Math.floor(Math.random() * n); }
+}
+function diceTypes() { return [DEFAULT_DIE].concat(S.settings.dice); }
+function currentDie() { return diceTypes().find(d => d.id === S.settings.diceType) || DEFAULT_DIE; }
+function facesPreview(d) { return d.faces.slice(0, 8).map(f => f.t).join(" ") + (d.faces.length > 8 ? " …" : ""); }
+/* Suma tylko wtedy, gdy WSZYSTKIE wylosowane ścianki są liczbami (także z „−” Unicode) */
+function diceSum(die, idxs) {
+  const vals = idxs.map(i => die.faces[i].t.replace(/\u2212/g, "-"));
+  return vals.every(v => /^[-+]?\d+$/.test(v)) ? vals.reduce((a, v) => a + parseInt(v, 10), 0) : null;
+}
+function diceTilesHtml(die, idxs) {
+  return idxs.map(i => { const f = die.faces[i]; return `<span class="die-tile${f.c ? " col " + cc(f.c) : ""}${f.t.length > 3 ? " long" : ""}">${esc(f.t)}</span>`; }).join("");
+}
+function diceInfoHtml(die, idxs) {
+  if (!idxs || !idxs.length) return "";
+  const sr = t("diceResult") + ": " + idxs.map(i => die.faces[i].t).join(", ");
+  const sum = idxs.length > 1 ? diceSum(die, idxs) : null;
+  return `<span class="sr-only">${esc(sr)}. </span>` + (sum !== null ? `<span>${t("diceSum")}: ${sum}</span>` : "");
+}
+function faceColorLabel(i, c) {
+  const idx = PLAYER_COLORS.indexOf(c);
+  return t("faceColor").replace("{n}", i + 1) + ": " + (idx >= 0 ? t("colorNames")[idx] : t("noColor"));
 }
 
 /* Wartości szybkich przycisków, zawsze posortowane rosnąco (kopia) */
@@ -652,6 +738,24 @@ function runSelfTests() {
     [{ id: "g1", players: [{ name: "A", color: "#e2e8f0" }, { name: "B", color: "#38bdf8" }] }]))).length === 1);
   check("grupy: score null/brak = 0, tekst odrzucony", sanitizePlayers([{ name: "A", color: "#e2e8f0" }])[0].score === 0 && sanitizePlayers([{ name: "A", color: "#e2e8f0", score: "x" }]) === null);
 
+  /* kości */
+  { const dd = sanitizeDice([
+      { id: "a", name: "  Akcji  ", faces: [{ t: "Miecz", c: "#f43f5e" }, { t: "", c: "red;x" }, "Tarcza", 7] },
+      { id: "b", name: "za mało", faces: [{ t: "1" }] },
+      { id: "c", name: "", faces: [{ t: "1" }, { t: "2" }] },
+      { id: "d6", name: "kolizja", faces: [{ t: "1" }, { t: "2" }] },
+      null, { name: "x", faces: "nie tablica" }]);
+    check("kości: poprawne zachowane, błędne pominięte", dd.length === 2 && dd[0].name === "Akcji");
+    check("kości: napis przycięty, pusty → numer, kolor spoza palety → brak", dd[0].faces[0].t === "Miecz" && dd[0].faces[0].c === "#f43f5e" && dd[0].faces[1].t === "2" && dd[0].faces[1].c === "" && dd[0].faces[2].t === "Tarcza" && dd[0].faces[3].t === "7");
+    check("kości: id „d6” zarezerwowane dla kości wbudowanej", dd[1].id !== "d6" && dd[1].id.length > 0); }
+  check("kości: >20 ścianek odrzucone", sanitizeDice([{ name: "X", faces: new Array(21).fill({ t: "1" }) }]).length === 0);
+  check("kości: max typów", sanitizeDice(new Array(25).fill({ name: "X", faces: [{ t: "1" }, { t: "2" }] })).length === LIMITS.diceTypes);
+  check("ustawienia: diceType spoza listy → d6, diceCount w 1–6", (() => { const x = sanitizeSettings({ diceType: "nie-ma", diceCount: 99 }); return x.diceType === "d6" && x.diceCount === 1 && sanitizeSettings({ diceCount: 4 }).diceCount === 4; })());
+  check("ustawienia: diceType wskazuje istniejącą kość", (() => { const x = sanitizeSettings({ dice: [{ id: "k1", name: "K", faces: [{ t: "a" }, { t: "b" }] }], diceType: "k1" }); return x.diceType === "k1"; })());
+  check("kości: randInt w zakresie i pokrywa wszystkie wartości", (() => { const seen = new Set(); for (let i = 0; i < 600; i++) { const r = randInt(6); if (r < 0 || r > 5 || r !== Math.floor(r)) return false; seen.add(r); } return seen.size === 6; })());
+  check("kości: suma tylko dla liczb (także „−” Unicode)", diceSum({ faces: [{ t: "2" }, { t: "\u22121" }, { t: "Miecz" }] }, [0, 1]) === 1 && diceSum({ faces: [{ t: "2" }, { t: "\u22121" }, { t: "Miecz" }] }, [0, 2]) === null);
+  check("kości: wbudowana D6 ma ścianki 1–6", DEFAULT_DIE.faces.length === 6 && DEFAULT_DIE.faces[5].t === "6");
+
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
   const passed = results.filter(r => r.ok).length;
@@ -808,6 +912,7 @@ function viewGame() {
     </span>
     <span class="row-left tools">
       <button class="icon-btn" aria-label="${t("undo")}"${S.history.length ? "" : " disabled"} data-a="undo">${ICONS.undo}</button>
+      <button class="icon-btn" aria-label="${t("dice")}" data-a="openDice">${ICONS.dice}</button>
       <button class="icon-btn" aria-label="${t("editLineupBtn")}" data-a="openEdit">${ICONS.pencil}</button>
       <button class="btn-outline" data-a="openFinish">${t("end")}</button>
     </span>
@@ -843,6 +948,15 @@ function viewSettings() {
       </span>
     </div>`).join("");
 
+  const dieRows = `<div class="list-item"><span class="row-left col"><span class="name">${esc(DEFAULT_DIE.name)}</span><span class="save-meta">${DEFAULT_DIE.faces.length} ${t("facesWord")}: ${esc(facesPreview(DEFAULT_DIE))} • ${t("diceDefaultNote")}</span></span></div>` +
+    S.settings.dice.map(d => `<div class="list-item">
+      <span class="row-left col"><span class="name">${esc(d.name)}</span><span class="save-meta">${d.faces.length} ${t("facesWord")}: ${esc(facesPreview(d))}</span></span>
+      <span class="btn-pair">
+        <button class="icon-btn" aria-label="${t("editDieBtn")}: ${esc(d.name)}" ${act("editDie", { id: d.id })}>${ICONS.pencil}</button>
+        <button class="icon-btn" aria-label="${t("deleteDieBtn")}: ${esc(d.name)}" ${act("askDeleteDie", { id: d.id })}>${ICONS.trash}</button>
+      </span>
+    </div>`).join("");
+
   return `<div class="header-row">
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
     </div>
@@ -862,6 +976,12 @@ function viewSettings() {
         <button class="btn-outline mt full"${vals.length >= MAX_BUTTON_PAIRS ? " disabled" : ""} data-a="addButtonValue">${t("addPair")}</button>
         <p class="tiny tc note mt10">${t("onCard")} ${vals.length * 2 + 2} ${t("buttonsCount1")}</p>
         <p class="tiny note mt8">${t("buttonsTip")}</p>
+      </div>
+      <p class="sub">${t("diceSection")}</p>
+      <div class="card">
+        ${dieRows}
+        <button class="btn-outline mt full"${S.settings.dice.length >= LIMITS.diceTypes ? " disabled" : ""} data-a="addDie">${t("addDie")}</button>
+        <p class="tiny tc note mt10">${t("diceSettingsNote")}</p>
       </div>
       <p class="sub">${t("language")}</p>
       <div class="card">
@@ -1035,6 +1155,60 @@ function dialogHtml() {
       </div>`;
   }
 
+  if (d.type === "dice") {
+    const die = currentDie(), types = diceTypes(), n = S.settings.diceCount;
+    const typeHtml = types.length > 1
+      ? `<select id="diceType" aria-labelledby="diceTypeLbl">${types.map(x => `<option value="${esc(x.id)}"${x.id === die.id ? " selected" : ""}>${esc(x.name)} · ${x.faces.length} ${t("facesWord")}</option>`).join("")}</select>`
+      : `<p class="dice-static">${esc(die.name)}</p>`;
+    inner = `${title(t("dice"))}
+      <p class="tiny mt" id="diceCountLbl">${t("diceCountQ")}</p>
+      <div class="row font-ctl dice-count" role="group" aria-labelledby="diceCountLbl">
+        <button class="btn-outline font-btn" id="diceDec" aria-label="${t("diceFewer")}"${n <= 1 ? " disabled" : ""} ${act("diceCount", { v: -1 })}>\u2212</button>
+        <span class="pct" aria-live="polite">${n}</span>
+        <button class="btn-outline font-btn" id="diceInc" aria-label="${t("diceMore")}"${n >= LIMITS.diceCount ? " disabled" : ""} ${act("diceCount", { v: 1 })}>+</button>
+      </div>
+      <p class="tiny mt" id="diceTypeLbl">${t("diceTypeQ")}</p>
+      ${typeHtml}
+      <button class="btn mt" id="rollBtn" data-autofocus data-a="rollDice">${t("rollBtn")}</button>
+      <div class="dice-out" id="diceOut">${d.results ? diceTilesHtml(die, d.results) : ""}</div>
+      <p class="dice-info" id="diceInfo" role="status">${d.results ? diceInfoHtml(die, d.results) : ""}</p>
+      <p class="tiny tc note mt8">${t("diceNote")}</p>
+      <div class="dialog-actions tight"><button class="dlg-btn secondary" data-a="closeDialog">${t("close")}</button></div>`;
+  }
+  else if (d.type === "editDie") {
+    const dd = S.dieDraft;
+    if (!dd) { S.dialog = null; return ""; }
+    const rows = dd.faces.map((f, i) => `<div class="face-row">
+        <span class="tiny face-n" aria-hidden="true">${i + 1}</span>
+        <input type="text" class="face-input" id="dieFace${i}" data-face="${i}" maxlength="${LIMITS.faceText}" value="${esc(f.t)}" aria-label="${t("faceN").replace("{n}", i + 1)}" autocomplete="off">
+        <button class="die-sw${f.c ? " col " + cc(f.c) : ""}" id="dieCol${i}" aria-label="${esc(faceColorLabel(i, f.c))}" ${act("dieCycleColor", { v: i })}>${f.c ? "" : "\u2014"}</button>
+      </div>`).join("");
+    inner = `${title(dd.id ? t("editDieTitle") : t("newDieTitle"))}
+      <label class="tiny" for="dieName">${t("dieName")}</label>
+      <input type="text" id="dieName" maxlength="${LIMITS.dieName}" placeholder="${t("dieNamePlaceholder")}" value="${esc(dd.name)}" autocomplete="off">
+      <p class="tiny mt" id="facesCountLbl">${t("facesCount")}</p>
+      <div class="row font-ctl" role="group" aria-labelledby="facesCountLbl">
+        <button class="btn-outline font-btn" id="dieFacesDec" aria-label="\u2212"${dd.faces.length <= LIMITS.diceFacesMin ? " disabled" : ""} ${act("dieFaces", { v: -1 })}>\u2212</button>
+        <span class="pct">${dd.faces.length}</span>
+        <button class="btn-outline font-btn" id="dieFacesInc" aria-label="+"${dd.faces.length >= LIMITS.diceFacesMax ? " disabled" : ""} ${act("dieFaces", { v: 1 })}>+</button>
+      </div>
+      <div class="face-list">${rows}</div>
+      <p class="tiny note mt8">${t("facesHint")}</p>
+      <div class="dialog-actions">
+        <button class="dlg-btn secondary" data-a="cancelDie">${t("cancelShort")}</button>
+        <button class="dlg-btn solid" data-a="saveDie">${t("save")}</button>
+      </div>`;
+    noBack = true; // szkic nie ginie po przypadkowym dotknięciu tła
+  }
+  else if (d.type === "confirmDeleteDie") {
+    inner = `${title(t("deleteDieQ"))}
+      <p class="dlg-name">${esc(d.name)}</p>
+      <div class="dialog-actions">
+        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn red" ${act("confirmDeleteDieFn", { id: d.id })}>${t("remove")}</button>
+      </div>`;
+  }
+
   return `<div class="dialog-back"${noBack ? "" : ' data-a="dialogBackdrop"'}>
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">${inner}</div></div>`;
 }
@@ -1046,9 +1220,13 @@ function dialogHtml() {
 function updateOverlay() {
   const dlgEl = app.querySelector(".dialog-back");
   if (S.dialog) {
+    /* fokus wewnątrz dialogu (np. na „+” przy liczbie kości) wraca po przebudowie, o ile element ma id */
+    const ae = document.activeElement;
+    const aid = dlgEl && ae && dlgEl.contains(ae) && ae.id ? ae.id : null;
     if (dlgEl) dlgEl.remove();
     app.insertAdjacentHTML("beforeend", dialogHtml());
-    focusDialog();
+    const re = aid ? document.getElementById(aid) : null;
+    if (re && !re.disabled) re.focus(); else focusDialog();
   } else if (dlgEl) dlgEl.remove();
 
 }
@@ -1056,7 +1234,7 @@ function updateOverlay() {
 function focusDialog() {
   const dlg = document.querySelector(".dialog");
   if (!dlg) return;
-  const first = dlg.querySelector("input") || dlg.querySelector("button:not(:disabled)");
+  const first = dlg.querySelector("[data-autofocus]") || dlg.querySelector("input") || dlg.querySelector("button:not(:disabled)");
   if (first) first.focus();
 }
 
@@ -1130,6 +1308,7 @@ function render() {
 
 function closeDialog() {
   S.editDraft = null;
+  S.dieDraft = null;
   S.dialog = null;
   render();
   restoreFocus();
@@ -1138,7 +1317,7 @@ function restoreFocus() {
   if (S.lastFocus && document.contains(S.lastFocus) && typeof S.lastFocus.focus === "function") S.lastFocus.focus();
   S.lastFocus = null;
 }
-function setScreen(s) { S.dialog = null; S.editDraft = null; S.screen = s; render(); window.scrollTo(0, 0); }
+function setScreen(s) { S.dialog = null; S.editDraft = null; S.dieDraft = null; S.screen = s; render(); window.scrollTo(0, 0); }
 function openDialogFn(d) {
   if (!document.querySelector(".dialog-back")) S.lastFocus = document.activeElement;
   S.dialog = d;
@@ -1399,6 +1578,103 @@ const ACTIONS = {
     saveSettings(); render();
   },
 
+  /* kości: rzut na ekranie punktacji */
+  openDice() { openDialogFn({ type: "dice", results: null, rolling: false }); },
+  diceCount(delta) {
+    const d = S.dialog; if (!d || d.type !== "dice") return;
+    S.settings.diceCount = Math.max(1, Math.min(LIMITS.diceCount, S.settings.diceCount + Number(delta)));
+    d.results = null; saveSettings(); render();
+  },
+  setDiceType(id) {
+    const d = S.dialog; if (!d || d.type !== "dice" || !diceTypes().some(x => x.id === id)) return;
+    S.settings.diceType = id; d.results = null; saveSettings(); render();
+  },
+  rollDice() {
+    const d = S.dialog;
+    if (!d || d.type !== "dice" || d.rolling) return;
+    const die = currentDie(), n = S.settings.diceCount;
+    const finalIdx = Array.from({ length: n }, () => randInt(die.faces.length));
+    const finish = () => {
+      d.rolling = false;
+      if (S.dialog !== d) return;
+      d.results = finalIdx;
+      const o = document.getElementById("diceOut"), i = document.getElementById("diceInfo");
+      if (o) o.innerHTML = diceTilesHtml(die, finalIdx);
+      if (i) i.innerHTML = diceInfoHtml(die, finalIdx);
+      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+    };
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !document.getElementById("diceOut")) { finish(); return; }
+    /* krótka animacja: migają losowe ścianki (bezpośrednio w DOM — bez przebudowy dialogu), potem wynik */
+    d.rolling = true; d.results = null;
+    const info = document.getElementById("diceInfo"); if (info) info.innerHTML = "";
+    let tick = 0;
+    const step = () => {
+      if (S.dialog !== d) return; // okno zamknięte w trakcie rzutu
+      if (++tick > 9) { finish(); return; }
+      const o = document.getElementById("diceOut");
+      if (o) o.innerHTML = diceTilesHtml(die, finalIdx.map(() => randInt(die.faces.length)));
+      setTimeout(step, 60);
+    };
+    step();
+  },
+
+  /* kości: definiowanie własnych typów (Ustawienia) */
+  addDie() {
+    if (S.settings.dice.length >= LIMITS.diceTypes) { toast(t("maxDice").replace("{n}", LIMITS.diceTypes)); return; }
+    S.dieDraft = { id: null, name: "", faces: DEFAULT_DIE.faces.map(f => ({ t: f.t, c: "" })) };
+    openDialogFn({ type: "editDie" });
+  },
+  editDie(id) {
+    const die = S.settings.dice.find(x => x.id === id); if (!die) return;
+    S.dieDraft = { id: die.id, name: die.name, faces: clone(die.faces) };
+    openDialogFn({ type: "editDie" });
+  },
+  dieFaces(delta) {
+    const dd = S.dieDraft; if (!dd) return;
+    const n = Math.max(LIMITS.diceFacesMin, Math.min(LIMITS.diceFacesMax, dd.faces.length + Number(delta)));
+    while (dd.faces.length < n) dd.faces.push({ t: String(dd.faces.length + 1), c: "" });
+    dd.faces.length = n;
+    render();
+  },
+  /* kolor ścianki: brak → 8 kolorów palety → brak; aktualizujemy tylko ten przycisk (bez przebudowy listy) */
+  dieCycleColor(i, el) {
+    const f = S.dieDraft && S.dieDraft.faces[Number(i)]; if (!f) return;
+    const order = [""].concat(PLAYER_COLORS);
+    f.c = order[(order.indexOf(f.c) + 1) % order.length];
+    if (el && el.setAttribute) {
+      el.className = "die-sw" + (f.c ? " col " + cc(f.c) : "");
+      el.textContent = f.c ? "" : "\u2014";
+      el.setAttribute("aria-label", faceColorLabel(Number(i), f.c));
+    }
+  },
+  cancelDie() { S.dieDraft = null; closeDialog(); },
+  saveDie() {
+    const dd = S.dieDraft; if (!dd) return;
+    const name = dd.name.trim().slice(0, LIMITS.dieName);
+    if (!name) { toast(t("dieNameEmpty")); return; }
+    const faces = dd.faces.map((f, i) => ({ t: String(f.t).trim().slice(0, LIMITS.faceText) || String(i + 1), c: PLAYER_COLORS.indexOf(f.c) >= 0 ? f.c : "" }));
+    if (dd.id) {
+      const idx = S.settings.dice.findIndex(x => x.id === dd.id);
+      if (idx >= 0) S.settings.dice[idx] = { id: dd.id, name: name, faces: faces };
+    } else {
+      if (S.settings.dice.length >= LIMITS.diceTypes) { toast(t("maxDice").replace("{n}", LIMITS.diceTypes)); return; }
+      S.settings.dice.push({ id: newId(), name: name, faces: faces });
+    }
+    saveSettings();
+    closeDialog();
+  },
+  askDeleteDie(id) {
+    const die = S.settings.dice.find(x => x.id === id); if (!die) return;
+    openDialogFn({ type: "confirmDeleteDie", id: id, name: die.name });
+  },
+  confirmDeleteDieFn(id) {
+    S.settings.dice = S.settings.dice.filter(x => x.id !== id);
+    if (S.settings.diceType === id) S.settings.diceType = DEFAULT_DIE.id;
+    saveSettings();
+    closeDialog();
+  },
+
   /* eksport / import */
   exportData() {
     try {
@@ -1541,11 +1817,17 @@ document.addEventListener("input", function (e) {
   const id = e.target.id;
   if (id === "nameInput") { S.setupName = e.target.value; syncAddPlayerBtn(); }
   else if (id === "editName" && S.editDraft) { S.editDraft.name = e.target.value; }
+  else if (id === "dieName" && S.dieDraft) { S.dieDraft.name = e.target.value; }
+  else if (S.dieDraft && e.target.dataset && e.target.dataset.face !== undefined) {
+    const f = S.dieDraft.faces[Number(e.target.dataset.face)];
+    if (f) f.t = e.target.value;
+  }
   else if ((id === "customAmountInput" || id === "editHistoryInput") && S.dialog) { S.dialog.value = e.target.value.replace(/[^0-9]/g, ""); }
 });
 
 document.addEventListener("change", function (e) {
   if (e.target.id === "importFile") { handleImportFile(e.target.files[0]); return; }
+  if (e.target.id === "diceType") { ACTIONS.setDiceType(e.target.value); return; }
   if (e.target.id === "keepAwake") { ACTIONS.setKeepAwake(e.target.checked); return; }
   if (e.target.dataset && e.target.dataset.change === "updateButtonValue") {
     ACTIONS.updateButtonValue(Number(e.target.dataset.v), e.target.value);
@@ -1575,7 +1857,7 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Tab" && S.dialog) {
     const dlg = document.querySelector(".dialog");
     if (!dlg) return;
-    const focusables = Array.from(dlg.querySelectorAll("button, input")).filter(x => !x.disabled);
+    const focusables = Array.from(dlg.querySelectorAll("button, input, select")).filter(x => !x.disabled);
     if (!focusables.length) return;
     const first = focusables[0], last = focusables[focusables.length - 1], active = document.activeElement;
     if (!dlg.contains(active)) { e.preventDefault(); first.focus(); }
