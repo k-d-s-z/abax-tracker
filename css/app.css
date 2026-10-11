@@ -320,6 +320,8 @@
     .dlg-btn.secondary:hover { background:var(--surface-hover); }
     .lang-btn:hover:not(.sel) { border-color:var(--accent); background:var(--surface-hover); }
     .confirm-row button:hover { filter:brightness(1.1); }
+    .module-card:hover { border-color:var(--accent); }
+    button.stat-btn:hover { border-color:var(--accent); }
   }
 
   /* WIDOCZNY FOCUS DLA NAWIGACJI KLAWIATURĄ (dostępność) */
@@ -447,6 +449,27 @@
   .die-tile.lg.long { font-size:calc(20px * var(--fs-mult)); }
   .die-tile.xl.long { font-size:calc(24px * var(--fs-mult)); }
   .dice-static { text-align:left; font-weight:600; font-size:calc(15px * var(--fs-mult)); color:var(--text-muted); padding:12px; border:1px dashed var(--border); border-radius:8px; margin-top:8px; }
+
+  /* ===== Moduły gry (v11): licznik rund, cel punktowy, timer ===== */
+  .module-list { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
+  .module-card { padding:12px 14px; background:var(--surface-2); border:1px solid var(--accent); border-radius:12px; cursor:pointer; transition:all .15s; }
+  .module-card:active { transform:scale(.98); }
+  .module-card .name { font-size:calc(14px * var(--fs-mult)); font-weight:800; letter-spacing:1px; color:var(--accent-text); text-transform:uppercase; }
+  .module-card .mod-state { text-transform:none; letter-spacing:0; white-space:nowrap; }
+  /* moduł wyłączony: przygaszona karta — klik rozjaśnia i dodaje do gry */
+  .module-card.off { background:rgba(255,255,255,0.02); border-color:var(--border); opacity:.5; }
+  .module-card.off .name { color:var(--text-muted); }
+  .mod-ctl { justify-content:center; gap:8px; }
+  .mod-ctl .pct { min-width:64px; text-transform:none; }
+  input.mod-input { text-align:center; }
+  .dlg-modules { margin:10px 0 14px; }
+  /* pasek statusu gry (nagłówek ekranu gry): runda / cel / czas */
+  .game-status { display:flex; align-items:center; justify-content:center; gap:6px; flex:1; min-width:0; flex-wrap:wrap; }
+  .stat-btn { display:inline-flex; align-items:center; justify-content:center; min-height:var(--tap); padding:4px 10px; background:var(--surface-2); border:1px solid rgba(var(--accent-rgb), .35); color:var(--accent-text); font-weight:800; font-size:calc(13px * var(--fs-mult)); border-radius:8px; cursor:default; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  button.stat-btn { cursor:pointer; transition:all .15s; }
+  button.stat-btn:active { transform:scale(.95); }
+  /* flaga osiągnięcia celu przy nazwie gracza */
+  .target-flag { color:var(--green); font-size:calc(15px * var(--fs-mult)); margin-left:6px; }
 
   /* ===== TABLET + DESKTOP: szerszy układ od 700 px (tablet pionowo = 2 kolumny kart) ===== */
   @media (min-width: 700px) {
