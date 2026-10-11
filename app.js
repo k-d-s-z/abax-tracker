@@ -42,7 +42,7 @@ const STR = {
     removePair: "Usuń tę parę przycisków", addPair: "+ DODAJ PARĘ PRZYCISKÓW",
     onCard: "Aktualnie na karcie gracza:",
     buttonsCount1: "przycisków (w tym stałe „+…” / „–…” do wpisania dowolnej liczby).",
-    buttonsTip: "Wskazówka: powyżej 3 par (8 przycisków + 2 „inne”) karta gracza robi się gęsta na małych ekranach. Zacznij od 1–2 par.",
+    buttonsTip: "Wskazówka: od 3 par przyciski układają się w dwa rzędy (minusy nad plusami), więc karta gracza robi się wyższa. Na małym ekranie zacznij od 1–2 par.",
     backup: "KOPIA ZAPASOWA", exportBtn: "EKSPORTUJ DANE (KOPIA ZAPASOWA)",
     importDataBtn: "IMPORTUJ DANE",
     backupNote: "Eksport zapisuje się jako plik .json na Twoim urządzeniu — nic nie jest wysyłane do internetu.",
@@ -73,6 +73,8 @@ const STR = {
     keepAwakeNote: "Ekran nie zgaśnie, dopóki jesteś na ekranie gry. Zwiększa zużycie baterii.",
     keepAwakeUnsupported: "Ta przeglądarka nie obsługuje tej funkcji.",
     updateReady: "Zaktualizowano aplikację do nowej wersji",
+    noEntries: "Brak wpisów",
+    diceLog: "HISTORIA RZUTÓW",
     dice: "Rzut kostką", rollBtn: "RZUĆ", diceCountQ: "Iloma kośćmi rzucić?", diceTypeQ: "Typ kości",
     diceMore: "Więcej kości", diceFewer: "Mniej kości",
     diceNote: "Własne typy kości (liczby, napisy, kolory) dodasz w Ustawieniach.",
@@ -122,7 +124,7 @@ const STR = {
     removePair: "Remove this button pair", addPair: "+ ADD BUTTON PAIR",
     onCard: "Currently on a player card:",
     buttonsCount1: "buttons (including the fixed “+…” / “–…” for entering any number).",
-    buttonsTip: "Tip: with more than 3 pairs (8 buttons + 2 “other”) the player card gets crowded on small screens. Start with 1–2 pairs.",
+    buttonsTip: "Tip: from 3 pairs the buttons are arranged in two rows (minus above plus), so the player card gets taller. On a small screen start with 1–2 pairs.",
     backup: "BACKUP", exportBtn: "EXPORT DATA (BACKUP)",
     importDataBtn: "IMPORT DATA",
     backupNote: "The export is saved as a .json file on your device — nothing is sent to the internet.",
@@ -152,6 +154,8 @@ const STR = {
     keepAwakeNote: "The screen will not turn off while you are on the game screen. Uses more battery.",
     keepAwakeUnsupported: "This browser does not support this feature.",
     updateReady: "The app was updated to a new version",
+    noEntries: "No entries",
+    diceLog: "ROLL HISTORY",
     dice: "Roll dice", rollBtn: "ROLL", diceCountQ: "How many dice to roll?", diceTypeQ: "Dice type",
     diceMore: "More dice", diceFewer: "Fewer dice",
     diceNote: "You can add your own dice types (numbers, text, colors) in Settings.",
@@ -203,7 +207,8 @@ const LIMITS = {
   diceTypes: 10,        // własne typy kości (poza wbudowaną D6)
   diceFacesMin: 2, diceFacesMax: 20,
   diceCount: 6,         // ile kości naraz
-  dieName: 20, faceText: 8
+  dieName: 20, faceText: 8,
+  diceLog: 50           // tyle ostatnich rzutów pamięta otwarte okno rzutu
 };
 
 /* Wbudowana, zawsze dostępna kość D6 (1–6). Własne kości: settings.dice = [{id, name, faces:[{t, c}]}],
@@ -429,13 +434,24 @@ function diceSum(die, idxs) {
   return vals.every(v => /^[-+]?\d+$/.test(v)) ? vals.reduce((a, v) => a + parseInt(v, 10), 0) : null;
 }
 function diceTilesHtml(die, idxs) {
-  return idxs.map(i => { const f = die.faces[i]; return `<span class="die-tile${f.c ? " col " + cc(f.c) : ""}${f.t.length > 3 ? " long" : ""}">${esc(f.t)}</span>`; }).join("");
+  const sz = idxs.length === 1 ? " xl" : idxs.length <= 3 ? " lg" : ""; // mało kości = duży wynik, widoczny z drugiej strony stołu
+  return idxs.map(i => { const f = die.faces[i]; return `<span class="die-tile${sz}${f.c ? " col " + cc(f.c) : ""}${f.t.length > 3 ? " long" : ""}">${esc(f.t)}</span>`; }).join("");
 }
 function diceInfoHtml(die, idxs) {
   if (!idxs || !idxs.length) return "";
   const sr = t("diceResult") + ": " + idxs.map(i => die.faces[i].t).join(", ");
   const sum = idxs.length > 1 ? diceSum(die, idxs) : null;
   return `<span class="sr-only">${esc(sr)}. </span>` + (sum !== null ? `<span>${t("diceSum")}: ${sum}</span>` : "");
+}
+/* Historia rzutów żyje tylko w otwartym oknie (S.dialog.log) — zamknięcie okna ją czyści.
+   Ostatni rzut widać duży nad listą, więc lista pokazuje wcześniejsze (a gdy wynik jest wyczyszczony — wszystkie). */
+function diceLogHtml(d) {
+  const rows = (d.results ? d.log.slice(0, -1) : d.log).slice().reverse();
+  if (!rows.length) return "";
+  return `<p class="tiny mt10">${t("diceLog")}</p><ul class="dice-log">${rows.map(r => `<li class="log-row">
+      <div class="log-head"><span>#${r.n} · ${esc(r.name)}${r.items.length > 1 ? " ×" + r.items.length : ""}</span>${r.sum !== null ? `<span class="log-sum">${t("diceSum")}: ${r.sum}</span>` : ""}</div>
+      <div class="log-faces">${r.items.map(f => `<span class="die-tile mini${f.c ? " col " + cc(f.c) : ""}">${esc(f.t)}</span>`).join("")}</div>
+    </li>`).join("")}</ul>`;
 }
 function faceColorLabel(i, c) {
   const idx = PLAYER_COLORS.indexOf(c);
@@ -754,6 +770,11 @@ function runSelfTests() {
   check("ustawienia: diceType wskazuje istniejącą kość", (() => { const x = sanitizeSettings({ dice: [{ id: "k1", name: "K", faces: [{ t: "a" }, { t: "b" }] }], diceType: "k1" }); return x.diceType === "k1"; })());
   check("kości: randInt w zakresie i pokrywa wszystkie wartości", (() => { const seen = new Set(); for (let i = 0; i < 600; i++) { const r = randInt(6); if (r < 0 || r > 5 || r !== Math.floor(r)) return false; seen.add(r); } return seen.size === 6; })());
   check("kości: suma tylko dla liczb (także „−” Unicode)", diceSum({ faces: [{ t: "2" }, { t: "\u22121" }, { t: "Miecz" }] }, [0, 1]) === 1 && diceSum({ faces: [{ t: "2" }, { t: "\u22121" }, { t: "Miecz" }] }, [0, 2]) === null);
+  check("kości: historia rzutów pomija ostatni (jest pokazany osobno)", (() => {
+    const e = (n, v) => ({ n: n, name: "D6", items: [{ t: v, c: "" }], sum: null });
+    const h = diceLogHtml({ results: [0], log: [e(1, "1"), e(2, "2")] });
+    const all = diceLogHtml({ results: null, log: [e(1, "1"), e(2, "2")] });
+    return h.includes("#1") && !h.includes("#2") && all.includes("#1") && all.includes("#2") && diceLogHtml({ results: [0], log: [e(1, "1")] }) === ""; })());
   check("kości: wbudowana D6 ma ścianki 1–6", DEFAULT_DIE.faces.length === 6 && DEFAULT_DIE.faces[5].t === "6");
 
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
@@ -807,7 +828,7 @@ function viewHome() {
         <button class="icon-btn" aria-label="${t("removeLineup")}" ${act("askRemoveGroup", { id: g.id })}>${ICONS.trash}</button>
       </div>
       <p class="name mt">${g.players.map(p => esc(p.name)).join(" &bull; ")}</p>
-      <button class="btn btn-sm mt" ${act("playGroup", { id: g.id })}>${t("play")}</button>
+      <button class="btn mt" ${act("playGroup", { id: g.id })}>${t("play")}</button>
     </div>`).join("")
     : `<p class="empty">${t("noLineups")}</p>`;
 
@@ -858,47 +879,48 @@ function viewSetup() {
 
 function scoreButtonsHtml(id) {
   const vals = buttonValues();
-  const count = vals.length * 2 + 2;
-  const size = count > 10 ? 10 : count > 8 ? 11 : count > 6 ? 12 : 14;
   const btn = v => {
     const label = (v > 0 ? "+" : "\u2212") + Math.abs(v);
     return `<button aria-label="${label}" ${act("pend", { id: id, v: v })}>${label}</button>`;
   };
-  return `<div class="score-btns s${size}">
-    <button class="amount-btn" aria-label="${t("subtractPoints")}" ${act("openCustomAmount", { id: id, v: -1 })}>\u2212\u2026</button>
-    ${vals.slice().reverse().map(v => btn(-v)).join("")}${vals.map(v => btn(v)).join("")}
-    <button class="amount-btn" aria-label="${t("addPoints")}" ${act("openCustomAmount", { id: id, v: 1 })}>+\u2026</button>
-  </div>`;
+  const minus = `<button class="amount-btn" aria-label="${t("subtractPoints")}" ${act("openCustomAmount", { id: id, v: -1 })}>\u2212\u2026</button>` +
+    vals.slice().reverse().map(v => btn(-v)).join("");
+  const plus = vals.map(v => btn(v)).join("") +
+    `<button class="amount-btn" aria-label="${t("addPoints")}" ${act("openCustomAmount", { id: id, v: 1 })}>+\u2026</button>`;
+  /* od 3 par: dwa rzędy (minusy nad plusami) — przy 10 przyciskach w jednym rzędzie cel dotyku miał ok. 24 px */
+  if (vals.length >= 3) return `<div class="score-stack"><div class="score-btns s14">${minus}</div><div class="score-btns s14">${plus}</div></div>`;
+  return `<div class="score-btns s14">${minus}${plus}</div>`;
 }
 
-/* Karta pojedynczego gracza (osobna funkcja — używana też przez render cząstkowy) */
+/* Karta pojedynczego gracza (osobna funkcja — używana też przez render cząstkowy).
+   Dolny wiersz (.card-row) ma stałą wysokość: albo ostatnie wpisy historii, albo ✕/✓ przy niezatwierdzonych
+   punktach — przełączenie nie zmienia wysokości karty i nie przesuwa niczego na ekranie. */
 function playerCardHtml(p) {
   const pend = S.pending[p.id] || 0;
   const entries = S.history.filter(h => h.id === p.id).slice(-3).reverse();
-  const chips = [0, 1, 2].map(i => {
-    const h = entries[i];
-    if (!h) return '<span class="chip empty" aria-hidden="true">—</span>';
+  const chips = entries.map(h => {
     const s = (h.delta > 0 ? "+" : "") + h.delta;
     return `<button class="chip ${h.delta > 0 ? "pos" : "neg"}" aria-label="${t("editEntryTitle")}: ${s}" ${act("openEditHistory", { id: h.hid })}>${s}</button>`;
   }).join("");
+  const bottom = pend
+    ? `<div class="confirm-row">
+        <button class="btn-cancel" aria-label="${t("cancelShort")}" ${act("pendCancel", { id: p.id })}>✕</button>
+        <button class="btn-apply" aria-label="OK" ${act("pendApply", { id: p.id })}>✓</button>
+      </div>`
+    : `<div class="history-chips">${chips || `<span class="tiny no-entries">${t("noEntries")}</span>`}</div>`;
 
   return `<div class="card player-card ${cc(p.color)}" data-card="${esc(p.id)}">
     <div class="row">
       <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name player-name">${esc(p.name)}</span></span>
       <button class="icon-btn drag-handle" data-drag aria-label="${t("dragHandle")}: ${esc(p.name)}" aria-keyshortcuts="ArrowUp ArrowDown">${ICONS.grip}</button>
     </div>
-    <div class="row score-row">
-      <div class="score-wrap">
-        <span class="score-num${S.animScore === p.id ? " bump" : ""}" aria-live="polite">${p.score}</span>
-        ${pend ? `<span class="pending ${pend > 0 ? "pos" : "neg"}">${pend > 0 ? "+" + pend : pend}</span>` : ""}
-      </div>
-      <div class="history-chips">${chips}</div>
+    <div class="score-row">
+      <span class="score-side" aria-hidden="true"></span>
+      <span class="score-num${S.animScore === p.id ? " bump" : ""}" aria-live="polite">${p.score}</span>
+      <span class="score-side">${pend ? `<span class="pending ${pend > 0 ? "pos" : "neg"}">${pend > 0 ? "+" + pend : pend}</span>` : ""}</span>
     </div>
     ${scoreButtonsHtml(p.id)}
-    <div class="confirm-row${pend ? "" : " idle"}">
-      <button class="btn-cancel" aria-label="${t("cancelShort")}" ${act("pendCancel", { id: p.id })}>✕</button>
-      <button class="btn-apply" aria-label="OK" ${act("pendApply", { id: p.id })}>✓</button>
-    </div>
+    <div class="card-row">${bottom}</div>
   </div>`;
 }
 
@@ -1104,13 +1126,11 @@ function dialogHtml() {
         <button class="btn-cancel${isNeg ? "" : " off"}" aria-label="\u2212" aria-pressed="${isNeg}" ${act("setHistorySign", { v: -1 })}>\u2212</button>
         <button class="btn-apply${isNeg ? " off" : ""}" aria-label="+" aria-pressed="${!isNeg}" ${act("setHistorySign", { v: 1 })}>+</button>
       </div>
-      <div class="dialog-actions edit-actions">
-        <button class="dlg-btn red btn-del" ${act("deleteHistoryEntry", { id: d.hid })}>${t("remove")}</button>
-        <span class="btn-pair">
-          <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
-          <button class="dlg-btn solid" data-a="saveHistoryEdit">${t("save")}</button>
-        </span>
-      </div>`;
+      <div class="dialog-actions tight">
+        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn solid" data-a="saveHistoryEdit">${t("save")}</button>
+      </div>
+      <div class="dialog-actions tight"><button class="dlg-btn red" ${act("deleteHistoryEntry", { id: d.hid })}>${t("remove")}</button></div>`;
   }
   else if (d.type === "exitGame") {
     inner = `${title(t("exitQ"))}
@@ -1159,7 +1179,7 @@ function dialogHtml() {
     const die = currentDie(), types = diceTypes(), n = S.settings.diceCount;
     const typeHtml = types.length > 1
       ? `<select id="diceType" aria-labelledby="diceTypeLbl">${types.map(x => `<option value="${esc(x.id)}"${x.id === die.id ? " selected" : ""}>${esc(x.name)} · ${x.faces.length} ${t("facesWord")}</option>`).join("")}</select>`
-      : `<p class="dice-static">${esc(die.name)}</p>`;
+      : `<p class="dice-static">${esc(die.name)} · ${die.faces.length} ${t("facesWord")}</p>`;
     inner = `${title(t("dice"))}
       <p class="tiny mt" id="diceCountLbl">${t("diceCountQ")}</p>
       <div class="row font-ctl dice-count" role="group" aria-labelledby="diceCountLbl">
@@ -1172,6 +1192,7 @@ function dialogHtml() {
       <button class="btn mt" id="rollBtn" data-autofocus data-a="rollDice">${t("rollBtn")}</button>
       <div class="dice-out" id="diceOut">${d.results ? diceTilesHtml(die, d.results) : ""}</div>
       <p class="dice-info" id="diceInfo" role="status">${d.results ? diceInfoHtml(die, d.results) : ""}</p>
+      <div id="diceLogBox">${diceLogHtml(d)}</div>
       <p class="tiny tc note mt8">${t("diceNote")}</p>
       <div class="dialog-actions tight"><button class="dlg-btn secondary" data-a="closeDialog">${t("close")}</button></div>`;
   }
@@ -1209,7 +1230,7 @@ function dialogHtml() {
       </div>`;
   }
 
-  return `<div class="dialog-back"${noBack ? "" : ' data-a="dialogBackdrop"'}>
+  return `<div class="dialog-back" data-dlg="${d.type}"${noBack ? "" : ' data-a="dialogBackdrop"'}>
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">${inner}</div></div>`;
 }
 
@@ -1219,16 +1240,28 @@ function dialogHtml() {
 /* Aktualizacja nakładek (dialog + toast) bez przebudowy widoku głównego */
 function updateOverlay() {
   const dlgEl = app.querySelector(".dialog-back");
-  if (S.dialog) {
-    /* fokus wewnątrz dialogu (np. na „+” przy liczbie kości) wraca po przebudowie, o ile element ma id */
-    const ae = document.activeElement;
-    const aid = dlgEl && ae && dlgEl.contains(ae) && ae.id ? ae.id : null;
+  if (!S.dialog) { if (dlgEl) dlgEl.remove(); return; }
+  /* fokus wewnątrz dialogu (np. na „+” przy liczbie kości) wraca po przebudowie, o ile element ma id */
+  const ae = document.activeElement;
+  const aid = dlgEl && ae && dlgEl.contains(ae) && ae.id ? ae.id : null;
+  const html = dialogHtml();
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  const nd = tmp.querySelector(".dialog"), od = dlgEl && dlgEl.querySelector(".dialog");
+  if (dlgEl && od && nd && dlgEl.dataset.dlg === S.dialog.type) {
+    /* ten sam dialog: podmieniamy tylko zawartość — bez ponownej animacji wejścia, rozmycia tła
+       i utraty przewinięcia (to właśnie powodowało miganie przy zmianie liczby ścianek/kości) */
+    const sc = od.scrollTop, fl = od.querySelector(".face-list"), fsc = fl ? fl.scrollTop : 0;
+    od.innerHTML = nd.innerHTML;
+    od.scrollTop = sc;
+    const fl2 = od.querySelector(".face-list");
+    if (fl2) fl2.scrollTop = fsc;
+  } else {
     if (dlgEl) dlgEl.remove();
-    app.insertAdjacentHTML("beforeend", dialogHtml());
-    const re = aid ? document.getElementById(aid) : null;
-    if (re && !re.disabled) re.focus(); else focusDialog();
-  } else if (dlgEl) dlgEl.remove();
-
+    app.insertAdjacentHTML("beforeend", html);
+  }
+  const re = aid ? document.getElementById(aid) : null;
+  if (re && !re.disabled) re.focus(); else focusDialog();
 }
 
 function focusDialog() {
@@ -1579,15 +1612,15 @@ const ACTIONS = {
   },
 
   /* kości: rzut na ekranie punktacji */
-  openDice() { openDialogFn({ type: "dice", results: null, rolling: false }); },
+  openDice() { openDialogFn({ type: "dice", results: null, rolling: false, log: [], rollNo: 0 }); },
   diceCount(delta) {
     const d = S.dialog; if (!d || d.type !== "dice") return;
     S.settings.diceCount = Math.max(1, Math.min(LIMITS.diceCount, S.settings.diceCount + Number(delta)));
-    d.results = null; saveSettings(); render();
+    d.results = null; saveSettings(); updateOverlay();
   },
   setDiceType(id) {
     const d = S.dialog; if (!d || d.type !== "dice" || !diceTypes().some(x => x.id === id)) return;
-    S.settings.diceType = id; d.results = null; saveSettings(); render();
+    S.settings.diceType = id; d.results = null; saveSettings(); updateOverlay();
   },
   rollDice() {
     const d = S.dialog;
@@ -1598,9 +1631,12 @@ const ACTIONS = {
       d.rolling = false;
       if (S.dialog !== d) return;
       d.results = finalIdx;
-      const o = document.getElementById("diceOut"), i = document.getElementById("diceInfo");
+      d.log.push({ n: ++d.rollNo, name: die.name, items: finalIdx.map(i => ({ t: die.faces[i].t, c: die.faces[i].c })), sum: finalIdx.length > 1 ? diceSum(die, finalIdx) : null });
+      if (d.log.length > LIMITS.diceLog) d.log.shift();
+      const o = document.getElementById("diceOut"), i = document.getElementById("diceInfo"), lg = document.getElementById("diceLogBox");
       if (o) o.innerHTML = diceTilesHtml(die, finalIdx);
       if (i) i.innerHTML = diceInfoHtml(die, finalIdx);
+      if (lg) lg.innerHTML = diceLogHtml(d);
       if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
     };
     const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1635,7 +1671,7 @@ const ACTIONS = {
     const n = Math.max(LIMITS.diceFacesMin, Math.min(LIMITS.diceFacesMax, dd.faces.length + Number(delta)));
     while (dd.faces.length < n) dd.faces.push({ t: String(dd.faces.length + 1), c: "" });
     dd.faces.length = n;
-    render();
+    updateOverlay();
   },
   /* kolor ścianki: brak → 8 kolorów palety → brak; aktualizujemy tylko ten przycisk (bez przebudowy listy) */
   dieCycleColor(i, el) {
