@@ -1600,6 +1600,19 @@ function openDialogFn(d) {
   render();
 }
 
+/* Zaznaczenie koloru w dialogu bez pełnego re-renderu (app.innerHTML = html
+   przebudowuje cały ekran → mignięcie na mobilkach). Dotykamy tylko klas .sel. */
+function selectDotDom(color) {
+  const back = document.querySelector(".dialog-back");
+  if (!back) return false;
+  const btn = back.querySelector('.dot[data-v="' + color + '"]');
+  if (!btn) return false;
+  back.querySelectorAll(".dot.sel").forEach(d => { d.classList.remove("sel"); d.setAttribute("aria-pressed", "false"); });
+  btn.classList.add("sel");
+  btn.setAttribute("aria-pressed", "true");
+  return true;
+}
+
 function addGroupIfNew(players) {
   const sig = Logic.signature(players);
   if (players.length && !S.groups.some(g => Logic.signature(g.players) === sig)) {
@@ -1712,7 +1725,7 @@ const ACTIONS = {
     if (!d || d.type !== "addPlayerColor") return;
     if (usedColors().includes(c)) return;
     d.color = c;
-    render();
+    if (!selectDotDom(c)) render(); // w miejscu, bez mignięcia ekranu
   },
   confirmAddPlayer() {
     const d = S.dialog;
@@ -1886,7 +1899,7 @@ const ACTIONS = {
   editColor(id, c) {
     if (!S.editDraft || usedColors(id).includes(c)) return;
     S.editDraft.color = c;
-    render();
+    if (!selectDotDom(c)) render(); // w miejscu, bez mignięcia ekranu
   },
   saveEdit(id) {
     const p = S.players.find(x => x.id === id);
