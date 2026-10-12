@@ -341,9 +341,15 @@
   /* ===== Kolory graczy: klasy z białej listy (indeks palety) zamiast inline style ===== */
   .c0 { --pc:#e2e8f0; } .c1 { --pc:#38bdf8; } .c2 { --pc:#34d399; } .c3 { --pc:#f43f5e; }
   .c4 { --pc:#fb923c; } .c5 { --pc:#a78bfa; } .c6 { --pc:#f472b6; } .c7 { --pc:#facc15; }
+  .c8 { --pc:#0a0a0a; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
   .player-card { border-left:4px solid var(--pc); }
   .list-item.accent { border-left-color:var(--pc); }
   .pos { color:var(--green); } .neg { color:var(--red); }
+  /* czarny widoczny na ciemnym tle: obwódka/poświata zamiast krycia */
+  .dot.c8 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); }
+  .dot.sel.c8 { box-shadow: inset 0 0 0 2px #fff, 0 0 12px var(--accent); }
+  .avatar.c8 { border:1px solid rgba(255,255,255,0.45); }
+  .die-tile.col.c8 { border-color: rgba(255,255,255,0.45); color:#fff; }
 
   /* ===== Pomocnicze klasy (zastępują style inline) ===== */
   .tc { text-align:center; } .full { width:100%; } .grow { flex:1; }
@@ -423,10 +429,6 @@
   /* okno rzutu przyklejone do góry: rosnąca historia nie przesuwa przycisku RZUĆ */
   .dialog-back[data-dlg="dice"] { align-items:flex-start; padding-top:max(20px, 8vh); }
   .dialog-back[data-dlg="dice"] .dialog { max-height: calc(100vh - max(20px, 8vh) - 20px); max-height: calc(100dvh - max(20px, 8vh) - 20px); }
-  /* wąskie telefony: pasek ekranu gry z kością i tak się nie mieści — tytuł „PUNKTACJA” zostaje tylko dla czytników ekranu */
-  @media (max-width: 420px) {
-    [data-screen="game"] .header-row.sticky h2 { position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-  }
 
   /* ===== Karta gracza (kompaktowa) i ekran główny ===== */
   .player-card { padding:12px 16px 14px; }
@@ -435,7 +437,17 @@
   .score-row .score-side:last-child { text-align:left; }
   .card-row { margin-top:10px; min-height:44px; display:flex; align-items:stretch; }
   .card-row .history-chips { flex:1; min-width:0; width:auto; flex-direction:row; justify-content:center; align-items:stretch; gap:8px; }
-  .card-row .history-chips .chip { flex:0 1 96px; min-width:60px; min-height:44px; }
+  /* ===== Ostatnie wpisy na karcie gracza: zwykłe liczby, bez obwódki i tła
+     (nie wyglądają jak przyciski punktacji) — klikalne do edycji przy pomyłce ===== */
+  .card-row .history-chips .chip {
+    flex:0 1 96px; min-width:60px; min-height:44px;
+    border:none; background:transparent; box-shadow:none;
+    font-weight:800; text-decoration:underline dotted rgba(var(--tan-rgb), .55);
+    text-underline-offset:3px;
+  }
+  .card-row .history-chips .chip.pos { color:var(--green); }
+  .card-row .history-chips .chip.neg { color:var(--red); }
+  @media (hover:hover) { .card-row .history-chips .chip:hover { text-decoration-color:var(--accent); } }
   .card-row .confirm-row { flex:1; margin-top:0; }
   .card-row .confirm-row button { padding:0; min-height:44px; }
   .no-entries { align-self:center; font-style:italic; text-transform:none; letter-spacing:0; }
@@ -450,7 +462,7 @@
   .die-tile.xl.long { font-size:calc(24px * var(--fs-mult)); }
   .dice-static { text-align:left; font-weight:600; font-size:calc(15px * var(--fs-mult)); color:var(--text-muted); padding:12px; border:1px dashed var(--border); border-radius:8px; margin-top:8px; }
 
-  /* ===== Moduły gry (v11): licznik rund, cel punktowy, timer ===== */
+  /* ===== Moduły gry (v11): losowanie, rundy, pomiar czasu, cel, kość ===== */
   .module-list { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
   .module-card { padding:12px 14px; background:var(--surface-2); border:1px solid var(--accent); border-radius:12px; cursor:pointer; transition:all .15s; }
   .module-card:active { transform:scale(.98); }
@@ -470,6 +482,16 @@
   button.stat-btn:active { transform:scale(.95); }
   /* flaga osiągnięcia celu przy nazwie gracza */
   .target-flag { color:var(--green); font-size:calc(15px * var(--fs-mult)); margin-left:6px; }
+  /* ikona w tytule karty modułu i w statusie czasu */
+  .mod-ico { display:inline-flex; width:16px; height:16px; margin-right:6px; vertical-align:-3px; color:inherit; }
+  .mod-ico svg { width:100%; height:100%; display:block; }
+  /* przycisk „+ DODAJ GRACZA” na ekranie NOWA GRA */
+  .btn-add-player { min-height:52px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
+  /* toast cofnięcia: informacja + przycisk PRZYWRÓĆ (gaśnie po 5 s) */
+  .toast-undo { display:flex; align-items:center; gap:12px; justify-content:center; max-width:92vw; z-index:100; }
+  .toast-undo[hidden] { display:none; }
+  .toast-undo-btn { flex:0 0 auto; min-height:34px; padding:4px 14px; background:var(--accent-grad); color:var(--ink); border:1px solid var(--accent); border-radius:20px; font-weight:800; font-size:calc(11px * var(--fs-mult)); letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
+  .toast-undo-btn:active { transform:scale(.95); }
 
   /* ===== TABLET + DESKTOP: szerszy układ od 700 px (tablet pionowo = 2 kolumny kart) ===== */
   @media (min-width: 700px) {

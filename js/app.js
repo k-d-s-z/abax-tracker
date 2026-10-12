@@ -61,7 +61,7 @@ const STR = {
     storageCorrupt: "Uszkodzone dane lokalne — odzyskano kopię zapasową",
     storageCorruptNoBak: "Uszkodzone dane lokalne — rozpoczęto od nowa",
     dragHandle: "Przenieś gracza (strzałki góra/dół)", colorTaken: "zajęty",
-    colorNames: ["srebrny","niebieski","zielony","czerwony","pomarańczowy","fioletowy","różowy","żółty"],
+    colorNames: ["srebrny","niebieski","zielony","czerwony","pomarańczowy","fioletowy","różowy","żółty","czarny"],
     importSkipped: "Pominięto uszkodzone lub nadmiarowe wpisy: {n}.",
     testsOk: "Testy: {p}/{t} OK", testsFail: "TESTY NIE PRZESZŁY: {p}/{t}",
     resumeTitle: "GRA W TOKU", resumeBtn: "WZNÓW GRĘ", resumeMeta: "Zapisano {d} • wpisów punktacji: {n}", discardResume: "Odrzuć niedokończoną grę",
@@ -86,18 +86,22 @@ const STR = {
     facesHint: "Wpisz liczby lub napisy (do 8 znaków). Kolor ścianki jest opcjonalny — dotknij pola koloru, aby go zmienić.",
     editDieBtn: "Edytuj kość", deleteDieBtn: "Usuń kość", deleteDieQ: "Usunąć kość?", maxDice: "Maksymalnie {n} własnych kości",
 
-    /* Moduły gry (v11): licznik rund, cel punktowy, timer */
+    /* Moduły gry (v11): losowanie gracza, licznik rund, pomiar czasu, cel punktowy, kość */
     modulesSection: "MODUŁY GRY",
     modulesHint: "Dotknij karty, aby włączyć lub wyłączyć moduł. Zestaw możesz też zmienić ołówkiem w trakcie gry.",
-    moduleRounds: "LICZNIK RUND", moduleTarget: "CEL PUNKTOWY", moduleTimer: "TIMER",
+    moduleDraw: "LOSOWANIE PIERWSZEGO GRACZA", moduleRounds: "LICZNIK RUND", moduleTimer: "POMIAR CZASU", moduleTarget: "CEL PUNKTOWY", moduleDice: "KOŚĆ",
     moduleOn: "włączony", moduleOff: "wyłączony",
-    roundsCountQ: "Ile rund?", roundsInf: "∞", roundsInfLabel: "Bez limitu rund", roundsWord: "rund",
-    roundWord: "Runda", nextRound: "Następna runda", nextRoundQ: "Przejść do następnej rundy?",
+    drawModNote: "Przy starcie gry pojawi się pytanie o wylosowanie gracza, który zaczyna.",
+    diceModNote: "Ikona kości pojawi się w pasku ekranu gry.",
+    roundsCountQ: "Ile rund?", roundsInf: "∞", roundsInfLabel: "Bez limitu rund",
+    nextRound: "Następna runda", nextRoundQ: "Przejść do następnej rundy?",
     lastRoundInfo: "Ostatnia runda!", overRoundInfo: "Runda {n} — gra trwa dalej",
     targetQ: "Jaki cel punktowy?", targetPlaceholder: "np. 100", targetWord: "Cel",
     targetReachedTitle: "CEL OSIĄGNIĘTY!", targetReachedText: "osiąga cel {v} punktów! Możecie grać dalej.",
     ok: "OK",
-    gameTime: "Czas gry", timerNote: "Zegar liczy od startu gry. Wyjście do menu go zatrzymuje, a wznowienie kontynuuje.",
+    gameTime: "Czas gry", timerNote: "Zegar liczy od startu gry. Wyjście do menu zatrzymuje zegar. Po wznowieniu gry pomiar czasu będzie kontynuowany od momentu zatrzymania.",
+    undoToast: "Cofnięto: {x} — {name}", undoRestore: "PRZYWRÓĆ",
+    newPlayerTitle: "NOWY GRACZ", chooseColor: "Wybierz kolor:", nextStep: "DALEJ",
     defaultModulesSection: "ZESTAW MODUŁÓW DOMYŚLNYCH",
     defaultModulesNote: "Te moduły będą wstępnie włączone przy tworzeniu nowej gry. W każdej grze możesz je zmienić przed startem oraz ołówkiem w trakcie gry.",
     gameModulesTitle: "MODUŁY"
@@ -158,7 +162,7 @@ const STR = {
     storageCorrupt: "Corrupted local data — backup recovered",
     storageCorruptNoBak: "Corrupted local data — started fresh",
     dragHandle: "Move player (up/down arrow keys)", colorTaken: "taken",
-    colorNames: ["silver","blue","green","red","orange","purple","pink","yellow"],
+    colorNames: ["silver","blue","green","red","orange","purple","pink","yellow","black"],
     importSkipped: "Skipped damaged or surplus entries: {n}.",
     testsOk: "Tests: {p}/{t} OK", testsFail: "TESTS FAILED: {p}/{t}",
     resumeTitle: "GAME IN PROGRESS", resumeBtn: "RESUME GAME", resumeMeta: "Saved {d} • score entries: {n}", discardResume: "Discard unfinished game",
@@ -183,18 +187,22 @@ const STR = {
     facesHint: "Enter numbers or text (up to 8 characters). Face color is optional — tap the color box to change it.",
     editDieBtn: "Edit die", deleteDieBtn: "Delete die", deleteDieQ: "Delete die?", maxDice: "Maximum of {n} custom dice",
 
-    /* Game modules (v11): round counter, score target, timer */
+    /* Game modules (v11): first player draw, round counter, time tracking, score target, dice */
     modulesSection: "GAME MODULES",
     modulesHint: "Tap a card to enable or disable a module. You can also change the set with the pencil during the game.",
-    moduleRounds: "ROUND COUNTER", moduleTarget: "SCORE TARGET", moduleTimer: "TIMER",
+    moduleDraw: "FIRST PLAYER DRAW", moduleRounds: "ROUND COUNTER", moduleTimer: "TIME TRACKING", moduleTarget: "SCORE TARGET", moduleDice: "DICE",
     moduleOn: "enabled", moduleOff: "disabled",
-    roundsCountQ: "How many rounds?", roundsInf: "∞", roundsInfLabel: "Unlimited rounds", roundsWord: "rounds",
-    roundWord: "Round", nextRound: "Next round", nextRoundQ: "Move to the next round?",
+    drawModNote: "When the game starts, you'll be asked whether to draw the starting player.",
+    diceModNote: "The dice icon will appear in the game screen bar.",
+    roundsCountQ: "How many rounds?", roundsInf: "∞", roundsInfLabel: "Unlimited rounds",
+    nextRound: "Next round", nextRoundQ: "Move to the next round?",
     lastRoundInfo: "Last round!", overRoundInfo: "Round {n} — the game continues",
     targetQ: "What's the score target?", targetPlaceholder: "e.g. 100", targetWord: "Target",
     targetReachedTitle: "TARGET REACHED!", targetReachedText: "reaches the target of {v} points! You can keep playing.",
     ok: "OK",
-    gameTime: "Game time", timerNote: "The clock starts when the game starts. Leaving for the menu stops it; resuming continues it.",
+    gameTime: "Game time", timerNote: "The clock runs from the game start. Leaving for the menu stops the clock. Resuming the game continues the measurement from the moment it stopped.",
+    undoToast: "Undone: {x} — {name}", undoRestore: "RESTORE",
+    newPlayerTitle: "NEW PLAYER", chooseColor: "Choose a color:", nextStep: "NEXT",
     defaultModulesSection: "DEFAULT MODULE SET",
     defaultModulesNote: "These modules will be pre-enabled when creating a new game. You can change them before each game and with the pencil during play.",
     gameModulesTitle: "MODULES"
@@ -212,7 +220,8 @@ const ICONS = {
   trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   dice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1" fill="currentColor" stroke="none"/></svg>',
-  load: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>'
+  load: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7 v5 l3.5 2"/></svg>'
 };
 
 /* ================================================================
@@ -221,7 +230,7 @@ const ICONS = {
    - kopia zapasowa kluczy (.bak) przed nadpisaniem
    - kwarantanna uszkodzonych danych (.corrupt) i odzyskiwanie
    ================================================================ */
-const PLAYER_COLORS = ["#e2e8f0","#38bdf8","#34d399","#f43f5e","#fb923c","#a78bfa","#f472b6","#facc15"];
+const PLAYER_COLORS = ["#e2e8f0","#38bdf8","#34d399","#f43f5e","#fb923c","#a78bfa","#f472b6","#facc15","#0a0a0a"];
 const MAX_BUTTON_PAIRS = 4;
 const FONT_MIN = 0.8, FONT_MAX = 1.6;
 const SCHEMA_VERSION = 2;
@@ -351,7 +360,7 @@ function sanitizeSettings(d, fallbackLang) {
 function defaultModules(raw) {
   const r = (raw && typeof raw === "object") ? raw : {};
   const b = k => r[k] === true;
-  return { rounds: b("rounds"), target: b("target"), timer: b("timer") };
+  return { draw: b("draw"), rounds: b("rounds"), timer: b("timer"), target: b("target"), dice: b("dice") };
 }
 function sanitizeModules(raw) {
   const r = (raw && typeof raw === "object") ? raw : {};
@@ -365,9 +374,11 @@ function sanitizeModules(raw) {
   const tel = num(tm.elapsed, 0, 1000 * 60 * 60 * 24 * 365); // do roku gry ciągłej
   const tst = tm.startedAt === null || tm.startedAt === undefined ? null : (Number.isFinite(Number(tm.startedAt)) ? Math.max(0, Math.trunc(Number(tm.startedAt))) : null);
   return {
+    draw: { on: r.draw && typeof r.draw === "object" ? r.draw.on === true : false },
     rounds: { on: roundsOn.on === true, count: rc === null ? 0 : rc, current: rcur === null ? 1 : rcur },
     target: { on: tg.on === true && tv !== null, value: tv === null ? 100 : tv },
-    timer: { on: tm.on === true, elapsed: tel === null ? 0 : tel, startedAt: tst }
+    timer: { on: tm.on === true, elapsed: tel === null ? 0 : tel, startedAt: tst },
+    dice: { on: r.dice && typeof r.dice === "object" ? r.dice.on === true : false }
   };
 }
 
@@ -463,6 +474,39 @@ function toast(msg) {
   toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
 }
 
+/* Toast cofnięcia: informacja, CO zostało cofnięte + przycisk „PRZYWRÓĆ” (anulowanie cofnięcia).
+   Gaśnie po 5 s. Osobny element — nie koliduje ze zwykłym tostem. */
+let undoToastTimer = 0;
+function undoToast(msg, entry) {
+  let el = document.getElementById("undoToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "undoToast";
+    el.className = "toast toast-undo";
+    document.body.appendChild(el);
+  }
+  el.textContent = "";
+  const txt = document.createElement("span");
+  txt.textContent = msg;
+  const btn = document.createElement("button");
+  btn.className = "toast-undo-btn";
+  btn.textContent = t("undoRestore");
+  btn.addEventListener("click", function () {
+    clearTimeout(undoToastTimer);
+    el.hidden = true;
+    if (Logic.applyPoints(S, entry.id, entry.delta)) {
+      if (S.modules && S.modules.target.on) applyTargetFlags();
+      render();
+      persistGame();
+    }
+  });
+  el.append(txt, btn);
+  el.hidden = false;
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+  clearTimeout(undoToastTimer);
+  undoToastTimer = setTimeout(() => { el.hidden = true; }, 5000);
+}
+
 /* --- Blokada wygaszania ekranu (Screen Wake Lock) — opcja w Ustawieniach, tylko na ekranie gry ---
    syncWakeLock() jest idempotentne: porównuje stan pożądany z faktycznym i wykonuje co najwyżej
    jedną operację naraz; po jej zakończeniu sprawdza się ponownie. Po błędzie (np. oszczędzanie
@@ -548,11 +592,11 @@ setInterval(function () {
 
 /* --- Licznik rund (moduł gry) ---
    count = 0 oznacza brak limitu (∞). current może przekroczyć count (10/9 — gra toczy się dalej).
-   Zwraca tekst statusu: „R 9/9” (albo „R 9” przy ∞) i ewentualną informację po zmianie rundy. */
+   Status pokazuje sam numer rundy (R 9); limit zostaje w konfiguracji i toastach. */
 function roundsLabel() {
   const r = S.modules && S.modules.rounds;
   if (!r || !r.on) return "";
-  return "R " + r.current + (r.count ? "/" + r.count : "");
+  return "R " + r.current;
 }
 function roundChangedToast(prev) {
   const r = S.modules && S.modules.rounds;
@@ -891,9 +935,10 @@ function runSelfTests() {
 
   /* moduły gry (v11) */
   check("moduły: zestaw domyślny tylko z flagami true", defaultModules(null).rounds === false && defaultModules({ rounds: true, target: "x" }).rounds === true && defaultModules({ rounds: true, target: "x" }).target === false);
-  check("moduły: sanityzacja poprawnego stanu gry", (() => { const m = sanitizeModules({ rounds: { on: true, count: 9, current: 2 }, target: { on: true, value: 150 }, timer: { on: true, elapsed: 60000, startedAt: null } }); return m.rounds.on && m.rounds.count === 9 && m.rounds.current === 2 && m.target.value === 150 && m.timer.elapsed === 60000; })());
-  check("moduły: śmieciowe dane → bezpieczne wartości", (() => { const m = sanitizeModules({ rounds: { on: "x", count: -5, current: 99999 }, target: { on: true, value: 0 }, timer: { on: true, elapsed: -1, startedAt: "x" } }); return m.rounds.on === false && m.rounds.count === 0 && m.rounds.current === 1 && m.target.on === false && m.target.value === 100 && m.timer.elapsed === 0 && m.timer.startedAt === null; })());
-  check("moduły: zapis gry zachowuje stan modułów", (() => { const e = sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ hid: "h", id: "0", delta: 5 }], modules: { rounds: { on: true, count: 3, current: 1 }, target: { on: false, value: 0 }, timer: { on: true, elapsed: 0, startedAt: 123 } } }])[0]; return !!e && !!e.modules && e.modules.rounds.count === 3 && e.modules.timer.startedAt === 123; })());
+  check("moduły: 5 modułów (losowanie, rundy, czas, cel, kość)", (() => { const d = defaultModules({ draw: true, dice: true, rounds: true, timer: true, target: true }); return d.draw === true && d.dice === true && defaultModules(null).draw === false && defaultModules(null).dice === false; })());
+  check("moduły: sanityzacja poprawnego stanu gry", (() => { const m = sanitizeModules({ draw: { on: true }, rounds: { on: true, count: 9, current: 2 }, target: { on: true, value: 150 }, timer: { on: true, elapsed: 60000, startedAt: null }, dice: { on: true } }); return m.draw.on === true && m.dice.on === true && m.rounds.on && m.rounds.count === 9 && m.rounds.current === 2 && m.target.value === 150 && m.timer.elapsed === 60000; })());
+  check("moduły: śmieciowe dane → bezpieczne wartości", (() => { const m = sanitizeModules({ draw: "x", dice: 1, rounds: { on: "x", count: -5, current: 99999 }, target: { on: true, value: 0 }, timer: { on: true, elapsed: -1, startedAt: "x" } }); return m.draw.on === false && m.dice.on === false && m.rounds.on === false && m.rounds.count === 0 && m.rounds.current === 1 && m.target.on === false && m.target.value === 100 && m.timer.elapsed === 0 && m.timer.startedAt === null; })());
+  check("moduły: zapis gry zachowuje stan modułów", (() => { const e = sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ hid: "h", id: "0", delta: 5 }], modules: { rounds: { on: true, count: 3, current: 1 }, target: { on: false, value: 0 }, timer: { on: true, elapsed: 0, startedAt: 123 }, draw: { on: true }, dice: { on: false } } }])[0]; return !!e && !!e.modules && e.modules.rounds.count === 3 && e.modules.timer.startedAt === 123 && e.modules.draw.on === true && e.modules.dice.on === false; })());
   check("moduły: timer etykieta minut i godzin", timerLabel(0) === "0'" && timerLabel(65 * 60000) === "1 h 05 min");
 
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
@@ -912,21 +957,6 @@ function runSelfTests() {
    ================================================================ */
 function usedColors(exceptId) {
   return S.players.filter(p => String(p.id) !== String(exceptId)).map(p => p.color);
-}
-
-/* Kolor wybrany w ekranie dodawania: wybór użytkownika albo pierwszy wolny.
-   Jedno źródło prawdy dla widoku, przycisku i akcji dodania. */
-function setupSelColor() {
-  const used = usedColors();
-  return S.setupColor || PLAYER_COLORS.find(c => !used.includes(c)) || PLAYER_COLORS[0];
-}
-function canAddSetupPlayer() {
-  return !!(S.setupName && S.setupName.trim()) && !usedColors().includes(setupSelColor());
-}
-/* Aktualizacja przycisku „Dodaj gracza” bez przebudowy widoku (zachowuje fokus i klawiaturę) */
-function syncAddPlayerBtn() {
-  const b = document.querySelector('[data-a="addSetupPlayer"]');
-  if (b) b.disabled = !canAddSetupPlayer();
 }
 
 /* Wybór koloru: każdy przycisk ma nazwę koloru, a zajęte są naprawdę wyłączone (disabled) */
@@ -973,40 +1003,44 @@ function viewHome() {
 
 /* --- Moduły gry: karty używane na ekranie NOWA GRA (szkic) i w oknie ołówka (gra) ---
    pfx = prefiks akcji ("setupMod" / "editMod"), inpId = id pola celu (szkic / gra).
+   Kolejność od góry: losowanie pierwszego gracza, licznik rund, pomiar czasu, cel, kość.
    Karta wyłączona jest przygaszona (.off); klik w kartę przełącza moduł.
    Przyciski konfiguracji wewnątrz karty mają własne data-a, więc klik w nie
    nie przełącza modułu (delegacja wybiera najbliższy [data-a]). */
 function moduleCardsHtml(m, pfx, inpId) {
-  /* ctl(a, opts, tekst, aria, disabled): przycisk ±/∞ w konfiguracji rund */
   const ctl = (a, o, txt, aria, dis) => `<button class="btn-outline font-btn"${dis ? " disabled" : ""} aria-label="${aria}" ${act(a, o)}>${txt}</button>`;
+  const drawCtl = m.draw.on ? `<p class="tiny note mt8">${t("drawModNote")}</p>` : "";
   const roundsCtl = m.rounds.on ? `
     <div class="row font-ctl mod-ctl mt8">
       ${ctl(pfx + "Rounds", { v: -1 }, "\u2212", "\u2212", m.rounds.count <= 0)}
-      <span class="pct">${m.rounds.count ? m.rounds.count + " " + t("roundsWord") : t("roundsInf")}</span>
+      <span class="pct">${m.rounds.count ? m.rounds.count : t("roundsInf")}</span>
       ${ctl(pfx + "Rounds", { v: 1 }, "+", "+", m.rounds.count >= LIMITS.roundsMax)}
       ${ctl(pfx + "RoundsInf", {}, t("roundsInf"), t("roundsInfLabel"), m.rounds.count === 0)}
     </div>
     <p class="tiny note mt4">${t("roundsCountQ")}</p>` : "";
+  const timerCtl = m.timer.on ? `<p class="tiny note mt8">${t("timerNote")}</p>` : "";
   const targetCtl = m.target.on ? `
     <div data-a="noop">
       <label class="tiny mt8" for="${inpId}">${t("targetQ")}</label>
       <input type="tel" inputmode="numeric" pattern="[0-9]*" id="${inpId}" maxlength="6" class="mod-input" value="${m.target.value || ""}" placeholder="${t("targetPlaceholder")}" autocomplete="off">
     </div>` : "";
-  const timerCtl = m.timer.on ? `<p class="tiny note mt8">${t("timerNote")}</p>` : "";
-  const card = (name, key, body) => `
+  const diceCtl = m.dice.on ? `<p class="tiny note mt8">${t("diceModNote")}</p>` : "";
+  const card = (nameKey, key, body, icon) => `
     <div class="module-card${m[key].on ? "" : " off"}" ${act(pfx + "Toggle", { v: key })} role="button" tabindex="0" aria-pressed="${m[key].on}">
       <div class="row">
-        <span class="name">${t(name)}</span>
+        <span class="name">${icon ? `<span class="mod-ico">${icon}</span>` : ""}${t(nameKey)}</span>
         <span class="tiny mod-state">${m[key].on ? t("moduleOn") : t("moduleOff")}</span>
       </div>
       ${body}
     </div>`;
-  return card("moduleRounds", "rounds", roundsCtl) + card("moduleTarget", "target", targetCtl) + card("moduleTimer", "timer", timerCtl);
+  return card("moduleDraw", "draw", drawCtl) +
+    card("moduleRounds", "rounds", roundsCtl) +
+    card("moduleTimer", "timer", timerCtl, ICONS.clock) +
+    card("moduleTarget", "target", targetCtl) +
+    card("moduleDice", "dice", diceCtl, ICONS.dice);
 }
 
 function viewSetup() {
-  const used = usedColors();
-  const sel = setupSelColor();
   const playersHtml = S.players.length ? S.players.map(p => `
     <div class="list-item accent ${cc(p.color)}">
       <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span></span>
@@ -1017,13 +1051,7 @@ function viewSetup() {
   return `<div class="header-row">
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("newGameTitle")}</h2>
     </div>
-    <div class="card">
-      <label class="tiny" for="nameInput">${t("playerName")}</label>
-      <input type="text" id="nameInput" maxlength="${LIMITS.name}" placeholder="${t("namePlaceholder")}" value="${esc(S.setupName)}" autocomplete="off">
-      <p class="tiny mt" id="colorLbl">${t("color")}</p>
-      <div class="colors" role="group" aria-labelledby="colorLbl">${colorDots(sel, used, "pickColor")}</div>
-      <button class="btn mt"${canAddSetupPlayer() ? "" : " disabled"} data-a="addSetupPlayer">${t("addPlayer")}</button>
-    </div>
+    <button class="btn-outline btn-add-player"${S.players.length >= PLAYER_COLORS.length ? " disabled" : ""} data-a="openAddPlayer">${t("addPlayer")}</button>
     <p class="tiny counter">${t("players")}: ${S.players.length} / ${PLAYER_COLORS.length}</p>
     <div class="scroll">${playersHtml}</div>
     <p class="sub">${t("modulesSection")}</p>
@@ -1085,16 +1113,15 @@ function viewGame() {
   return `<div class="header-row between sticky">
     <span class="row-left">
       <button class="icon-btn" aria-label="${t("backToMenu")}" data-a="askExitGame">${ICONS.back}</button>
-      <h2>${t("scoring")}</h2>
     </span>
     <span class="game-status">
       ${S.modules && S.modules.rounds.on ? `<button class="stat-btn" aria-label="${t("nextRound")}: ${roundsLabel()}" data-a="nextRound">${roundsLabel()}</button>` : ""}
       ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")}: ${S.modules.target.value}">\u2691${S.modules.target.value}</span>` : ""}
-      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}">${timerLabel(timerMs())}</span>` : ""}
+      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}"><span class="mod-ico">${ICONS.clock}</span>${timerLabel(timerMs())}</span>` : ""}
     </span>
     <span class="row-left tools">
       <button class="icon-btn" aria-label="${t("undo")}"${S.history.length ? "" : " disabled"} data-a="undo">${ICONS.undo}</button>
-      <button class="icon-btn" aria-label="${t("dice")}" data-a="openDice">${ICONS.dice}</button>
+      ${S.modules && S.modules.dice.on ? `<button class="icon-btn" aria-label="${t("dice")}" data-a="openDice">${ICONS.dice}</button>` : ""}
       <button class="icon-btn" aria-label="${t("editLineupBtn")}" data-a="openEdit">${ICONS.pencil}</button>
       <button class="btn-outline" data-a="openFinish">${t("end")}</button>
     </span>
@@ -1154,9 +1181,9 @@ function viewSettings() {
       </div>
       <p class="sub">${t("defaultModulesSection")}</p>
       <div class="card">
-        ${["rounds", "target", "timer"].map(k => `<label class="check-row">
-          <input type="checkbox" data-mod="${k}"${S.settings.defaultModules[k] ? " checked" : ""}>
-          <span>${t(k === "rounds" ? "moduleRounds" : k === "target" ? "moduleTarget" : "moduleTimer")}</span>
+        ${[["draw", "moduleDraw"], ["rounds", "moduleRounds"], ["timer", "moduleTimer"], ["target", "moduleTarget"], ["dice", "moduleDice"]].map(k => `<label class="check-row">
+          <input type="checkbox" data-mod="${k[0]}"${S.settings.defaultModules[k[0]] ? " checked" : ""}>
+          <span>${t(k[1])}</span>
         </label>`).join("")}
         <p class="tiny note mt8">${t("defaultModulesNote")}</p>
       </div>
@@ -1275,6 +1302,26 @@ function dialogHtml() {
       <div class="dialog-actions">
         <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
         <button class="dlg-btn solid" data-a="doNextRound">${t("nextRound")}</button>
+      </div>`;
+  }
+  else if (d.type === "addPlayer") {
+    /* krok 1: imię nowego gracza */
+    inner = `${title(t("newPlayerTitle"))}
+      <label class="tiny" for="newPlayerName">${t("playerName")}</label>
+      <input type="text" id="newPlayerName" maxlength="${LIMITS.name}" placeholder="${t("namePlaceholder")}" value="${esc(d.value)}" data-autofocus autocomplete="off">
+      <div class="dialog-actions">
+        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn solid" data-a="confirmAddPlayerName">${t("nextStep")}</button>
+      </div>`;
+  }
+  else if (d.type === "addPlayerColor") {
+    /* krok 2: wybór koloru — klik w kolor dodaje gracza */
+    inner = `${title(t("newPlayerTitle"))}
+      <p class="dlg-name">${esc(d.name)}</p>
+      <p class="tiny tc mt" id="pickColorLbl">${t("chooseColor")}</p>
+      <div class="colors colors-grid" role="group" aria-labelledby="pickColorLbl">${colorDots(null, usedColors(), "addPlayerWithColor")}</div>
+      <div class="dialog-actions tight">
+        <button class="dlg-btn secondary" data-a="backToPlayerName">${t("back")}</button>
       </div>`;
   }
   else if (d.type === "confirmDelete") {
@@ -1571,7 +1618,8 @@ function startGame(players) {
   S.modules.rounds.current = 1;
   if (S.modules.timer.on) S.modules.timer.elapsed = 0, S.modules.timer.startedAt = Date.now();
   applyTargetFlags();
-  S.dialog = { type: "drawAsk" };
+  /* losowanie pierwszego gracza tylko przy włączonym module */
+  S.dialog = S.modules.draw.on ? { type: "drawAsk" } : null;
   S.screen = "game";
   render(); window.scrollTo(0, 0);
 }
@@ -1601,9 +1649,11 @@ const ACTIONS = {
     /* szkic modułów: start od zestawu domyślnego z Ustawień */
     const dm = S.settings.defaultModules || defaultModules(null);
     S.setupModules = {
+      draw: { on: dm.draw === true },
       rounds: { on: dm.rounds === true, count: 9, current: 1 },
+      timer: { on: dm.timer === true, elapsed: 0, startedAt: null },
       target: { on: dm.target === true, value: 100 },
-      timer: { on: dm.timer === true, elapsed: 0, startedAt: null }
+      dice: { on: dm.dice === true }
     };
     setScreen("setup");
   },
@@ -1631,20 +1681,35 @@ const ACTIONS = {
     if (usedColors().includes(c)) return;
     S.setupColor = c;
     render();
-    /* kolor przed imieniem → fokus na polu imienia; po imieniu nie otwieramy klawiatury ponownie */
-    if (!(S.setupName || "").trim()) {
-      const inp = document.getElementById("nameInput");
-      if (inp) inp.focus();
-    }
   },
-  addSetupPlayer() {
-    if (!canAddSetupPlayer()) return;
-    const name = S.setupName.trim().slice(0, LIMITS.name);
-    S.players.push({ id: newId(), name: name, color: setupSelColor(), score: 0 });
+  /* Dodawanie gracza: okno z imieniem → okno z wyborem koloru (klik dodaje) */
+  openAddPlayer() {
+    if (S.players.length >= PLAYER_COLORS.length) return;
     S.setupName = ""; S.setupColor = null;
+    openDialogFn({ type: "addPlayer", value: "" });
+  },
+  confirmAddPlayerName() {
+    const d = S.dialog;
+    if (!d || d.type !== "addPlayer") return;
+    const name = (d.value || "").trim().slice(0, LIMITS.name);
+    if (!name) { toast(t("nameEmpty")); return; }
+    if (usedColors().length >= PLAYER_COLORS.length) return;
+    S.dialog = { type: "addPlayerColor", name: name };
     render();
-    const inp = document.getElementById("nameInput");
-    if (inp) inp.focus();
+  },
+  backToPlayerName() {
+    const d = S.dialog;
+    if (!d || d.type !== "addPlayerColor") return;
+    S.dialog = { type: "addPlayer", value: d.name };
+    render();
+  },
+  addPlayerWithColor(c) {
+    const d = S.dialog;
+    if (!d || d.type !== "addPlayerColor") return;
+    if (usedColors().includes(c)) return;
+    S.players.push({ id: newId(), name: d.name, color: c, score: 0 });
+    closeDialog();
+    render();
   },
   removeSetupPlayer(id) { S.players = S.players.filter(p => p.id !== id); render(); },
   startFromSetup() {
@@ -1744,7 +1809,16 @@ const ACTIONS = {
     render();
     setTimeout(() => { if (S.animScore === id) { S.animScore = null; render(); } }, 180);
   },
-  undo() { Logic.undo(S); if (S.modules && S.modules.target.on) applyTargetFlags(); render(); },
+  undo() {
+    const h = S.history[S.history.length - 1];
+    if (!h) return;
+    const p = Logic.findPlayer(S, h.id);
+    const entry = { id: h.id, delta: h.delta };
+    Logic.undo(S);
+    if (S.modules && S.modules.target.on) applyTargetFlags();
+    render();
+    undoToast(t("undoToast").replace("{x}", (h.delta > 0 ? "+" : "") + h.delta).replace("{name}", p ? p.name : ""), entry);
+  },
   openCustomAmount(id, sign) { openDialogFn({ type: "customAmount", id: id, sign: Number(sign), value: "" }); },
   confirmCustomAmount() {
     const d = S.dialog;
@@ -2154,7 +2228,7 @@ document.addEventListener("click", function (e) {
 
 document.addEventListener("input", function (e) {
   const id = e.target.id;
-  if (id === "nameInput") { S.setupName = e.target.value; syncAddPlayerBtn(); }
+  if (id === "newPlayerName" && S.dialog && S.dialog.type === "addPlayer") { S.dialog.value = e.target.value; }
   else if (id === "editName" && S.editDraft) { S.editDraft.name = e.target.value; }
   else if (id === "dieName" && S.dieDraft) { S.dieDraft.name = e.target.value; }
   else if (S.dieDraft && e.target.dataset && e.target.dataset.face !== undefined) {
@@ -2198,7 +2272,7 @@ document.addEventListener("keydown", function (e) {
   /* Enter zatwierdza w polach tekstowych */
   if (e.key === "Enter") {
     const id = e.target.id;
-    const submit = { nameInput: "addSetupPlayer", customAmountInput: "confirmCustomAmount", editHistoryInput: "saveHistoryEdit" }[id];
+    const submit = { newPlayerName: "confirmAddPlayerName", customAmountInput: "confirmCustomAmount", editHistoryInput: "saveHistoryEdit" }[id];
     if (submit) { e.preventDefault(); ACTIONS[submit](); persistGame(); }
     return;
   }
