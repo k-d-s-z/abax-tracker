@@ -84,7 +84,23 @@ const STR = {
     dieName: "Nazwa kości", dieNamePlaceholder: "np. Kość akcji", dieNameEmpty: "Podaj nazwę kości",
     facesCount: "Liczba ścianek", facesWord: "ścianek", faceN: "Ścianka {n}", faceColor: "Kolor ścianki {n}", noColor: "brak koloru",
     facesHint: "Wpisz liczby lub napisy (do 8 znaków). Kolor ścianki jest opcjonalny — dotknij pola koloru, aby go zmienić.",
-    editDieBtn: "Edytuj kość", deleteDieBtn: "Usuń kość", deleteDieQ: "Usunąć kość?", maxDice: "Maksymalnie {n} własnych kości"
+    editDieBtn: "Edytuj kość", deleteDieBtn: "Usuń kość", deleteDieQ: "Usunąć kość?", maxDice: "Maksymalnie {n} własnych kości",
+
+    /* Moduły gry (v11): licznik rund, cel punktowy, timer */
+    modulesSection: "MODUŁY GRY",
+    modulesHint: "Dotknij karty, aby włączyć lub wyłączyć moduł. Zestaw możesz też zmienić ołówkiem w trakcie gry.",
+    moduleRounds: "LICZNIK RUND", moduleTarget: "CEL PUNKTOWY", moduleTimer: "TIMER",
+    moduleOn: "włączony", moduleOff: "wyłączony",
+    roundsCountQ: "Ile rund?", roundsInf: "∞", roundsInfLabel: "Bez limitu rund", roundsWord: "rund",
+    roundWord: "Runda", nextRound: "Następna runda", nextRoundQ: "Przejść do następnej rundy?",
+    lastRoundInfo: "Ostatnia runda!", overRoundInfo: "Runda {n} — gra trwa dalej",
+    targetQ: "Jaki cel punktowy?", targetPlaceholder: "np. 100", targetWord: "Cel",
+    targetReachedTitle: "CEL OSIĄGNIĘTY!", targetReachedText: "osiąga cel {v} punktów! Możecie grać dalej.",
+    ok: "OK",
+    gameTime: "Czas gry", timerNote: "Zegar liczy od startu gry. Wyjście do menu go zatrzymuje, a wznowienie kontynuuje.",
+    defaultModulesSection: "ZESTAW MODUŁÓW DOMYŚLNYCH",
+    defaultModulesNote: "Te moduły będą wstępnie włączone przy tworzeniu nowej gry. W każdej grze możesz je zmienić przed startem oraz ołówkiem w trakcie gry.",
+    gameModulesTitle: "MODUŁY"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME",
@@ -165,7 +181,23 @@ const STR = {
     dieName: "Die name", dieNamePlaceholder: "e.g. Action die", dieNameEmpty: "Enter a die name",
     facesCount: "Number of faces", facesWord: "faces", faceN: "Face {n}", faceColor: "Color of face {n}", noColor: "no color",
     facesHint: "Enter numbers or text (up to 8 characters). Face color is optional — tap the color box to change it.",
-    editDieBtn: "Edit die", deleteDieBtn: "Delete die", deleteDieQ: "Delete die?", maxDice: "Maximum of {n} custom dice"
+    editDieBtn: "Edit die", deleteDieBtn: "Delete die", deleteDieQ: "Delete die?", maxDice: "Maximum of {n} custom dice",
+
+    /* Game modules (v11): round counter, score target, timer */
+    modulesSection: "GAME MODULES",
+    modulesHint: "Tap a card to enable or disable a module. You can also change the set with the pencil during the game.",
+    moduleRounds: "ROUND COUNTER", moduleTarget: "SCORE TARGET", moduleTimer: "TIMER",
+    moduleOn: "enabled", moduleOff: "disabled",
+    roundsCountQ: "How many rounds?", roundsInf: "∞", roundsInfLabel: "Unlimited rounds", roundsWord: "rounds",
+    roundWord: "Round", nextRound: "Next round", nextRoundQ: "Move to the next round?",
+    lastRoundInfo: "Last round!", overRoundInfo: "Round {n} — the game continues",
+    targetQ: "What's the score target?", targetPlaceholder: "e.g. 100", targetWord: "Target",
+    targetReachedTitle: "TARGET REACHED!", targetReachedText: "reaches the target of {v} points! You can keep playing.",
+    ok: "OK",
+    gameTime: "Game time", timerNote: "The clock starts when the game starts. Leaving for the menu stops it; resuming continues it.",
+    defaultModulesSection: "DEFAULT MODULE SET",
+    defaultModulesNote: "These modules will be pre-enabled when creating a new game. You can change them before each game and with the pencil during play.",
+    gameModulesTitle: "MODULES"
   }
 };
 
@@ -208,7 +240,9 @@ const LIMITS = {
   diceFacesMin: 2, diceFacesMax: 20,
   diceCount: 6,         // ile kości naraz
   dieName: 20, faceText: 8,
-  diceLog: 50           // tyle ostatnich rzutów pamięta otwarte okno rzutu
+  diceLog: 50,          // tyle ostatnich rzutów pamięta otwarte okno rzutu
+  roundsMax: 999,       // licznik rund: maksymalna planowana liczba rund (0 = ∞)
+  targetMax: 999999     // cel punktowy: górny limit (= limit punktów)
 };
 
 /* Wbudowana, zawsze dostępna kość D6 (1–6). Własne kości: settings.dice = [{id, name, faces:[{t, c}]}],
@@ -289,7 +323,7 @@ function locale() { return (S.settings.lang === "en") ? "en-GB" : "pl-PL"; }
 /* Walidacja ustawień (używana przy ładowaniu i imporcie) */
 function sanitizeSettings(d, fallbackLang) {
   if (!d || typeof d !== "object") {
-    return { fontScale: 1, buttonValues: [1, 10], lang: fallbackLang || detectLang(), keepAwake: false, dice: [], diceType: DEFAULT_DIE.id, diceCount: 1 };
+    return { fontScale: 1, buttonValues: [1, 10], lang: fallbackLang || detectLang(), keepAwake: false, dice: [], diceType: DEFAULT_DIE.id, diceCount: 1, defaultModules: defaultModules(null) };
   }
   const fs = typeof d.fontScale === "number" && Number.isFinite(d.fontScale) ? d.fontScale : 1;
   let bv = [1, 10];
@@ -307,7 +341,34 @@ function sanitizeSettings(d, fallbackLang) {
   const diceType = (typeof d.diceType === "string" && dice.some(x => x.id === d.diceType)) ? d.diceType : DEFAULT_DIE.id;
   const dc = Math.trunc(Number(d.diceCount));
   const diceCount = (dc >= 1 && dc <= LIMITS.diceCount) ? dc : 1;
-  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang, keepAwake: d.keepAwake === true, dice: dice, diceType: diceType, diceCount: diceCount };
+  return { fontScale: Math.max(FONT_MIN, Math.min(FONT_MAX, fs)), buttonValues: bv, lang: lang, keepAwake: d.keepAwake === true, dice: dice, diceType: diceType, diceCount: diceCount, defaultModules: defaultModules(d.defaultModules) };
+}
+
+/* --- Moduły gry (v11): licznik rund, cel punktowy, timer ---
+   Zestaw domyślny w ustawieniach: tylko flagi on/off.
+   Stan modułów w grze: rounds {on, count(0=∞), current}, target {on, value},
+   timer {on, elapsed(ms), startedAt(ms|null)} — przechodzi sanityzację jak każde dane. */
+function defaultModules(raw) {
+  const r = (raw && typeof raw === "object") ? raw : {};
+  const b = k => r[k] === true;
+  return { rounds: b("rounds"), target: b("target"), timer: b("timer") };
+}
+function sanitizeModules(raw) {
+  const r = (raw && typeof raw === "object") ? raw : {};
+  const num = (v, min, max) => { const n = Math.trunc(Number(v)); return Number.isFinite(n) && n >= min && n <= max ? n : null; };
+  const roundsOn = r.rounds && typeof r.rounds === "object" ? r.rounds : {};
+  const rc = num(roundsOn.count, 0, LIMITS.roundsMax);
+  const rcur = num(roundsOn.current, 1, LIMITS.roundsMax * 2);
+  const tg = r.target && typeof r.target === "object" ? r.target : {};
+  const tv = num(tg.value, 1, LIMITS.targetMax);
+  const tm = r.timer && typeof r.timer === "object" ? r.timer : {};
+  const tel = num(tm.elapsed, 0, 1000 * 60 * 60 * 24 * 365); // do roku gry ciągłej
+  const tst = tm.startedAt === null || tm.startedAt === undefined ? null : (Number.isFinite(Number(tm.startedAt)) ? Math.max(0, Math.trunc(Number(tm.startedAt))) : null);
+  return {
+    rounds: { on: roundsOn.on === true, count: rc === null ? 0 : rc, current: rcur === null ? 1 : rcur },
+    target: { on: tg.on === true && tv !== null, value: tv === null ? 100 : tv },
+    timer: { on: tm.on === true, elapsed: tel === null ? 0 : tel, startedAt: tst }
+  };
 }
 
 /* Własne kości: 2–20 ścianek, napis do 8 znaków (pusty → numer ścianki), kolor tylko z palety. */
@@ -346,6 +407,8 @@ const S = {
   dialog: null,
   animScore: null,
   editDraft: null,
+  setupModules: null,  // szkic modułów na ekranie NOWA GRA (rounds/target/timer)
+  modules: null,       // aktywne moduły w grze (sanitizeModules)
   dieDraft: null,       // szkic edytowanej kości (Ustawienia → Kości)
   pendingImport: null,  // ZAWSZE dane po sanityzacji (validateImport)
   resume: loadResume(), // niedokończona gra odzyskana z autozapisu (albo null)
@@ -461,26 +524,74 @@ function faceColorLabel(i, c) {
 /* Wartości szybkich przycisków, zawsze posortowane rosnąco (kopia) */
 function buttonValues() { return S.settings.buttonValues.slice().sort((a, b) => a - b); }
 
+/* --- Timer (moduł gry) ---
+   elapsed + startedAt: zegar można zatrzymać (wyjście do menu) i wznowić bez utraty czasu.
+   timerMs() zwraca czas od startu gry; label w minutach (65'), powyżej godziny 1 h 05 min. */
+function timerRunning() { return !!(S.modules && S.modules.timer.on && S.modules.timer.startedAt); }
+function timerMs() {
+  const m = S.modules && S.modules.timer;
+  if (!m) return 0;
+  return Math.max(0, (m.elapsed || 0) + (m.startedAt ? Date.now() - m.startedAt : 0));
+}
+function timerStart() { const m = S.modules && S.modules.timer; if (m && m.on && !m.startedAt) m.startedAt = Date.now(); }
+function timerStop() { const m = S.modules && S.modules.timer; if (m && m.startedAt) { m.elapsed = timerMs(); m.startedAt = null; } }
+function timerLabel(ms) {
+  const min = Math.floor(ms / 60000);
+  if (min < 60) return min + "'";
+  return Math.floor(min / 60) + " h " + String(min % 60).padStart(2, "0") + " min";
+}
+/* Lekkie odświeżanie timera w pasku statusu (bez render() — nie przebudowuje kart ani fokusu) */
+setInterval(function () {
+  const el = document.getElementById("timerStat");
+  if (el && timerRunning()) el.textContent = timerLabel(timerMs());
+}, 5000);
+
+/* --- Licznik rund (moduł gry) ---
+   count = 0 oznacza brak limitu (∞). current może przekroczyć count (10/9 — gra toczy się dalej).
+   Zwraca tekst statusu: „R 9/9” (albo „R 9” przy ∞) i ewentualną informację po zmianie rundy. */
+function roundsLabel() {
+  const r = S.modules && S.modules.rounds;
+  if (!r || !r.on) return "";
+  return "R " + r.current + (r.count ? "/" + r.count : "");
+}
+function roundChangedToast(prev) {
+  const r = S.modules && S.modules.rounds;
+  if (!r || !r.on || !r.count) return;
+  if (r.current === r.count) toast(t("lastRoundInfo"));
+  else if (r.current > r.count) toast(t("overRoundInfo").replace("{n}", r.current));
+}
+
+/* --- Cel punktowy (moduł gry): oznacza gracza po osiągnięciu limitu, nie przerywa gry --- */
+function checkTargetHit(p) {
+  const m = S.modules && S.modules.target;
+  if (!m || !m.on || !p || p.targetHit) return;
+  if (Math.trunc(p.score) >= m.value) {
+    p.targetHit = true;
+    if (S.dialog) toast(p.name + ": " + t("targetReachedTitle"));
+    else S.dialog = { type: "targetReached", name: p.name, value: m.value };
+  }
+}
+
 /* --- Autozapis trwającej gry (przeżywa odświeżenie i ubicie karty przez system) ---
    Zapisujemy tylko grę z co najmniej jednym wpisem w historii. Przy starcie dane przechodzą
    tę samą sanityzację co zapisy/import. Zapis bez zmian (identyczny JSON) jest pomijany. */
 let lastPersist = "", lastPersistAt = 0;
 /* Migawka gry do wznowienia: dane przechodzą tę samą sanityzację co zapisy. null, gdy brak wpisów punktacji. */
-function toResume(players, history, savedAt) {
-  const e = sanitizeSaves([{ name: "x", players: players, history: history, savedAt: savedAt }])[0];
-  return e && e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt } : null;
+function toResume(players, history, savedAt, modules) {
+  const e = sanitizeSaves([{ name: "x", players: players, history: history, savedAt: savedAt, modules: modules || null }])[0];
+  return e && e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt, modules: e.modules } : null;
 }
 function loadResume() {
   const d = readStore(LS_GAME_KEY);
-  return d && typeof d === "object" ? toResume(d.players, d.history, d.savedAt) : null;
+  return d && typeof d === "object" ? toResume(d.players, d.history, d.savedAt, d.modules) : null;
 }
 function persistGame() {
   if (S.screen !== "game") return;
   if (!S.players.length || !S.history.length) { clearPersistedGame(); return; }
-  const snap = JSON.stringify({ players: S.players, history: S.history });
+  const snap = JSON.stringify({ players: S.players, history: S.history, modules: S.modules });
   if (snap === lastPersist) return;
   const savedAt = Date.now();
-  if (writeStore(LS_GAME_KEY, { players: S.players, history: S.history, savedAt }, false)) { lastPersist = snap; lastPersistAt = savedAt; }
+  if (writeStore(LS_GAME_KEY, { players: S.players, history: S.history, modules: S.modules, savedAt }, false)) { lastPersist = snap; lastPersistAt = savedAt; }
 }
 function clearPersistedGame() {
   lastPersist = ""; lastPersistAt = 0;
@@ -492,7 +603,7 @@ function archiveResume() {
   if (!r) return;
   S.resume = null;
   clearPersistedGame();
-  S.saves.unshift({ id: newId(), name: t("autosaveName") + " – " + new Date(r.savedAt).toLocaleDateString(locale()), savedAt: r.savedAt, players: r.players, history: r.history });
+  S.saves.unshift({ id: newId(), name: t("autosaveName") + " – " + new Date(r.savedAt).toLocaleDateString(locale()), savedAt: r.savedAt, players: r.players, history: r.history, modules: r.modules || null });
   if (S.saves.length > LIMITS.saves) S.saves.length = LIMITS.saves;
   saveSaves(S.saves);
   toast(t("resumeArchived"));
@@ -639,7 +750,8 @@ function sanitizeSaves(raw) {
     out.push({
       id: uniqueId(s.id, seen), name: name,
       savedAt: Number.isFinite(Number(s.savedAt)) ? Number(s.savedAt) : Date.now(),
-      players: players, history: history
+      players: players, history: history,
+      modules: (s.modules && typeof s.modules === "object") ? sanitizeModules(s.modules) : null
     });
   }
   return out;
@@ -777,6 +889,13 @@ function runSelfTests() {
     return h.includes("#1") && !h.includes("#2") && all.includes("#1") && all.includes("#2") && diceLogHtml({ results: [0], log: [e(1, "1")] }) === ""; })());
   check("kości: wbudowana D6 ma ścianki 1–6", DEFAULT_DIE.faces.length === 6 && DEFAULT_DIE.faces[5].t === "6");
 
+  /* moduły gry (v11) */
+  check("moduły: zestaw domyślny tylko z flagami true", defaultModules(null).rounds === false && defaultModules({ rounds: true, target: "x" }).rounds === true && defaultModules({ rounds: true, target: "x" }).target === false);
+  check("moduły: sanityzacja poprawnego stanu gry", (() => { const m = sanitizeModules({ rounds: { on: true, count: 9, current: 2 }, target: { on: true, value: 150 }, timer: { on: true, elapsed: 60000, startedAt: null } }); return m.rounds.on && m.rounds.count === 9 && m.rounds.current === 2 && m.target.value === 150 && m.timer.elapsed === 60000; })());
+  check("moduły: śmieciowe dane → bezpieczne wartości", (() => { const m = sanitizeModules({ rounds: { on: "x", count: -5, current: 99999 }, target: { on: true, value: 0 }, timer: { on: true, elapsed: -1, startedAt: "x" } }); return m.rounds.on === false && m.rounds.count === 0 && m.rounds.current === 1 && m.target.on === false && m.target.value === 100 && m.timer.elapsed === 0 && m.timer.startedAt === null; })());
+  check("moduły: zapis gry zachowuje stan modułów", (() => { const e = sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ hid: "h", id: "0", delta: 5 }], modules: { rounds: { on: true, count: 3, current: 1 }, target: { on: false, value: 0 }, timer: { on: true, elapsed: 0, startedAt: 123 } } }])[0]; return !!e && !!e.modules && e.modules.rounds.count === 3 && e.modules.timer.startedAt === 123; })());
+  check("moduły: timer etykieta minut i godzin", timerLabel(0) === "0'" && timerLabel(65 * 60000) === "1 h 05 min");
+
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
   const passed = results.filter(r => r.ok).length;
@@ -852,6 +971,39 @@ function viewHome() {
     <div class="scroll">${groupsHtml}</div>`;
 }
 
+/* --- Moduły gry: karty używane na ekranie NOWA GRA (szkic) i w oknie ołówka (gra) ---
+   pfx = prefiks akcji ("setupMod" / "editMod"), inpId = id pola celu (szkic / gra).
+   Karta wyłączona jest przygaszona (.off); klik w kartę przełącza moduł.
+   Przyciski konfiguracji wewnątrz karty mają własne data-a, więc klik w nie
+   nie przełącza modułu (delegacja wybiera najbliższy [data-a]). */
+function moduleCardsHtml(m, pfx, inpId) {
+  /* ctl(a, opts, tekst, aria, disabled): przycisk ±/∞ w konfiguracji rund */
+  const ctl = (a, o, txt, aria, dis) => `<button class="btn-outline font-btn"${dis ? " disabled" : ""} aria-label="${aria}" ${act(a, o)}>${txt}</button>`;
+  const roundsCtl = m.rounds.on ? `
+    <div class="row font-ctl mod-ctl mt8">
+      ${ctl(pfx + "Rounds", { v: -1 }, "\u2212", "\u2212", m.rounds.count <= 0)}
+      <span class="pct">${m.rounds.count ? m.rounds.count + " " + t("roundsWord") : t("roundsInf")}</span>
+      ${ctl(pfx + "Rounds", { v: 1 }, "+", "+", m.rounds.count >= LIMITS.roundsMax)}
+      ${ctl(pfx + "RoundsInf", {}, t("roundsInf"), t("roundsInfLabel"), m.rounds.count === 0)}
+    </div>
+    <p class="tiny note mt4">${t("roundsCountQ")}</p>` : "";
+  const targetCtl = m.target.on ? `
+    <div data-a="noop">
+      <label class="tiny mt8" for="${inpId}">${t("targetQ")}</label>
+      <input type="tel" inputmode="numeric" pattern="[0-9]*" id="${inpId}" maxlength="6" class="mod-input" value="${m.target.value || ""}" placeholder="${t("targetPlaceholder")}" autocomplete="off">
+    </div>` : "";
+  const timerCtl = m.timer.on ? `<p class="tiny note mt8">${t("timerNote")}</p>` : "";
+  const card = (name, key, body) => `
+    <div class="module-card${m[key].on ? "" : " off"}" ${act(pfx + "Toggle", { v: key })} role="button" tabindex="0" aria-pressed="${m[key].on}">
+      <div class="row">
+        <span class="name">${t(name)}</span>
+        <span class="tiny mod-state">${m[key].on ? t("moduleOn") : t("moduleOff")}</span>
+      </div>
+      ${body}
+    </div>`;
+  return card("moduleRounds", "rounds", roundsCtl) + card("moduleTarget", "target", targetCtl) + card("moduleTimer", "timer", timerCtl);
+}
+
 function viewSetup() {
   const used = usedColors();
   const sel = setupSelColor();
@@ -874,6 +1026,9 @@ function viewSetup() {
     </div>
     <p class="tiny counter">${t("players")}: ${S.players.length} / ${PLAYER_COLORS.length}</p>
     <div class="scroll">${playersHtml}</div>
+    <p class="sub">${t("modulesSection")}</p>
+    <div class="module-list">${moduleCardsHtml(S.setupModules, "setupMod", "setupTarget")}</div>
+    <p class="tiny tc note mt4">${t("modulesHint")}</p>
     <button class="btn"${S.players.length ? "" : " disabled"} data-a="startFromSetup">${t("letsGo")}</button>`;
 }
 
@@ -911,7 +1066,7 @@ function playerCardHtml(p) {
 
   return `<div class="card player-card ${cc(p.color)}" data-card="${esc(p.id)}">
     <div class="row">
-      <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name player-name">${esc(p.name)}</span></span>
+      <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name player-name">${esc(p.name)}</span>${p.targetHit ? `<span class="target-flag" title="${t("targetReachedTitle")}" aria-label="${t("targetReachedTitle")}">\u2691</span>` : ""}</span>
       <button class="icon-btn drag-handle" data-drag aria-label="${t("dragHandle")}: ${esc(p.name)}" aria-keyshortcuts="ArrowUp ArrowDown">${ICONS.grip}</button>
     </div>
     <div class="score-row">
@@ -931,6 +1086,11 @@ function viewGame() {
     <span class="row-left">
       <button class="icon-btn" aria-label="${t("backToMenu")}" data-a="askExitGame">${ICONS.back}</button>
       <h2>${t("scoring")}</h2>
+    </span>
+    <span class="game-status">
+      ${S.modules && S.modules.rounds.on ? `<button class="stat-btn" aria-label="${t("nextRound")}: ${roundsLabel()}" data-a="nextRound">${roundsLabel()}</button>` : ""}
+      ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")}: ${S.modules.target.value}">\u2691${S.modules.target.value}</span>` : ""}
+      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}">${timerLabel(timerMs())}</span>` : ""}
     </span>
     <span class="row-left tools">
       <button class="icon-btn" aria-label="${t("undo")}"${S.history.length ? "" : " disabled"} data-a="undo">${ICONS.undo}</button>
@@ -991,6 +1151,14 @@ function viewSettings() {
       <div class="card">
         <label class="check-row"><input type="checkbox" id="keepAwake"${S.settings.keepAwake ? " checked" : ""}${navigator.wakeLock ? "" : " disabled"}><span>${t("keepAwake")}</span></label>
         <p class="tiny note mt8">${navigator.wakeLock ? t("keepAwakeNote") : t("keepAwakeUnsupported")}</p>
+      </div>
+      <p class="sub">${t("defaultModulesSection")}</p>
+      <div class="card">
+        ${["rounds", "target", "timer"].map(k => `<label class="check-row">
+          <input type="checkbox" data-mod="${k}"${S.settings.defaultModules[k] ? " checked" : ""}>
+          <span>${t(k === "rounds" ? "moduleRounds" : k === "target" ? "moduleTarget" : "moduleTimer")}</span>
+        </label>`).join("")}
+        <p class="tiny note mt8">${t("defaultModulesNote")}</p>
       </div>
       <p class="sub">${t("quickButtons")}</p>
       <div class="card">
@@ -1061,6 +1229,7 @@ function dialogHtml() {
     }).join("");
     inner = `${title(t("finishTitle"))}
       <p class="tiny tc mt4">${t("finalRanking")}</p>
+      ${S.modules && S.modules.timer.on ? `<p class="tiny tc mt4">${t("gameTime")}: <strong>${timerLabel(timerMs())}</strong></p>` : ""}
       <div class="rank-list">${rows}</div>
       <div class="dialog-actions tight">
         <button class="dlg-btn secondary" data-a="closeDialog">${t("cancel")}</button>
@@ -1069,6 +1238,8 @@ function dialogHtml() {
   }
   else if (d.type === "edit") {
     inner = `${title(t("editLineupTitle"))}
+      <p class="tiny tc mt4">${t("gameModulesTitle")}</p>
+      <div class="module-list dlg-modules">${moduleCardsHtml(S.modules || sanitizeModules(null), "editMod", "editTarget")}</div>
       <div class="edit-list">${S.players.map(p => `<div class="row edit-row">
         <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span></span>
         <span class="btn-pair">
@@ -1089,6 +1260,21 @@ function dialogHtml() {
       <div class="dialog-actions">
         <button class="dlg-btn secondary" data-a="cancelEditPlayer">${t("cancelShort")}</button>
         <button class="dlg-btn solid" ${act("saveEdit", { id: p.id })}>${t("save")}</button>
+      </div>`;
+  }
+  else if (d.type === "targetReached") {
+    inner = `<p class="tiny tc" id="dlgTitle">${t("targetReachedTitle")}</p>
+      <p class="winner">${esc(d.name)}</p>
+      <p class="tiny tc note mt8">${t("targetReachedText").replace("{v}", d.value)}</p>
+      <div class="dialog-actions tight"><button class="dlg-btn solid" data-a="closeDialog">${t("ok")}</button></div>`;
+    noBack = true; // okno informacji — klik w tło też zamyka
+  }
+  else if (d.type === "nextRound") {
+    inner = `${title(t("nextRound"))}
+      <p class="dlg-text">${t("nextRoundQ")}</p>
+      <div class="dialog-actions">
+        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn solid" data-a="doNextRound">${t("nextRound")}</button>
       </div>`;
   }
   else if (d.type === "confirmDelete") {
@@ -1282,6 +1468,14 @@ function partialRenderGame() {
   const undoBtn = app.querySelector('[data-a="undo"]');
   if (undoBtn) undoBtn.disabled = !S.history.length;
 
+  /* pasek statusu (runda / cel) — aktualizowany w miejscu, bez przebudowy nagłówka */
+  const rb = app.querySelector('[data-a="nextRound"]');
+  if (rb && S.modules && S.modules.rounds.on) { rb.textContent = roundsLabel(); rb.setAttribute("aria-label", t("nextRound") + ": " + roundsLabel()); }
+  const tb = app.querySelector('[data-stat="target"]');
+  if (tb && S.modules && S.modules.target.on) tb.textContent = "\u2691" + S.modules.target.value;
+  const tm = app.querySelector("#timerStat");
+  if (tm && S.modules && S.modules.timer.on) tm.textContent = timerLabel(timerMs());
+
   const scroll = app.querySelector(".scroll");
   if (scroll) {
     const cards = S.players.map(playerCardHtml);
@@ -1372,9 +1566,20 @@ function startGame(players) {
   S.pending = {};
   S.history = [];
   S.cardCache = null;
+  /* moduły gry: szkic z ekranu NOWA GRA staje się stanem rozgrywki */
+  S.modules = sanitizeModules(S.setupModules || null);
+  S.modules.rounds.current = 1;
+  if (S.modules.timer.on) S.modules.timer.elapsed = 0, S.modules.timer.startedAt = Date.now();
+  applyTargetFlags();
   S.dialog = { type: "drawAsk" };
   S.screen = "game";
   render(); window.scrollTo(0, 0);
+}
+
+/* Cel osiągnięty: flaga gracza (⚑) odtwarzana po wznowieniu/wczytaniu — bez okna informacyjnego */
+function applyTargetFlags() {
+  const m = S.modules && S.modules.target;
+  S.players.forEach(p => { p.targetHit = !!(m && m.on && Math.trunc(p.score) >= m.value); });
 }
 
 /* Zmiana kolejności graczy (klawiatura: strzałki góra/dół na uchwycie) */
@@ -1391,11 +1596,22 @@ function movePlayer(id, dir) {
 /* --- Akcje UI --- */
 const ACTIONS = {
   /* nawigacja */
-  newGame() { S.players = []; S.setupName = ""; S.setupColor = null; setScreen("setup"); },
+  newGame() {
+    S.players = []; S.setupName = ""; S.setupColor = null;
+    /* szkic modułów: start od zestawu domyślnego z Ustawień */
+    const dm = S.settings.defaultModules || defaultModules(null);
+    S.setupModules = {
+      rounds: { on: dm.rounds === true, count: 9, current: 1 },
+      target: { on: dm.target === true, value: 100 },
+      timer: { on: dm.timer === true, elapsed: 0, startedAt: null }
+    };
+    setScreen("setup");
+  },
   openSettings() { setScreen("settings"); },
   backHome() { setScreen("home"); },
   dialogBackdrop(el, e) { if (e.target === el) closeDialog(); },
   closeDialog() { closeDialog(); },
+  noop() {}, // klik wewnątrz karty modułu (np. pole celu) nie przełącza modułu
 
   /* skład / gracze */
   askRemoveGroup(id) {
@@ -1437,6 +1653,83 @@ const ACTIONS = {
     startGame(S.players);
   },
 
+  /* moduły gry — szkic (ekran NOWA GRA) */
+  setupModToggle(k) {
+    const m = S.setupModules && S.setupModules[k];
+    if (!m) return;
+    m.on = !m.on;
+    render();
+  },
+  setupModRounds(d) {
+    const r = S.setupModules && S.setupModules.rounds;
+    if (!r) return;
+    r.count = Math.max(0, Math.min(LIMITS.roundsMax, (r.count || 0) + Number(d)));
+    render();
+  },
+  setupModRoundsInf() {
+    const r = S.setupModules && S.setupModules.rounds;
+    if (!r) return;
+    r.count = 0;
+    render();
+  },
+  updateSetupTarget(v) {
+    const m = S.setupModules && S.setupModules.target;
+    if (!m) return;
+    const n = Math.trunc(Number(String(v).replace(/[^0-9]/g, "")));
+    if (Number.isFinite(n) && n > 0) m.value = Math.min(LIMITS.targetMax, n);
+  },
+
+  /* moduły gry — w trakcie gry (okno ołówka) */
+  editModToggle(k) {
+    const m = S.modules && S.modules[k];
+    if (!m) return;
+    m.on = !m.on;
+    if (k === "timer") { m.on ? timerStart() : timerStop(); }
+    if (k === "target") { m.on ? applyTargetFlags() : S.players.forEach(p => { p.targetHit = false; }); }
+    render();
+  },
+  editModRounds(d) {
+    const r = S.modules && S.modules.rounds;
+    if (!r || !r.on) return;
+    r.count = Math.max(0, Math.min(LIMITS.roundsMax, (r.count || 0) + Number(d)));
+    render();
+  },
+  editModRoundsInf() {
+    const r = S.modules && S.modules.rounds;
+    if (!r || !r.on) return;
+    r.count = 0;
+    render();
+  },
+  updateEditTarget(v) {
+    const m = S.modules && S.modules.target;
+    if (!m) return;
+    const n = Math.trunc(Number(String(v).replace(/[^0-9]/g, "")));
+    if (Number.isFinite(n) && n > 0) m.value = Math.min(LIMITS.targetMax, n);
+    applyTargetFlags();
+  },
+
+  /* licznik rund: klik w status potwierdza przejście do kolejnej rundy */
+  nextRound() {
+    const r = S.modules && S.modules.rounds;
+    if (!r || !r.on) return;
+    openDialogFn({ type: "nextRound" });
+  },
+  doNextRound() {
+    const r = S.modules && S.modules.rounds;
+    closeDialog();
+    if (!r || !r.on) return;
+    r.current += 1;
+    render();
+    roundChangedToast();
+  },
+
+  /* zestaw modułów domyślnych (Ustawienia) */
+  setDefaultModule(k, on) {
+    if (!S.settings.defaultModules || !(k in S.settings.defaultModules)) return;
+    S.settings.defaultModules[k] = on === true;
+    saveSettings();
+  },
+
   /* punktacja */
   pend(id, d) { S.pending[id] = (S.pending[id] || 0) + Number(d); render(); },
   pendCancel(id) { delete S.pending[id]; render(); },
@@ -1446,11 +1739,12 @@ const ACTIONS = {
     if (!Logic.applyPoints(S, id, d)) { toast(t("pointsLimit")); return; } // punkty zostają w oczekujących — nic nie ginie po cichu
     delete S.pending[id];
     S.animScore = id;
+    checkTargetHit(Logic.findPlayer(S, id));
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
     render();
     setTimeout(() => { if (S.animScore === id) { S.animScore = null; render(); } }, 180);
   },
-  undo() { Logic.undo(S); render(); },
+  undo() { Logic.undo(S); if (S.modules && S.modules.target.on) applyTargetFlags(); render(); },
   openCustomAmount(id, sign) { openDialogFn({ type: "customAmount", id: id, sign: Number(sign), value: "" }); },
   confirmCustomAmount() {
     const d = S.dialog;
@@ -1474,12 +1768,14 @@ const ACTIONS = {
     if (!n) { toast(t("numPositive")); return; }
     if (!Logic.editEntry(S, d.hid, d.sign * n)) { toast(t("pointsLimit")); return; }
     S.dialog = null;
+    if (S.modules && S.modules.target.on) applyTargetFlags();
     render();
     restoreFocus();
   },
   deleteHistoryEntry(hid) {
     Logic.deleteEntry(S, hid);
     S.dialog = null;
+    if (S.modules && S.modules.target.on) applyTargetFlags();
     render();
     restoreFocus();
   },
@@ -1518,10 +1814,13 @@ const ACTIONS = {
     render();
   },
   openFinish() { openDialogFn({ type: "finish" }); },
-  finishGame() { S.players = []; S.pending = {}; S.history = []; S.cardCache = null; clearPersistedGame(); setScreen("home"); restoreFocus(); },
+  finishGame() { timerStop(); S.players = []; S.pending = {}; S.history = []; S.cardCache = null; S.modules = null; S.setupModules = null; clearPersistedGame(); setScreen("home"); restoreFocus(); },
   resumeGame() {
     const r = S.resume; if (!r) return;
     S.players = r.players; S.history = r.history;
+    S.modules = r.modules || sanitizeModules(null);
+    if (S.modules.timer.on && !S.modules.timer.startedAt) S.modules.timer.startedAt = Date.now(); // wznowienie zegara
+    applyTargetFlags();
     S.pending = {}; S.cardCache = null; S.resume = null; S.dialog = null; S.screen = "game";
     render(); window.scrollTo(0, 0);
   },
@@ -1539,9 +1838,10 @@ const ACTIONS = {
     openDialogFn({ type: "exitGame", pending: Object.keys(S.pending).length > 0 });
   },
   exitToMenu() {
+    timerStop(); // wyjście do menu zatrzymuje zegar (wznowienie go kontynuuje)
     persistGame();
-    S.resume = toResume(S.players, S.history, lastPersistAt || Date.now());
-    S.players = []; S.pending = {}; S.history = []; S.cardCache = null;
+    S.resume = toResume(S.players, S.history, lastPersistAt || Date.now(), S.modules);
+    S.players = []; S.pending = {}; S.history = []; S.cardCache = null; S.modules = null;
     setScreen("home");
     restoreFocus();
   },
@@ -1554,6 +1854,9 @@ const ACTIONS = {
     archiveResume();
     S.players = clone(s.players);   // zapisy są już po sanityzacji (spójne ID graczy i historii)
     S.history = clone(s.history);
+    S.modules = s.modules ? clone(s.modules) : sanitizeModules(null);
+    if (S.modules.timer.on && !S.modules.timer.startedAt) S.modules.timer.startedAt = Date.now();
+    applyTargetFlags();
     S.pending = {};
     S.cardCache = null;
     S.dialog = null;
@@ -1865,6 +2168,9 @@ document.addEventListener("change", function (e) {
   if (e.target.id === "importFile") { handleImportFile(e.target.files[0]); return; }
   if (e.target.id === "diceType") { ACTIONS.setDiceType(e.target.value); return; }
   if (e.target.id === "keepAwake") { ACTIONS.setKeepAwake(e.target.checked); return; }
+  if (e.target.id === "setupTarget") { ACTIONS.updateSetupTarget(e.target.value); return; }
+  if (e.target.id === "editTarget") { ACTIONS.updateEditTarget(e.target.value); return; }
+  if (e.target.dataset && e.target.dataset.mod) { ACTIONS.setDefaultModule(e.target.dataset.mod, e.target.checked); return; }
   if (e.target.dataset && e.target.dataset.change === "updateButtonValue") {
     ACTIONS.updateButtonValue(Number(e.target.dataset.v), e.target.value);
   }
@@ -1878,6 +2184,14 @@ document.addEventListener("keydown", function (e) {
   if ((e.key === "ArrowUp" || e.key === "ArrowDown") && e.target.matches && e.target.matches("[data-drag]")) {
     e.preventDefault();
     movePlayer(e.target.closest("[data-card]").dataset.card, e.key === "ArrowUp" ? -1 : 1);
+    return;
+  }
+
+  /* Enter / Spacja aktywuje karty modułów (div[role=button] nie robi tego natywnie) */
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[role="button"][data-a]')) {
+    e.preventDefault();
+    const fn = ACTIONS[e.target.dataset.a];
+    if (fn) fn.call(ACTIONS, e.target.dataset.v, e.target, e);
     return;
   }
 
