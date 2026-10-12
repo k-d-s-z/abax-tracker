@@ -12,13 +12,11 @@ const STR = {
     removeLineup: "Usuń skład", removeLineupQ: "Usunąć skład?",
     playerName: "Nazwa gracza", namePlaceholder: "np. Ania", color: "Kolor:",
     addPlayer: "DODAJ GRACZA", addAtLeastOne: "Dodaj przynajmniej 1 gracza…",
-    players: "Gracze", letsGo: "DO BOJU!", scoring: "PUNKTACJA",
+    players: "Gracze", letsGo: "DO BOJU!",
     backToMenu: "Wróć do menu głównego", back: "Wróć", undo: "Cofnij punktację",
     editLineupBtn: "Edytuj skład", end: "Koniec",
     removePlayer: "Usuń gracza", editPlayerBtn: "Edytuj gracza",
-    firstPlayer: "Pierwszy gracz", drawAsk: "Czy wylosować pierwszego gracza?",
-    no: "Nie", draw: "Losuj", starts: "ZACZYNA", letsPlay: "Gramy!",
-    finishTitle: "Koniec gry!", finalRanking: "Oto ostateczna klasyfikacja:",
+    starts: "ZACZYNA", letsPlay: "Gramy!",    finishTitle: "Koniec gry!", finalRanking: "Oto ostateczna klasyfikacja:",
     cancel: "ANULUJ", cancelShort: "Anuluj", endGame: "KONIEC GRY",
     editLineupTitle: "Edycja składu", close: "Zamknij", editPlayerTitle: "Edycja gracza",
     save: "Zapisz", remove: "Usuń", removePlayerQ: "Usunąć gracza?",
@@ -60,8 +58,8 @@ const STR = {
     invalidData: "Nieprawidłowa struktura danych w pliku",
     storageCorrupt: "Uszkodzone dane lokalne — odzyskano kopię zapasową",
     storageCorruptNoBak: "Uszkodzone dane lokalne — rozpoczęto od nowa",
-    dragHandle: "Przenieś gracza (strzałki góra/dół)", colorTaken: "zajęty",
-    colorNames: ["srebrny","niebieski","zielony","czerwony","pomarańczowy","fioletowy","różowy","żółty","czarny"],
+    dragHandle: "Przenieś gracza", colorTaken: "zajęty",
+    colorNames: ["srebrny","niebieski","błękitny","zielony","ciemnozielony","żółty","pomarańczowy","czerwony","różowy","fioletowy","indygo","czarny"],
     importSkipped: "Pominięto uszkodzone lub nadmiarowe wpisy: {n}.",
     testsOk: "Testy: {p}/{t} OK", testsFail: "TESTY NIE PRZESZŁY: {p}/{t}",
     resumeTitle: "GRA W TOKU", resumeBtn: "WZNÓW GRĘ", resumeMeta: "Zapisano {d} • wpisów punktacji: {n}", discardResume: "Odrzuć niedokończoną grę",
@@ -91,7 +89,7 @@ const STR = {
     modulesHint: "Dotknij karty, aby włączyć lub wyłączyć moduł. Zestaw możesz też zmienić ołówkiem w trakcie gry.",
     moduleDraw: "LOSOWANIE PIERWSZEGO GRACZA", moduleRounds: "LICZNIK RUND", moduleTimer: "POMIAR CZASU", moduleTarget: "CEL PUNKTOWY", moduleDice: "KOŚĆ",
     moduleOn: "włączony", moduleOff: "wyłączony",
-    drawModNote: "Przy starcie gry pojawi się pytanie o wylosowanie gracza, który zaczyna.",
+    drawModNote: "Przy starcie gra od razu pokaże wylosowanego gracza, który zaczyna.",
     diceModNote: "Ikona kości pojawi się w pasku ekranu gry.",
     roundsCountQ: "Ile rund?", roundsInf: "∞", roundsInfLabel: "Bez limitu rund",
     nextRound: "Następna runda", nextRoundQ: "Przejść do następnej rundy?",
@@ -114,12 +112,11 @@ const STR = {
     removeLineup: "Delete lineup", removeLineupQ: "Delete lineup?",
     playerName: "Player name", namePlaceholder: "e.g. Anna", color: "Color:",
     addPlayer: "ADD PLAYER", addAtLeastOne: "Add at least 1 player…",
-    players: "Players", letsGo: "LET'S GO!", scoring: "SCORE",
+    players: "Players", letsGo: "LET'S GO!",
     backToMenu: "Back to main menu", back: "Back", undo: "Undo score change",
     editLineupBtn: "Edit lineup", end: "End",
     removePlayer: "Remove player", editPlayerBtn: "Edit player",
-    firstPlayer: "First player", drawAsk: "Draw the first player?",
-    no: "No", draw: "Draw", starts: "STARTS", letsPlay: "Let's play!",
+    starts: "STARTS", letsPlay: "Let's play!",
     finishTitle: "Game over!", finalRanking: "Final standings:",
     cancel: "CANCEL", cancelShort: "Cancel", endGame: "END GAME",
     editLineupTitle: "Edit lineup", close: "Close", editPlayerTitle: "Edit player",
@@ -161,8 +158,8 @@ const STR = {
     invalidData: "Invalid data structure in file",
     storageCorrupt: "Corrupted local data — backup recovered",
     storageCorruptNoBak: "Corrupted local data — started fresh",
-    dragHandle: "Move player (up/down arrow keys)", colorTaken: "taken",
-    colorNames: ["silver","blue","green","red","orange","purple","pink","yellow","black"],
+    dragHandle: "Move player", colorTaken: "taken",
+    colorNames: ["silver","blue","azure","green","dark green","yellow","orange","red","pink","purple","indigo","black"],
     importSkipped: "Skipped damaged or surplus entries: {n}.",
     testsOk: "Tests: {p}/{t} OK", testsFail: "TESTS FAILED: {p}/{t}",
     resumeTitle: "GAME IN PROGRESS", resumeBtn: "RESUME GAME", resumeMeta: "Saved {d} • score entries: {n}", discardResume: "Discard unfinished game",
@@ -192,7 +189,7 @@ const STR = {
     modulesHint: "Tap a card to enable or disable a module. You can also change the set with the pencil during the game.",
     moduleDraw: "FIRST PLAYER DRAW", moduleRounds: "ROUND COUNTER", moduleTimer: "TIME TRACKING", moduleTarget: "SCORE TARGET", moduleDice: "DICE",
     moduleOn: "enabled", moduleOff: "disabled",
-    drawModNote: "When the game starts, you'll be asked whether to draw the starting player.",
+    drawModNote: "When the game starts, the drawn starting player is shown right away.",
     diceModNote: "The dice icon will appear in the game screen bar.",
     roundsCountQ: "How many rounds?", roundsInf: "∞", roundsInfLabel: "Unlimited rounds",
     nextRound: "Next round", nextRoundQ: "Move to the next round?",
@@ -213,7 +210,7 @@ const STR = {
    2. IKONY
    ================================================================ */
 const ICONS = {
-  grip:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 V20"/><path d="M8 8 L12 4 L16 8"/><path d="M8 16 L12 20 L16 16"/></svg>',
+  move:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>',
   back:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>',
   undo:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10 h9 a5 5 0 0 1 0 10 h-3"/><path d="M4 10 L8 6 M4 10 L8 14"/></svg>',
   pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
@@ -230,7 +227,7 @@ const ICONS = {
    - kopia zapasowa kluczy (.bak) przed nadpisaniem
    - kwarantanna uszkodzonych danych (.corrupt) i odzyskiwanie
    ================================================================ */
-const PLAYER_COLORS = ["#e2e8f0","#38bdf8","#34d399","#f43f5e","#fb923c","#a78bfa","#f472b6","#facc15","#0a0a0a"];
+const PLAYER_COLORS = ["#e2e8f0","#38bdf8","#0ea5e9","#34d399","#10b981","#facc15","#fb923c","#f43f5e","#f472b6","#a78bfa","#8b5cf6","#0a0a0a"];
 const MAX_BUTTON_PAIRS = 4;
 const FONT_MIN = 0.8, FONT_MAX = 1.6;
 const SCHEMA_VERSION = 2;
@@ -584,9 +581,10 @@ function timerLabel(ms) {
   if (min < 60) return min + "'";
   return Math.floor(min / 60) + " h " + String(min % 60).padStart(2, "0") + " min";
 }
-/* Lekkie odświeżanie timera w pasku statusu (bez render() — nie przebudowuje kart ani fokusu) */
+/* Lekkie odświeżanie timera w pasku statusu (bez render() — nie przebudowuje kart ani fokusu).
+   Aktualizujemy tylko etykietę, żeby nie nadpisać ikony zegara w #timerStat. */
 setInterval(function () {
-  const el = document.getElementById("timerStat");
+  const el = document.getElementById("timerStatLabel");
   if (el && timerRunning()) el.textContent = timerLabel(timerMs());
 }, 5000);
 
@@ -1007,7 +1005,7 @@ function viewHome() {
    Karta wyłączona jest przygaszona (.off); klik w kartę przełącza moduł.
    Przyciski konfiguracji wewnątrz karty mają własne data-a, więc klik w nie
    nie przełącza modułu (delegacja wybiera najbliższy [data-a]). */
-function moduleCardsHtml(m, pfx, inpId) {
+function moduleCardsHtml(m, pfx, inpId, inGame) {
   const ctl = (a, o, txt, aria, dis) => `<button class="btn-outline font-btn"${dis ? " disabled" : ""} aria-label="${aria}" ${act(a, o)}>${txt}</button>`;
   const drawCtl = m.draw.on ? `<p class="tiny note mt8">${t("drawModNote")}</p>` : "";
   const roundsCtl = m.rounds.on ? `
@@ -1033,11 +1031,14 @@ function moduleCardsHtml(m, pfx, inpId) {
       </div>
       ${body}
     </div>`;
-  return card("moduleDraw", "draw", drawCtl) +
-    card("moduleRounds", "rounds", roundsCtl) +
-    card("moduleTimer", "timer", timerCtl, ICONS.clock) +
-    card("moduleTarget", "target", targetCtl) +
-    card("moduleDice", "dice", diceCtl, ICONS.dice);
+  /* moduł losowania jest nieprzydatny po starcie gry — w oknie ołówka (inGame) go nie ma */
+  const cards = [];
+  if (!inGame) cards.push(card("moduleDraw", "draw", drawCtl));
+  cards.push(card("moduleRounds", "rounds", roundsCtl));
+  cards.push(card("moduleTimer", "timer", timerCtl, ICONS.clock));
+  cards.push(card("moduleTarget", "target", targetCtl));
+  cards.push(card("moduleDice", "dice", diceCtl, ICONS.dice));
+  return cards.join("");
 }
 
 function viewSetup() {
@@ -1095,7 +1096,7 @@ function playerCardHtml(p) {
   return `<div class="card player-card ${cc(p.color)}" data-card="${esc(p.id)}">
     <div class="row">
       <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name player-name">${esc(p.name)}</span>${p.targetHit ? `<span class="target-flag" title="${t("targetReachedTitle")}" aria-label="${t("targetReachedTitle")}">\u2691</span>` : ""}</span>
-      <button class="icon-btn drag-handle" data-drag aria-label="${t("dragHandle")}: ${esc(p.name)}" aria-keyshortcuts="ArrowUp ArrowDown">${ICONS.grip}</button>
+      <button class="icon-btn drag-handle" data-drag aria-label="${t("dragHandle")}: ${esc(p.name)}" aria-keyshortcuts="ArrowUp ArrowDown">${ICONS.move}</button>
     </div>
     <div class="score-row">
       <span class="score-side" aria-hidden="true"></span>
@@ -1117,7 +1118,7 @@ function viewGame() {
     <span class="game-status">
       ${S.modules && S.modules.rounds.on ? `<button class="stat-btn" aria-label="${t("nextRound")}: ${roundsLabel()}" data-a="nextRound">${roundsLabel()}</button>` : ""}
       ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")}: ${S.modules.target.value}">\u2691${S.modules.target.value}</span>` : ""}
-      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}"><span class="mod-ico">${ICONS.clock}</span>${timerLabel(timerMs())}</span>` : ""}
+      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}"><span class="mod-ico">${ICONS.clock}</span><span id="timerStatLabel">${timerLabel(timerMs())}</span></span>` : ""}
     </span>
     <span class="row-left tools">
       <button class="icon-btn" aria-label="${t("undo")}"${S.history.length ? "" : " disabled"} data-a="undo">${ICONS.undo}</button>
@@ -1227,16 +1228,8 @@ function dialogHtml() {
   const title = s => `<h3 id="dlgTitle">${s}</h3>`;
   let inner = "", noBack = false;
 
-  if (d.type === "drawAsk") {
-    inner = `${title(t("firstPlayer"))}
-      <p class="dlg-text">${t("drawAsk")}</p>
-      <div class="dialog-actions">
-        <button class="dlg-btn secondary" data-a="closeDialog">${t("no")}</button>
-        <button class="dlg-btn solid" data-a="drawFirst">${t("draw")}</button>
-      </div>`;
-    noBack = true;
-  }
-  else if (d.type === "drawResult") {
+  if (d.type === "drawResult") {
+    /* wynik losowania pierwszego gracza (moduł włączony = bez pytania) */
     inner = `<p class="tiny tc" id="dlgTitle">${t("starts")}</p>
       <p class="winner">${esc(d.name)}</p>
       <div class="dialog-actions tight"><button class="dlg-btn solid" data-a="closeDialog">${t("letsPlay")}</button></div>`;
@@ -1266,7 +1259,7 @@ function dialogHtml() {
   else if (d.type === "edit") {
     inner = `${title(t("editLineupTitle"))}
       <p class="tiny tc mt4">${t("gameModulesTitle")}</p>
-      <div class="module-list dlg-modules">${moduleCardsHtml(S.modules || sanitizeModules(null), "editMod", "editTarget")}</div>
+      <div class="module-list dlg-modules">${moduleCardsHtml(S.modules || sanitizeModules(null), "editMod", "editTarget", true)}</div>
       <div class="edit-list">${S.players.map(p => `<div class="row edit-row">
         <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span></span>
         <span class="btn-pair">
@@ -1315,13 +1308,14 @@ function dialogHtml() {
       </div>`;
   }
   else if (d.type === "addPlayerColor") {
-    /* krok 2: wybór koloru — klik w kolor dodaje gracza */
+    /* krok 2: wybór koloru — zaznaczenie + potwierdzenie (ochrona przed przypadkowym tapnięciem) */
     inner = `${title(t("newPlayerTitle"))}
       <p class="dlg-name">${esc(d.name)}</p>
       <p class="tiny tc mt" id="pickColorLbl">${t("chooseColor")}</p>
-      <div class="colors colors-grid" role="group" aria-labelledby="pickColorLbl">${colorDots(null, usedColors(), "addPlayerWithColor")}</div>
+      <div class="colors colors-grid" role="group" aria-labelledby="pickColorLbl">${colorDots(d.color, usedColors(), "pickNewPlayerColor")}</div>
       <div class="dialog-actions tight">
         <button class="dlg-btn secondary" data-a="backToPlayerName">${t("back")}</button>
+        <button class="dlg-btn solid"${d.color ? "" : " disabled"} data-a="confirmAddPlayer">${t("add")}</button>
       </div>`;
   }
   else if (d.type === "confirmDelete") {
@@ -1520,7 +1514,7 @@ function partialRenderGame() {
   if (rb && S.modules && S.modules.rounds.on) { rb.textContent = roundsLabel(); rb.setAttribute("aria-label", t("nextRound") + ": " + roundsLabel()); }
   const tb = app.querySelector('[data-stat="target"]');
   if (tb && S.modules && S.modules.target.on) tb.textContent = "\u2691" + S.modules.target.value;
-  const tm = app.querySelector("#timerStat");
+  const tm = app.querySelector("#timerStatLabel");
   if (tm && S.modules && S.modules.timer.on) tm.textContent = timerLabel(timerMs());
 
   const scroll = app.querySelector(".scroll");
@@ -1618,8 +1612,10 @@ function startGame(players) {
   S.modules.rounds.current = 1;
   if (S.modules.timer.on) S.modules.timer.elapsed = 0, S.modules.timer.startedAt = Date.now();
   applyTargetFlags();
-  /* losowanie pierwszego gracza tylko przy włączonym module */
-  S.dialog = S.modules.draw.on ? { type: "drawAsk" } : null;
+  /* losowanie pierwszego gracza: moduł włączony = od razu wynik, bez pytania */
+  S.dialog = S.modules.draw.on
+    ? { type: "drawResult", name: S.players[randInt(S.players.length)].name }
+    : null;
   S.screen = "game";
   render(); window.scrollTo(0, 0);
 }
@@ -1703,11 +1699,18 @@ const ACTIONS = {
     S.dialog = { type: "addPlayer", value: d.name };
     render();
   },
-  addPlayerWithColor(c) {
+  pickNewPlayerColor(c) {
     const d = S.dialog;
     if (!d || d.type !== "addPlayerColor") return;
     if (usedColors().includes(c)) return;
-    S.players.push({ id: newId(), name: d.name, color: c, score: 0 });
+    d.color = c;
+    render();
+  },
+  confirmAddPlayer() {
+    const d = S.dialog;
+    if (!d || d.type !== "addPlayerColor" || !d.color) return;
+    if (usedColors().includes(d.color)) { d.color = null; render(); return; }
+    S.players.push({ id: newId(), name: d.name, color: d.color, score: 0 });
     closeDialog();
     render();
   },
@@ -1900,12 +1903,6 @@ const ACTIONS = {
   },
   askDiscardResume() { openDialogFn({ type: "confirmDiscardResume" }); },
   confirmDiscardResume() { S.resume = null; clearPersistedGame(); closeDialog(); },
-  drawFirst() {
-    if (!S.players.length) { S.dialog = null; render(); return; }
-    const p = S.players[Math.floor(Math.random() * S.players.length)];
-    S.dialog = { type: "drawResult", name: p.name };
-    render();
-  },
   /* Wyjście do menu: gra (jeśli ma wpisy punktacji) jest zapisywana i czeka pod przyciskiem „WZNÓW GRĘ” */
   askExitGame() {
     if (!S.players.length || !S.history.length) { setScreen("home"); return; }
@@ -2252,7 +2249,7 @@ document.addEventListener("change", function (e) {
 
 document.addEventListener("keydown", function (e) {
   /* Escape zamyka dialog (poza obowiązkowym wyborem pierwszego gracza) */
-  if (e.key === "Escape" && S.dialog && S.dialog.type !== "drawAsk") { closeDialog(); return; }
+  if (e.key === "Escape" && S.dialog) { closeDialog(); return; }
 
   /* Zmiana kolejności z klawiatury: strzałki góra/dół na uchwycie karty */
   if ((e.key === "ArrowUp" || e.key === "ArrowDown") && e.target.matches && e.target.matches("[data-drag]")) {

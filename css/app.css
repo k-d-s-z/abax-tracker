@@ -339,17 +339,17 @@
   }
 
   /* ===== Kolory graczy: klasy z białej listy (indeks palety) zamiast inline style ===== */
-  .c0 { --pc:#e2e8f0; } .c1 { --pc:#38bdf8; } .c2 { --pc:#34d399; } .c3 { --pc:#f43f5e; }
-  .c4 { --pc:#fb923c; } .c5 { --pc:#a78bfa; } .c6 { --pc:#f472b6; } .c7 { --pc:#facc15; }
-  .c8 { --pc:#0a0a0a; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
+  .c0 { --pc:#e2e8f0; } .c1 { --pc:#38bdf8; } .c2 { --pc:#0ea5e9; } .c3 { --pc:#34d399; }
+  .c4 { --pc:#10b981; } .c5 { --pc:#facc15; } .c6 { --pc:#fb923c; } .c7 { --pc:#f43f5e; }
+  .c8 { --pc:#f472b6; } .c9 { --pc:#a78bfa; } .c10 { --pc:#8b5cf6; } .c11 { --pc:#0a0a0a; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
   .player-card { border-left:4px solid var(--pc); }
   .list-item.accent { border-left-color:var(--pc); }
   .pos { color:var(--green); } .neg { color:var(--red); }
-  /* czarny widoczny na ciemnym tle: obwódka/poświata zamiast krycia */
-  .dot.c8 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); }
-  .dot.sel.c8 { box-shadow: inset 0 0 0 2px #fff, 0 0 12px var(--accent); }
-  .avatar.c8 { border:1px solid rgba(255,255,255,0.45); }
-  .die-tile.col.c8 { border-color: rgba(255,255,255,0.45); color:#fff; }
+  /* czarny (c11) widoczny na ciemnym tle: obwódka/poświata zamiast krycia */
+  .dot.c11 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); }
+  .dot.sel.c11 { box-shadow: inset 0 0 0 2px #fff, 0 0 12px var(--accent); }
+  .avatar.c11 { border:1px solid rgba(255,255,255,0.45); }
+  .die-tile.col.c11 { border-color: rgba(255,255,255,0.45); color:#fff; }
 
   /* ===== Pomocnicze klasy (zastępują style inline) ===== */
   .tc { text-align:center; } .full { width:100%; } .grow { flex:1; }
