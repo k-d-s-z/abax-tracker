@@ -869,7 +869,7 @@ function runSelfTests() {
   check("import tablicy odrzucony", validateImport([1,2,3]) === null);
   check("import bez danych odrzucony", validateImport({ foo: 1 }) === null);
   check("import złośliwych graczy odrzucony", sanitizePlayers([{ name: "", color: "#fff" }]) === null);
-  check("import >8 graczy odrzucony", sanitizePlayers(new Array(9).fill({ name: "X", color: "#e2e8f0" })) === null);
+  check("import >8 graczy odrzucony", sanitizePlayers(new Array(LIMITS.players + 1).fill({ name: "X", color: "#e2e8f0" })) === null);
   check("import złej historii pominięty", sanitizeSaves([{ players: [{ name: "A", color: "#e2e8f0" }], history: [{ id: "0", delta: 0 }] }]).length === 0);
 
   // spójność ID graczy i historii w zapisach (po usunięciu gracza w trakcie gry)
