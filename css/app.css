@@ -480,14 +480,23 @@
   .die-tile.xl.long { font-size:calc(24px * var(--fs-mult)); }
   .dice-static { text-align:left; font-weight:600; font-size:calc(15px * var(--fs-mult)); color:var(--text-muted); padding:12px; border:1px dashed var(--border); border-radius:8px; margin-top:8px; }
 
+  /* ===== Nagłówki grup ustawień (Rozgrywka / Wygląd / Dane) — mocniejsze niż .sub ===== */
+  .settings-group { font-size: calc(13px * var(--fs-mult)); font-weight:900; letter-spacing:2.5px; text-transform:uppercase; text-align:left; color:var(--text-light); margin:28px 0 4px; padding-bottom:6px; border-bottom:2px solid var(--border); }
+  .settings-group:first-child { margin-top:0; }
+  .settings-group + .sub { margin-top:12px; }
+
   /* ===== Moduły gry (v11): losowanie, rundy, pomiar czasu, cel, kość ===== */
   .module-list { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
-  .module-card { padding:12px 14px; background:var(--surface-2); border:1px solid var(--accent); border-radius:12px; cursor:pointer; transition:all .15s; }
+  .module-card { padding:12px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:all .15s; }
   .module-card:active { transform:scale(.98); }
+  /* aktywny moduł: subtelna kropka statusu przy nazwie (bez mocnej ramki — ta zostaje
+     tylko dla interakcji: hover/active w bloku @media oraz stan .dragging) */
+  .module-card .name::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; vertical-align:1px; background:var(--brown-700); }
+  .module-card:not(.off) .name::before { background:var(--accent); }
   .module-card .name { font-size:calc(14px * var(--fs-mult)); font-weight:800; letter-spacing:1px; color:var(--accent-text); text-transform:uppercase; }
   .module-card .mod-state { text-transform:none; letter-spacing:0; white-space:nowrap; }
   /* moduł wyłączony: przygaszona karta — klik rozjaśnia i dodaje do gry */
-  .module-card.off { background:rgba(255,255,255,0.02); border-color:var(--border); opacity:.5; }
+  .module-card.off { background:rgba(255,255,255,0.02); border-color:var(--border); opacity:.65; }
   .module-card.off .name { color:var(--text-muted); }
   .mod-ctl { justify-content:center; gap:8px; }
   .mod-ctl .pct { min-width:64px; text-transform:none; }

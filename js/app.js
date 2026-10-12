@@ -9,6 +9,7 @@ const STR = {
     savedLineups: "ZAPISANE SKŁADY",
     noLineups: "Brak zapisanych składów.<br>Stwórz nową grę, a skład zapisze się automatycznie.",
     play: "GRAJ", settings: "Ustawienia", settingsTitle: "USTAWIENIA",
+    settingsGroupPlay: "Rozgrywka", settingsGroupLook: "Wygląd i obsługa", settingsGroupData: "Dane",
     removeLineup: "Usuń skład", removeLineupQ: "Usunąć skład?",
     playerName: "Nazwa gracza", namePlaceholder: "np. Ania", color: "Kolor:",
     addPlayer: "DODAJ GRACZA", addAtLeastOne: "Dodaj przynajmniej 1 gracza…",
@@ -109,6 +110,7 @@ const STR = {
     savedLineups: "SAVED LINEUPS",
     noLineups: "No saved lineups yet.<br>Start a new game and the lineup will be saved automatically.",
     play: "PLAY", settings: "Settings", settingsTitle: "SETTINGS",
+    settingsGroupPlay: "Gameplay", settingsGroupLook: "Appearance & handling", settingsGroupData: "Data",
     removeLineup: "Delete lineup", removeLineupQ: "Delete lineup?",
     playerName: "Player name", namePlaceholder: "e.g. Anna", color: "Color:",
     addPlayer: "ADD PLAYER", addAtLeastOne: "Add at least 1 player…",
@@ -1175,27 +1177,13 @@ function viewSettings() {
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
     </div>
     <div class="scroll">
-      <p class="sub">${t("language")}</p>
-      <div class="card">
-        <div class="row">
-          <button class="lang-btn${S.settings.lang === "pl" ? " sel" : ""}" ${act("setLang", { v: "pl" })}>POLSKI</button>
-          <button class="lang-btn${S.settings.lang === "en" ? " sel" : ""}" ${act("setLang", { v: "en" })}>ENGLISH</button>
-        </div>
-        <p class="tiny tc note mt10">${t("langNote")}</p>
-      </div>
+      <p class="settings-group">${t("settingsGroupPlay")}</p>
       <p class="sub">${t("quickButtons")}</p>
       <div class="card">
         ${btnRows}
         <button class="btn-outline mt full"${vals.length >= MAX_BUTTON_PAIRS ? " disabled" : ""} data-a="addButtonValue">${t("addPair")}</button>
         <p class="tiny tc note mt10">${t("onCard")} ${vals.length * 2 + 2} ${t("buttonsCount1")}</p>
         <p class="tiny note mt8">${t("buttonsTip")}</p>
-      </div>
-      <p class="sub">${t("fontSize")}</p>
-      <div class="card">${fontHtml}</div>
-      <p class="sub">${t("screenTitle")}</p>
-      <div class="card">
-        <label class="check-row"><input type="checkbox" id="keepAwake"${S.settings.keepAwake ? " checked" : ""}${navigator.wakeLock ? "" : " disabled"}><span>${t("keepAwake")}</span></label>
-        <p class="tiny note mt8">${navigator.wakeLock ? t("keepAwakeNote") : t("keepAwakeUnsupported")}</p>
       </div>
       <p class="sub">${t("defaultModulesSection")}</p>
       <div class="card">
@@ -1211,6 +1199,23 @@ function viewSettings() {
         <button class="btn-outline mt full"${S.settings.dice.length >= LIMITS.diceTypes ? " disabled" : ""} data-a="addDie">${t("addDie")}</button>
         <p class="tiny tc note mt10">${t("diceSettingsNote")}</p>
       </div>
+      <p class="settings-group">${t("settingsGroupLook")}</p>
+      <p class="sub">${t("language")}</p>
+      <div class="card">
+        <div class="row">
+          <button class="lang-btn${S.settings.lang === "pl" ? " sel" : ""}" ${act("setLang", { v: "pl" })}>POLSKI</button>
+          <button class="lang-btn${S.settings.lang === "en" ? " sel" : ""}" ${act("setLang", { v: "en" })}>ENGLISH</button>
+        </div>
+        <p class="tiny tc note mt10">${t("langNote")}</p>
+      </div>
+      <p class="sub">${t("fontSize")}</p>
+      <div class="card">${fontHtml}</div>
+      <p class="sub">${t("screenTitle")}</p>
+      <div class="card">
+        <label class="check-row"><input type="checkbox" id="keepAwake"${S.settings.keepAwake ? " checked" : ""}${navigator.wakeLock ? "" : " disabled"}><span>${t("keepAwake")}</span></label>
+        <p class="tiny note mt8">${navigator.wakeLock ? t("keepAwakeNote") : t("keepAwakeUnsupported")}</p>
+      </div>
+      <p class="settings-group">${t("settingsGroupData")}</p>
       <p class="sub">${t("savedGames")}</p>
       <div class="card">${savesHtml}</div>
       <p class="sub">${t("backup")}</p>
