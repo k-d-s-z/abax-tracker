@@ -1479,7 +1479,8 @@ function updateOverlay() {
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   const nd = tmp.querySelector(".dialog"), od = dlgEl && dlgEl.querySelector(".dialog");
-  if (dlgEl && od && nd && dlgEl.dataset.dlg === S.dialog.type) {
+  const same = !!(dlgEl && od && nd && dlgEl.dataset.dlg === S.dialog.type);
+  if (same) {
     /* ten sam dialog: podmieniamy tylko zawartość — bez ponownej animacji wejścia, rozmycia tła
        i utraty przewinięcia (to właśnie powodowało miganie przy zmianie liczby ścianek/kości) */
     const sc = od.scrollTop, fl = od.querySelector(".face-list"), fsc = fl ? fl.scrollTop : 0;
@@ -1491,8 +1492,17 @@ function updateOverlay() {
     if (dlgEl) dlgEl.remove();
     app.insertAdjacentHTML("beforeend", html);
   }
+  if (!same) { focusDialog(); return; } // nowy dialog → fokus na pierwsze pole
+  /* ten sam dialog: fokus wraca tam, gdzie był — na pole (po id) lub ten sam przycisk akcji
+     (np. „+” przy liczbie rund); NIGDY nie skaczemy do pierwszego pola (celu punktowego) */
   const re = aid ? document.getElementById(aid) : null;
-  if (re && !re.disabled) re.focus(); else focusDialog();
+  if (re && !re.disabled) { re.focus(); return; }
+  if (ae && ae.dataset && ae.dataset.a) {
+    let sel = '[data-a="' + esc(ae.dataset.a) + '"]';
+    if (ae.dataset.v !== undefined) sel += '[data-v="' + esc(ae.dataset.v) + '"]';
+    const btn = od.querySelector(sel);
+    if (btn && !btn.disabled) { btn.focus(); return; }
+  }
 }
 
 function focusDialog() {
