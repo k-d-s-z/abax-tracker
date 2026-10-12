@@ -1577,8 +1577,8 @@ function render() {
       el.focus();
       if (typeof el.selectionStart === "number") el.selectionStart = el.selectionEnd = el.value ? el.value.length : 0;
     }
-  } else if (S.dialog) {
-    focusDialog();
+  } else if (S.dialog && !sameDlg) {
+    focusDialog(); // tylko przy otwarciu nowego dialogu; re-render wewnątrz (np. +/− rund) nie kradnie fokusu
   }
 }
 
