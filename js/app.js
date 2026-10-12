@@ -509,6 +509,11 @@ function undoToast(msg, entry) {
   clearTimeout(undoToastTimer);
   undoToastTimer = setTimeout(() => { el.hidden = true; }, 5000);
 }
+function hideUndoToast() {
+  clearTimeout(undoToastTimer);
+  const el = document.getElementById("undoToast");
+  if (el) el.hidden = true;
+}
 
 /* --- Blokada wygaszania ekranu (Screen Wake Lock) — opcja w Ustawieniach, tylko na ekranie gry ---
    syncWakeLock() jest idempotentne: porównuje stan pożądany z faktycznym i wykonuje co najwyżej
@@ -1029,13 +1034,15 @@ function moduleCardsHtml(m, pfx, inpId, inGame) {
   const ctl = (a, o, txt, aria, dis) => `<button class="btn-outline font-btn"${dis ? " disabled" : ""} aria-label="${aria}" ${act(a, o)}>${txt}</button>`;
   const drawCtl = m.draw.on ? `<p class="tiny note mt8">${t("drawModNote")}</p>` : "";
   const roundsCtl = m.rounds.on ? `
+    <div data-a="noop">
     <div class="row font-ctl mod-ctl mt8">
       ${ctl(pfx + "Rounds", { v: -1 }, "\u2212", "\u2212", m.rounds.count <= 0)}
       <span class="pct">${m.rounds.count ? m.rounds.count : t("roundsInf")}</span>
       ${ctl(pfx + "Rounds", { v: 1 }, "+", "+", m.rounds.count >= LIMITS.roundsMax)}
       ${ctl(pfx + "RoundsInf", {}, t("roundsInf"), t("roundsInfLabel"), m.rounds.count === 0)}
     </div>
-    <p class="tiny note mt4">${t("roundsCountQ")}</p>` : "";
+    <p class="tiny note mt4">${t("roundsCountQ")}</p>
+    </div>` : "";
   const timerCtl = m.timer.on ? `<p class="tiny note mt8">${t("timerNote")}</p>` : "";
   const targetCtl = m.target.on ? `
     <div data-a="noop">
@@ -1538,9 +1545,28 @@ function cacheCards(cards) {
   S.players.forEach((p, i) => { S.cardCache[p.id] = cards[i]; });
 }
 
+/* Sygnatura nagłówka gry: które moduły są włączone (zmiana = przebudowa nagłówka, B1) */
+function headerSig() { const m = S.modules; return m ? [m.rounds.on, m.target.on, m.timer.on, m.dice.on].join() : ""; }
+function forceGameHeader() {
+  const hdr = app.querySelector(".header-row.sticky");
+  if (hdr) hdr.dataset.sig = ""; // wymusi przebudowę w najbliższym partialRenderGame
+}
+
 function partialRenderGame() {
   const undoBtn = app.querySelector('[data-a="undo"]');
   if (undoBtn) undoBtn.disabled = !S.history.length;
+
+  /* B1: nagłówek gry (ikony/status modułów) musi nadążyć za przełączeniem modułu
+     ołówkiem — partialRender aktualizuje tylko istniejące elementy, więc po zmianie
+     zestawu wymuszamy przebudowę nagłówka. */
+  const hdr = app.querySelector(".header-row.sticky");
+  if (hdr && hdr.dataset.sig !== headerSig()) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = viewGame();
+    const nh = tmp.querySelector(".header-row.sticky");
+    if (nh) { nh.dataset.sig = headerSig(); hdr.replaceWith(nh); }
+    else hdr.remove();
+  }
 
   /* pasek statusu (runda / cel) — aktualizowany w miejscu, bez przebudowy nagłówka */
   const rb = app.querySelector('[data-a="nextRound"]');
@@ -1559,9 +1585,23 @@ function partialRenderGame() {
     if (sameOrder && S.cardCache) {
       S.players.forEach((p, i) => {
         if (S.cardCache[p.id] !== cards[i]) {
+          /* A1: podmiana karty gubi fokus klawiatury (spada na body) — zapamiętujemy
+             kliknięty przycisk i po podmianie przywracamy fokus na jego odpowiednik */
+          const ae = document.activeElement;
+          const sig = ae && ae.dataset && ae.dataset.a
+            ? [ae.dataset.a, ae.dataset.id, ae.dataset.v].join("\u0001")
+            : null;
           const tmp = document.createElement("div");
           tmp.innerHTML = cards[i];
           scroll.replaceChild(tmp.firstElementChild, existing[i]);
+          if (sig) {
+            const [da, did, dv] = sig.split("\u0001");
+            let sel = '[data-a="' + esc(da) + '"]';
+            if (did !== "undefined" && did !== undefined && did !== "") sel += '[data-id="' + esc(did) + '"]';
+            if (dv !== "undefined" && dv !== undefined && dv !== "") sel += '[data-v="' + esc(dv) + '"]';
+            const again = scroll.querySelector(sel);
+            if (again && !again.disabled) again.focus();
+          }
         }
       });
     } else {
@@ -1622,7 +1662,7 @@ function restoreFocus() {
   if (S.lastFocus && document.contains(S.lastFocus) && typeof S.lastFocus.focus === "function") S.lastFocus.focus();
   S.lastFocus = null;
 }
-function setScreen(s) { S.dialog = null; S.editDraft = null; S.dieDraft = null; S.screen = s; render(); window.scrollTo(0, 0); }
+function setScreen(s) { hideUndoToast(); S.dialog = null; S.editDraft = null; S.dieDraft = null; S.screen = s; render(); window.scrollTo(0, 0); }
 function openDialogFn(d) {
   if (!document.querySelector(".dialog-back")) S.lastFocus = document.activeElement;
   S.dialog = d;
@@ -1655,14 +1695,26 @@ function addGroupIfNew(players) {
   }
 }
 
+/* Zestaw modułów z ustawień domyślnych (B2): używany, gdy startujemy grę
+   z zapisanego składu bez przejścia przez ekran NOWA GRA. */
+function modulesFromDefaults() {
+  const dm = S.settings.defaultModules;
+  return {
+    draw: { on: !!dm.draw }, rounds: { on: !!dm.rounds, count: 9, current: 1 },
+    timer: { on: !!dm.timer, elapsed: 0, startedAt: null },
+    target: { on: !!dm.target, value: 100 }, dice: { on: !!dm.dice }
+  };
+}
+
 function startGame(players) {
   archiveResume();
   S.players = players.map((p, i) => ({ id: String(i), name: p.name, color: p.color, score: 0 }));
   S.pending = {};
   S.history = [];
   S.cardCache = null;
-  /* moduły gry: szkic z ekranu NOWA GRA staje się stanem rozgrywki */
-  S.modules = sanitizeModules(S.setupModules || null);
+  /* moduły gry: szkic z ekranu NOWA GRA; po zakończeniu gry (finishGame) szkic
+     znika, więc start zapisanego składu bierze zestaw domyślny z ustawień (B2) */
+  S.modules = sanitizeModules(S.setupModules || modulesFromDefaults());
   S.modules.rounds.current = 1;
   if (S.modules.timer.on) S.modules.timer.elapsed = 0, S.modules.timer.startedAt = Date.now();
   applyTargetFlags();
@@ -1808,18 +1860,22 @@ const ACTIONS = {
     m.on = !m.on;
     if (k === "timer") { m.on ? timerStart() : timerStop(); }
     if (k === "target") { m.on ? applyTargetFlags() : S.players.forEach(p => { p.targetHit = false; }); }
+    persistGame(); // zmiana modułu wchodzi do autozapisu od razu (B1)
+    forceGameHeader(); // ...i odświeża nagłówek gry (ikony/status modułów), B1
     render();
   },
   editModRounds(d) {
     const r = S.modules && S.modules.rounds;
     if (!r || !r.on) return;
     r.count = Math.max(0, Math.min(LIMITS.roundsMax, (r.count || 0) + Number(d)));
+    persistGame(); // zmiana wchodzi do autozapisu od razu
     render();
   },
   editModRoundsInf() {
     const r = S.modules && S.modules.rounds;
     if (!r || !r.on) return;
     r.count = 0;
+    persistGame();
     render();
   },
   updateEditTarget(v) {
@@ -1828,6 +1884,12 @@ const ACTIONS = {
     const n = Math.trunc(Number(String(v).replace(/[^0-9]/g, "")));
     if (Number.isFinite(n) && n > 0) m.value = Math.min(LIMITS.targetMax, n);
     applyTargetFlags();
+    /* pusta/zerowa wartość nie zostaje w modelu (B8): przy zmianie (blur) przywracamy
+       w polu wartość z modelu, żeby pole i stan nie pokazywały różnych rzeczy */
+    const inp = document.getElementById("editTarget");
+    if (inp && String(inp.value) !== String(m.value)) inp.value = m.value;
+    const tb = app.querySelector('[data-stat="target"]');
+    if (tb) tb.textContent = "\u2691" + m.value;
   },
 
   /* licznik rund: klik w status potwierdza przejście do kolejnej rundy */
@@ -1964,6 +2026,7 @@ const ACTIONS = {
     openDialogFn({ type: "exitGame", pending: Object.keys(S.pending).length > 0 });
   },
   exitToMenu() {
+    hideUndoToast();
     timerStop(); // wyjście do menu zatrzymuje zegar (wznowienie go kontynuuje)
     persistGame();
     S.resume = toResume(S.players, S.history, lastPersistAt || Date.now(), S.modules);
@@ -2339,7 +2402,7 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Tab" && S.dialog) {
     const dlg = document.querySelector(".dialog");
     if (!dlg) return;
-    const focusables = Array.from(dlg.querySelectorAll("button, input, select")).filter(x => !x.disabled);
+    const focusables = Array.from(dlg.querySelectorAll('button, input, select, [tabindex]:not([tabindex="-1"])')).filter(x => !x.disabled);
     if (!focusables.length) return;
     const first = focusables[0], last = focusables[focusables.length - 1], active = document.activeElement;
     if (!dlg.contains(active)) { e.preventDefault(); first.focus(); }
