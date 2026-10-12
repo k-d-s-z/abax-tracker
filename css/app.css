@@ -173,7 +173,8 @@
   .dot { width:var(--tap); height:var(--tap); background:var(--pc); border:2px solid var(--bg); border-radius:50%; cursor:pointer; flex-shrink:0; transition:transform .15s; padding:0; }
   .dot.sel { border-color:#fff; transform:scale(1.1); box-shadow: 0 0 12px var(--accent); }
   /* zajęty kolor: widoczny (nie niewidzialna plamka), ale wyraźnie przekreślony */
-  .dot:disabled { opacity:.55; pointer-events:none; background-image:linear-gradient(45deg, transparent 43%, rgba(19,14,10,.85) 43%, rgba(19,14,10,.85) 57%, transparent 57%); }
+  /* zajęty kolor: pusta ramka zamiast kropki (czytelny znak „niedostępny”) */
+  .dot:disabled { background:transparent; border:2px dashed var(--brown-500); box-shadow:none; opacity:1; pointer-events:none; }
   /* brązowy (c10) słabo widoczny na ciemnym tle — obwódka jak przy czarnym */
   .dot.c10 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4); }
   .dot.sel.c10 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4), 0 0 12px var(--accent); }
