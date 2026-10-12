@@ -81,7 +81,7 @@ jobs:
           }
 
           let browser = null;
-          try {
+          async function main() {
             if (!(await waitForPort(BASE + '/index.html'))) {
               console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
             }
@@ -126,6 +126,9 @@ jobs:
               process.exitCode = 1; return;
             }
             console.log(`OK: smoke + harness ?test (${r.passed}/${r.total})`);
+          }
+          try {
+            await main();
           } finally {
             if (browser) await browser.close().catch(() => {});
             server.kill();
@@ -229,7 +232,7 @@ jobs:
           ];
 
           let browser = null;
-          try {
+          async function main() {
             if (!(await waitForPort(BASE + '/index.html'))) {
               console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
             }
@@ -274,6 +277,9 @@ jobs:
             } else {
               console.log('OK: brak naruszeń krytycznych/poważnych WCAG 2.x AA');
             }
+          }
+          try {
+            await main();
           } finally {
             if (browser) await browser.close().catch(() => {});
             server.kill();
