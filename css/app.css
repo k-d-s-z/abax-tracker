@@ -276,6 +276,8 @@
 
   .dialog-back { position:fixed; inset:0; background:rgba(var(--ink-rgb), 0.88); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; }
   .dialog { background:var(--card-inner); border:1px solid var(--accent); padding:24px; width:100%; max-width:340px; margin:0 auto; animation:dialogIn .18s ease-out; box-shadow:var(--shadow-3); border-radius:12px; max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y:auto; }
+  /* re-render otwartego dialogu (np. wybór koloru) nie odtwarza animacji */
+  .dialog-back[data-anim="off"] .dialog { animation: none; }
   .dialog h3 { font-size: calc(20px * var(--fs-mult)); margin-bottom:12px; color:var(--text-light); text-align:center; border-bottom:1px solid var(--border); padding-bottom:8px; font-weight:800; }
   .dialog-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
 

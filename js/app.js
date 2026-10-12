@@ -1226,7 +1226,7 @@ function viewSettings() {
 /* ================================================================
    7. DIALOGI (każdy ma tytuł z id="dlgTitle" → aria-labelledby)
    ================================================================ */
-function dialogHtml() {
+function dialogHtml(noAnim) {
   if (!S.dialog) return "";
   const d = S.dialog;
   const title = s => `<h3 id="dlgTitle">${s}</h3>`;
@@ -1461,7 +1461,7 @@ function dialogHtml() {
       </div>`;
   }
 
-  return `<div class="dialog-back" data-dlg="${d.type}"${noBack ? "" : ' data-a="dialogBackdrop"'}>
+  return `<div class="dialog-back" data-dlg="${d.type}"${noBack ? "" : ' data-a="dialogBackdrop"'} data-anim="${noAnim ? "off" : "on"}">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">${inner}</div></div>`;
 }
 
@@ -1563,7 +1563,11 @@ function render() {
   else if (S.screen === "settings") html = viewSettings();
   else html = viewGame();
 
-  html += dialogHtml();
+  /* Dialog już otwarty (ten sam typ) → bez animacji otwarcia; inaczej każdy
+     re-render (np. klik w kolor gracza) odtwarzałby dialogIn i ekran „migał”. */
+  const sameDlg = S.dialog && app.querySelector(".dialog-back") &&
+    app.querySelector(".dialog-back").dataset.dlg === S.dialog.type;
+  html += dialogHtml(sameDlg);
   app.innerHTML = html;
 
   /* Przywrócenie fokusu aktywnego pola (np. podczas pisania) */
