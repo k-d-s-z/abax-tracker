@@ -339,9 +339,9 @@
   }
 
   /* ===== Kolory graczy: klasy z białej listy (indeks palety) zamiast inline style ===== */
-  .c0 { --pc:#e2e8f0; } .c1 { --pc:#38bdf8; } .c2 { --pc:#0ea5e9; } .c3 { --pc:#34d399; }
-  .c4 { --pc:#10b981; } .c5 { --pc:#facc15; } .c6 { --pc:#fb923c; } .c7 { --pc:#f43f5e; }
-  .c8 { --pc:#f472b6; } .c9 { --pc:#a78bfa; } .c10 { --pc:#8b5cf6; } .c11 { --pc:#0a0a0a; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
+  .c0 { --pc:#FFFFFF; } .c1 { --pc:#E53935; } .c2 { --pc:#1E88E5; } .c3 { --pc:#43A047; }
+  .c4 { --pc:#FDD835; } .c5 { --pc:#757575; } .c6 { --pc:#FB8C00; } .c7 { --pc:#8E24AA; }
+  .c8 { --pc:#D81B60; } .c9 { --pc:#00ACC1; } .c10 { --pc:#6D4C41; } .c11 { --pc:#000000; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
   .player-card { border-left:4px solid var(--pc); }
   .list-item.accent { border-left-color:var(--pc); }
   .pos { color:var(--green); } .neg { color:var(--red); }
