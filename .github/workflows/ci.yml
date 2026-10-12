@@ -2,15 +2,22 @@
 # Umieść jako: .github/workflows/ci.yml
 #
 # Joby:
-#   1. tests      — aplikacja w prawdziwej przeglądarce (Playwright): brak błędów konsoli
-#                   + wbudowany harness ?test (szukamy "[FAIL]" w konsoli)
-#   2. lighthouse — Lighthouse CI na statycznej stronie (bez builda)
-#   3. a11y-axe   — skan dostępności axe (WCAG 2.x AA)
+#   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
+#        a) brak błędów konsoli przy starcie
+#        b) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
+#           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
+#   2. lighthouse — Lighthouse CI z progami (assert, C6)
+#   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
+#                  i dialogów; fail przy naruszeniach krytycznych/poważnych (C5)
 #
 # Uwaga: Playwright i http-server instalujemy LOKALNIE w katalogu ci-workdir
 # (npm install -g + import w .mjs nie działa — Node nie widzi globalnych pakietów
 # przy importach ES). Serwowanie aplikacji i uruchamianie testu w jednym kroku,
 # bo proces w tle nie przeżywa końca kroku, gdy katalog zostanie sprzątnięty.
+#
+# TODO (docelowo): package.json + package-lock.json w repo i `npm ci` zamiast
+# niepiętych wersji (C4); akcje przypiąć do commit-SHA i włączyć Dependabota
+# dla ekosystemu github-actions.
 
 name: CI
 
@@ -20,6 +27,13 @@ on:
   pull_request:
     branches: [main]
 
+# zasada najmniejszych uprawnień (C4)
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'   # jedno LTS dla wszystkich jobów (C3)
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -28,7 +42,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install deps (lokalnie, nie globalnie)
         run: |
@@ -53,12 +67,25 @@ jobs:
 
           const BASE = 'http://127.0.0.1:8000';
 
-          // start serwera w tle Z TEGO SAMEGO procesu testu — nie może zginąć między krokami
+          // start serwera w tle Z TEGO SAMEGO procesu testu
           const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
-          await new Promise(r => setTimeout(r, 2000)); // chwila na start serwera
 
+          // czekamy, aż port naprawdę odpowie (nie sztywny sleep, C2)
+          async function waitForPort(url, ms = 15000) {
+            const deadline = Date.now() + ms;
+            while (Date.now() < deadline) {
+              try { await fetch(url); return true; }
+              catch { await new Promise(r => setTimeout(r, 250)); }
+            }
+            return false;
+          }
+
+          let browser = null;
           try {
-            const browser = await chromium.launch();
+            if (!(await waitForPort(BASE + '/index.html'))) {
+              console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
+            }
+            browser = await chromium.launch();
             const page = await browser.newPage();
 
             const errors = [];
@@ -69,29 +96,38 @@ jobs:
             await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
             if (errors.length) {
               console.error('Błędy konsoli przy starcie:', errors);
-              process.exit(1);
+              process.exitCode = 1; return;
             }
 
             // 2. Kluczowa struktura: kontener aplikacji + toast
             for (const sel of ['#app', '#toast']) {
               if (!(await page.locator(sel).count())) {
                 console.error('Brak elementu: ' + sel);
-                process.exit(1);
+                process.exitCode = 1; return;
               }
             }
 
-            // 3. Wbudowany harness ?test — runSelfTests() loguje "[OK ] nazwa" / "[FAIL] nazwa"
+            // 3. Wbudowany harness ?test — wynik bezpośrednio z runSelfTests() (C1):
+            //    wyjątek w harnessie lub niezgodność passed/total = FAIL,
+            //    komunikat o błędach trafia do logu, a job kończy się czerwono.
             await page.goto(BASE + '/index.html?test', { waitUntil: 'networkidle' });
-            await page.waitForTimeout(2000);
-            const fails = errors.filter(e => /\[FAIL\]/.test(e));
-            if (fails.length) {
-              console.error('Wbudowany harness zgłosił błędy:\n' + fails.join('\n'));
-              process.exit(1);
+            const r = await page.evaluate(() => {
+              try {
+                const res = window.__abaxTests();
+                return { ok: true, passed: res.passed, total: res.total,
+                         failed: res.results.filter(x => !x.ok).map(x => x.name) };
+              } catch (e) {
+                return { ok: false, error: String(e && e.stack ? e.stack : e) };
+              }
+            });
+            if (!r.ok || r.passed !== r.total || errors.length) {
+              console.error('Harness ?test nie przeszedł:', JSON.stringify(r, null, 2));
+              if (errors.length) console.error('Błędy konsoli:', errors);
+              process.exitCode = 1; return;
             }
-
-            console.log('OK: smoke + harness ?test');
-            await browser.close();
+            console.log(`OK: smoke + harness ?test (${r.passed}/${r.total})`);
           } finally {
+            if (browser) await browser.close().catch(() => {});
             server.kill();
           }
           EOF
@@ -103,9 +139,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Akcja wymaga wskazania, co audytować: bez `urls` ani `configPath`
-      # kończy się błędem w kilka sekund. Dla katalogu statycznego potrzebny
-      # jest plik konfiguracyjny z ci.collect.staticDistDir.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Progi (C6): job NIE przechodzi, jeśli wynik spadnie poniżej baseline.
       - name: Write lighthouserc
         run: |
           cat > lighthouserc.json <<'EOF'
@@ -114,6 +152,14 @@ jobs:
               "collect": {
                 "staticDistDir": ".",
                 "numberOfRuns": 3
+              },
+              "assert": {
+                "assertions": {
+                  "categories:accessibility": ["error", { "minScore": 0.95 }],
+                  "categories:best-practices": ["error", { "minScore": 0.95 }],
+                  "categories:performance": ["error", { "minScore": 0.9 }],
+                  "categories:seo": ["warn", { "minScore": 0.9 }]
+                }
               }
             }
           }
@@ -126,8 +172,6 @@ jobs:
           uploadArtifacts: true
           temporaryPublicStorage: true
           # Aplikacja mobile-first: domyślny preset (mobile).
-          # Progi dokręć do baseline po pierwszym stabilnym przebiegu
-          # (sekcja ci.assert w lighthouserc.json).
 
   a11y-axe:
     runs-on: ubuntu-latest
@@ -137,28 +181,102 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
 
+      # C5: axe działa wewnątrz Playwright — jeden Chromium (nieparowana para
+      # Chrome/ChromeDriver znika), skanujemy realne ekrany aplikacji, nie tylko home.
       - name: Install deps (lokalnie)
         run: |
           mkdir -p ci-workdir
           cd ci-workdir
           npm init -y >/dev/null
-          npm install --no-fund --no-audit @axe-core/cli http-server
+          npm install --no-fund --no-audit playwright @axe-core/playwright http-server
 
-      - name: axe scan (ekran główny)
+      - name: Install Chromium for Playwright
+        run: |
+          cd ci-workdir
+          npx playwright install --with-deps chromium
+
+      - name: axe scan (home, NOWA GRA, USTAWIENIA, dialogi)
         env:
           APP_DIR: ${{ github.workspace }}
         run: |
           cd ci-workdir
-          # Chrome na runnerze (154) i ChromeDriver z @axe-core/cli (155) nie pasują
-          # do siebie — instalujemy zsynchronizowaną parę przez browser-driver-manager.
-          npx browser-driver-manager install chrome
-          node ./node_modules/http-server/bin/http-server "$APP_DIR" -p 8000 --silent &
-          SERVER_PID=$!
-          sleep 2
-          # Bez --exit: naruszenia są ZGŁASZANE w logu, ale nie ubijają jobu.
-          # To celowe na starcie — najpierw ustal baseline, potem dodaj --exit,
-          # żeby CI pilnował regresji dostępności.
-          npx axe http://127.0.0.1:8000/index.html --tags wcag2a,wcag2aa,wcag21a,wcag21aa || echo "axe: znaleziono naruszenia (patrz log powyżej) — job nie jest ubijany"
-          kill $SERVER_PID
+          cat > a11y.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import { AxeBuilder } from '@axe-core/playwright';
+          import { spawn } from 'child_process';
+
+          const BASE = 'http://127.0.0.1:8000';
+          const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
+
+          async function waitForPort(url, ms = 15000) {
+            const deadline = Date.now() + ms;
+            while (Date.now() < deadline) {
+              try { await fetch(url); return true; }
+              catch { await new Promise(r => setTimeout(r, 250)); }
+            }
+            return false;
+          }
+
+          // ekrany do skanowania: [nazwa, akcja prowadząca do ekranu]
+          const SCREENS = [
+            ['home', null],
+            ['setup-nowa-gra', '[data-a="newGame"]'],
+            ['setup-dodaj-gracza', '[data-a="openAddPlayer"]'],
+            ['settings', '[data-a="openSettings"]'],
+            ['settings-dodaj-kosc', '[data-a="addDie"]'],
+          ];
+
+          let browser = null;
+          try {
+            if (!(await waitForPort(BASE + '/index.html'))) {
+              console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
+            }
+            browser = await chromium.launch();
+            const page = await browser.newPage();
+            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+
+            let blocking = [];
+            for (const [name, action] of SCREENS) {
+              if (action) {
+                const el = page.locator(action).first();
+                if (await el.count()) { await el.click(); await page.waitForTimeout(150); }
+                else { console.warn(`Pominięto ${name}: brak ${action}`); continue; }
+              }
+              const res = await new AxeBuilder({ page })
+                .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+                .analyze();
+              const serious = res.violations.filter(v => ['critical', 'serious'].includes(v.impact));
+              const moderate = res.violations.filter(v => v.impact === 'moderate');
+              if (res.violations.length) {
+                console.log(`[axe] ${name}: ${res.violations.length} naruszeń` +
+                  ` (${serious.length} krytycznych/poważnych, ${moderate.length} umiarkowanych)`);
+                for (const v of res.violations) {
+                  console.log(`  - [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} węzłów)`);
+                }
+              } else {
+                console.log(`[axe] ${name}: czysto`);
+              }
+              blocking = blocking.concat(serious.map(v => `${name}: [${v.impact}] ${v.id} — ${v.help}`));
+              // powrót do home przed kolejnym ekranem
+              if (action) {
+                const back = page.locator('[data-a="closeDialog"], [data-a="backHome"]').first();
+                if (await back.count()) { await back.click().catch(() => {}); await page.waitForTimeout(150); }
+                const back2 = page.locator('[data-a="backHome"]').first();
+                if (await back2.count()) { await back2.click().catch(() => {}); await page.waitForTimeout(150); }
+              }
+            }
+            // po ustaleniu baseline zamień poniższy blok na: if (blocking.length) → exit 1
+            if (blocking.length) {
+              console.error('NARUSZENIA KRYTYCZNE/POWAŻNE:\n' + blocking.join('\n'));
+              process.exitCode = 1;
+            } else {
+              console.log('OK: brak naruszeń krytycznych/poważnych WCAG 2.x AA');
+            }
+          } finally {
+            if (browser) await browser.close().catch(() => {});
+            server.kill();
+          }
+          EOF
+          node a11y.mjs
