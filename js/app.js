@@ -1171,8 +1171,21 @@ function viewSettings() {
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
     </div>
     <div class="scroll">
-      <p class="sub">${t("savedGames")}</p>
-      <div class="card">${savesHtml}</div>
+      <p class="sub">${t("language")}</p>
+      <div class="card">
+        <div class="row">
+          <button class="lang-btn${S.settings.lang === "pl" ? " sel" : ""}" ${act("setLang", { v: "pl" })}>POLSKI</button>
+          <button class="lang-btn${S.settings.lang === "en" ? " sel" : ""}" ${act("setLang", { v: "en" })}>ENGLISH</button>
+        </div>
+        <p class="tiny tc note mt10">${t("langNote")}</p>
+      </div>
+      <p class="sub">${t("quickButtons")}</p>
+      <div class="card">
+        ${btnRows}
+        <button class="btn-outline mt full"${vals.length >= MAX_BUTTON_PAIRS ? " disabled" : ""} data-a="addButtonValue">${t("addPair")}</button>
+        <p class="tiny tc note mt10">${t("onCard")} ${vals.length * 2 + 2} ${t("buttonsCount1")}</p>
+        <p class="tiny note mt8">${t("buttonsTip")}</p>
+      </div>
       <p class="sub">${t("fontSize")}</p>
       <div class="card">${fontHtml}</div>
       <p class="sub">${t("screenTitle")}</p>
@@ -1188,27 +1201,14 @@ function viewSettings() {
         </label>`).join("")}
         <p class="tiny note mt8">${t("defaultModulesNote")}</p>
       </div>
-      <p class="sub">${t("quickButtons")}</p>
-      <div class="card">
-        ${btnRows}
-        <button class="btn-outline mt full"${vals.length >= MAX_BUTTON_PAIRS ? " disabled" : ""} data-a="addButtonValue">${t("addPair")}</button>
-        <p class="tiny tc note mt10">${t("onCard")} ${vals.length * 2 + 2} ${t("buttonsCount1")}</p>
-        <p class="tiny note mt8">${t("buttonsTip")}</p>
-      </div>
       <p class="sub">${t("diceSection")}</p>
       <div class="card">
         ${dieRows}
         <button class="btn-outline mt full"${S.settings.dice.length >= LIMITS.diceTypes ? " disabled" : ""} data-a="addDie">${t("addDie")}</button>
         <p class="tiny tc note mt10">${t("diceSettingsNote")}</p>
       </div>
-      <p class="sub">${t("language")}</p>
-      <div class="card">
-        <div class="row">
-          <button class="lang-btn${S.settings.lang === "pl" ? " sel" : ""}" ${act("setLang", { v: "pl" })}>POLSKI</button>
-          <button class="lang-btn${S.settings.lang === "en" ? " sel" : ""}" ${act("setLang", { v: "en" })}>ENGLISH</button>
-        </div>
-        <p class="tiny tc note mt10">${t("langNote")}</p>
-      </div>
+      <p class="sub">${t("savedGames")}</p>
+      <div class="card">${savesHtml}</div>
       <p class="sub">${t("backup")}</p>
       <div class="card">
         <button class="btn-outline mt full" data-a="exportData">${t("exportBtn")}</button>
