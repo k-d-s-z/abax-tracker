@@ -627,7 +627,15 @@ let lastPersist = "", lastPersistAt = 0;
 /* Migawka gry do wznowienia: dane przechodzą tę samą sanityzację co zapisy. null, gdy brak wpisów punktacji. */
 function toResume(players, history, savedAt, modules) {
   const e = sanitizeSaves([{ name: "x", players: players, history: history, savedAt: savedAt, modules: modules || null }])[0];
-  return e && e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt, modules: e.modules } : null;
+  if (!e) return null;
+  /* B3: zegar w zapisie może mieć startedAt sprzed zamknięcia aplikacji —
+     doliczamy przerwę do elapsed i zatrzymujemy, żeby timer nie liczył czasu offline. */
+  const m = e.modules;
+  if (m && m.timer && m.timer.on && m.timer.startedAt) {
+    m.timer.elapsed = Math.max(0, (m.timer.elapsed || 0) + Math.max(0, (e.savedAt || m.timer.startedAt) - m.timer.startedAt));
+    m.timer.startedAt = null;
+  }
+  return e.history.length ? { players: e.players, history: e.history, savedAt: e.savedAt, modules: e.modules } : null;
 }
 function loadResume() {
   const d = readStore(LS_GAME_KEY);
@@ -712,7 +720,13 @@ const Logic = {
     if (i < 0) return false;
     const h = st.history[i];
     const p = Logic.findPlayer(st, h.id);
-    if (p) p.score -= h.delta;
+    if (p) {
+      const next = p.score - h.delta;
+      /* jak w editEntry: nie pozwól usunąć wpisu, jeśli wynik wyszedłby poza ±limit
+         (inaczej autozapis byłby potem odrzucony w całości — utrata gry, B4) */
+      if (Math.abs(next) > LIMITS.scoreAbs && Math.abs(next) > Math.abs(p.score)) return false;
+      p.score = next;
+    }
     st.history.splice(i, 1);
     return true;
   },
@@ -2147,10 +2161,16 @@ const ACTIONS = {
   confirmImportData() {
     const data = S.pendingImport;
     if (!data) { closeDialog(); return; }
-    S.groups = data.groups;
-    saveGroups(S.groups);
-    S.saves = data.saves;
-    saveSaves(S.saves);
+    /* Podmieniamy tylko sekcje obecne w pliku (B5): import samego settings
+       nie może czyścić składów ani zapisanych gier. */
+    if (Array.isArray(data.groups)) {
+      S.groups = data.groups;
+      saveGroups(S.groups);
+    }
+    if (Array.isArray(data.saves)) {
+      S.saves = data.saves;
+      saveSaves(S.saves);
+    }
     if (data.settings) {
       S.settings = data.settings;
       saveSettings();

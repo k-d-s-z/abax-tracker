@@ -1,7 +1,7 @@
 /* Abax Tracker — service worker.
    Zmień numer w CACHE przy każdej publikacji, która zmienia plik z CORE (CI to wymusza:
    job "tests" zawodzi, gdy CORE się zmieniło, a linia CACHE nie). */
-const CACHE = "abax-tracker-v31";
+const CACHE = "abax-tracker-v32";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./css/app.css", "./js/app.js"];
 const OPTIONAL = ["./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
 const NAV_TIMEOUT = 3000;              // po tylu ms bez odpowiedzi sieci pokazujemy wersję z cache
@@ -10,8 +10,10 @@ const MATCH = { ignoreSearch: true };  // ?test itp. nie tworzy osobnych wpisów
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE).then(async (c) => {
-      await c.addAll(CORE); // pliki krytyczne: błąd = brak instalacji
-      await Promise.all(OPTIONAL.map((u) => c.add(u).catch(() => {}))); // brak ikony nie blokuje instalacji
+      /* cache:"reload" omija HTTP cache przeglądarki — nowy numer CACHE
+         zawsze odpowiada świeżej treści (P1) */
+      await c.addAll(CORE.map((u) => new Request(u, { cache: "reload" }))); // pliki krytyczne: błąd = brak instalacji
+      await Promise.all(OPTIONAL.map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {}))); // brak ikony nie blokuje instalacji
     })
   );
   self.skipWaiting();
@@ -19,9 +21,11 @@ self.addEventListener("install", (e) => {
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    /* kasujemy tylko WŁASNE stare wersje — na github.io Cache Storage jest współdzielone
+       z innymi projektami (P2) */
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith("abax-tracker-") && k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 function store(req, res) {
@@ -29,7 +33,8 @@ function store(req, res) {
     const copy = res.clone();
     const url = new URL(req.url);
     url.search = ""; // jeden wpis na zasób, niezależnie od parametrów w adresie
-    caches.open(CACHE).then((c) => c.put(url.href, copy));
+    /* zapis do cache musi się zmieścić w cyklu życia SW (P3) */
+    if (self.registration) { self.registration.active && caches.open(CACHE).then((c) => c.put(url.href, copy)); }
   }
   return res;
 }
