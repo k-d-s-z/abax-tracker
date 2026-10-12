@@ -237,7 +237,10 @@ jobs:
               console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
             }
             browser = await chromium.launch();
-            const page = await browser.newPage();
+            // AxeBuilder wymaga strony z osobnego kontekstu (browser.newContext()),
+            // nie bezpośrednio z browser.newPage()
+            const context = await browser.newContext();
+            const page = await context.newPage();
             await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
 
             let blocking = [];
