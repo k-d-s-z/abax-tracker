@@ -59,7 +59,7 @@ const STR = {
     storageCorrupt: "Uszkodzone dane lokalne — odzyskano kopię zapasową",
     storageCorruptNoBak: "Uszkodzone dane lokalne — rozpoczęto od nowa",
     dragHandle: "Przenieś gracza", colorTaken: "zajęty",
-    colorNames: ["srebrny","niebieski","błękitny","zielony","ciemnozielony","żółty","pomarańczowy","czerwony","różowy","fioletowy","indygo","czarny"],
+    colorNames: ["biały","czerwony","niebieski","zielony","żółty","szary","pomarańczowy","fioletowy","różowy","turkusowy","brązowy","czarny"],
     importSkipped: "Pominięto uszkodzone lub nadmiarowe wpisy: {n}.",
     testsOk: "Testy: {p}/{t} OK", testsFail: "TESTY NIE PRZESZŁY: {p}/{t}",
     resumeTitle: "GRA W TOKU", resumeBtn: "WZNÓW GRĘ", resumeMeta: "Zapisano {d} • wpisów punktacji: {n}", discardResume: "Odrzuć niedokończoną grę",
@@ -159,7 +159,7 @@ const STR = {
     storageCorrupt: "Corrupted local data — backup recovered",
     storageCorruptNoBak: "Corrupted local data — started fresh",
     dragHandle: "Move player", colorTaken: "taken",
-    colorNames: ["silver","blue","azure","green","dark green","yellow","orange","red","pink","purple","indigo","black"],
+    colorNames: ["white","red","blue","green","yellow","grey","orange","purple","pink","cyan","brown","black"],
     importSkipped: "Skipped damaged or surplus entries: {n}.",
     testsOk: "Tests: {p}/{t} OK", testsFail: "TESTS FAILED: {p}/{t}",
     resumeTitle: "GAME IN PROGRESS", resumeBtn: "RESUME GAME", resumeMeta: "Saved {d} • score entries: {n}", discardResume: "Discard unfinished game",
@@ -227,7 +227,10 @@ const ICONS = {
    - kopia zapasowa kluczy (.bak) przed nadpisaniem
    - kwarantanna uszkodzonych danych (.corrupt) i odzyskiwanie
    ================================================================ */
-const PLAYER_COLORS = ["#e2e8f0","#38bdf8","#0ea5e9","#34d399","#10b981","#facc15","#fb923c","#f43f5e","#f472b6","#a78bfa","#8b5cf6","#0a0a0a"];
+const PLAYER_COLORS = ["#FFFFFF","#E53935","#1E88E5","#43A047","#FDD835","#757575","#FB8C00","#8E24AA","#D81B60","#00ACC1","#6D4C41","#000000"];
+/* Poprzednia paleta (do v13) — kolor ze starego zapisu mapujemy na ten sam indeks nowej palety */
+const LEGACY_PLAYER_COLORS = ["#e2e8f0","#38bdf8","#0ea5e9","#34d399","#10b981","#facc15","#fb923c","#f43f5e","#f472b6","#a78bfa","#8b5cf6","#0a0a0a"];
+const cix = c => { let i = PLAYER_COLORS.indexOf(c); return i >= 0 ? i : LEGACY_PLAYER_COLORS.indexOf(c); };
 const MAX_BUTTON_PAIRS = 4;
 const FONT_MIN = 0.8, FONT_MAX = 1.6;
 const SCHEMA_VERSION = 2;
@@ -237,7 +240,7 @@ const LIMITS = {
   importBytes: 2 * 1024 * 1024, // 2 MB
   groups: 50,
   saves: 50,
-  players: PLAYER_COLORS.length, // 8
+  players: PLAYER_COLORS.length, // 12
   name: 20,
   saveName: 40,
   history: 500,
@@ -393,7 +396,8 @@ function sanitizeDice(raw) {
       const o = (f && typeof f === "object") ? f : { t: f };
       let tx = (typeof o.t === "string" || typeof o.t === "number") ? String(o.t).trim().slice(0, LIMITS.faceText) : "";
       if (!tx) tx = String(i + 1);
-      return { t: tx, c: PLAYER_COLORS.indexOf(o.c) >= 0 ? o.c : "" };
+      const ci = cix(o.c);
+      return { t: tx, c: ci >= 0 ? o.c : "" };
     });
     out.push({ id: uniqueId(x.id, seen), name: name, faces: faces });
   }
@@ -430,7 +434,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 
 /* Klasa koloru gracza (.c0–.c7 w CSS). Kolor NIGDY nie trafia do HTML jako wartość —
    tylko jako indeks z białej listy, więc nie da się wstrzyknąć stylu. */
-const cc = color => "c" + Math.max(0, PLAYER_COLORS.indexOf(color));
+const cc = color => "c" + Math.max(0, cix(color));
 
 /* Atrybuty akcji: data-a + opcjonalnie data-id / data-v (zawsze escapowane) */
 const act = (name, o = {}) =>
@@ -558,7 +562,7 @@ function diceLogHtml(d) {
     </li>`).join("")}</ul>`;
 }
 function faceColorLabel(i, c) {
-  const idx = PLAYER_COLORS.indexOf(c);
+  const idx = cix(c);
   return t("faceColor").replace("{n}", i + 1) + ": " + (idx >= 0 ? t("colorNames")[idx] : t("noColor"));
 }
 
@@ -714,7 +718,7 @@ const Logic = {
 };
 
 /* --- Walidacja danych importu (głęboka sanityzacja) --- */
-function sanitizeColor(c) { return PLAYER_COLORS.indexOf(c) >= 0 ? c : PLAYER_COLORS[0]; }
+function sanitizeColor(c) { const i = cix(c); return i >= 0 ? PLAYER_COLORS[i] : PLAYER_COLORS[0]; }
 
 function sanitizePlayers(raw) {
   if (!Array.isArray(raw) || raw.length === 0 || raw.length > LIMITS.players) return null;
@@ -1346,7 +1350,7 @@ function dialogHtml() {
   }
   else if (d.type === "editHistory") {
     const isNeg = d.sign < 0;
-    inner = `${title(t("editEntryTitle"))}
+    inner = `${title(esc(d.player) ? `${t("editEntryTitle")} — ${esc(d.player)}` : t("editEntryTitle"))}
       <p class="tiny tc mt">${t("editEntryHint")}</p>
       <input type="tel" inputmode="numeric" pattern="[0-9]*" id="editHistoryInput" maxlength="6" value="${esc(d.value)}" autocomplete="off" aria-label="${t("enterNumber")}">
       <div class="confirm-row">
@@ -1835,7 +1839,8 @@ const ACTIONS = {
   openEditHistory(hid) {
     const h = S.history.find(x => x.hid === hid);
     if (!h) return;
-    openDialogFn({ type: "editHistory", hid: hid, value: String(Math.abs(h.delta)), sign: h.delta < 0 ? -1 : 1 });
+    const p = S.players.find(x => x.id === h.id);
+    openDialogFn({ type: "editHistory", hid: hid, player: p ? p.name : "", value: String(Math.abs(h.delta)), sign: h.delta < 0 ? -1 : 1 });
   },
   setHistorySign(sign) { if (S.dialog && S.dialog.type === "editHistory") { S.dialog.sign = Number(sign); render(); } },
   saveHistoryEdit() {
@@ -2063,7 +2068,7 @@ const ACTIONS = {
     const dd = S.dieDraft; if (!dd) return;
     const name = dd.name.trim().slice(0, LIMITS.dieName);
     if (!name) { toast(t("dieNameEmpty")); return; }
-    const faces = dd.faces.map((f, i) => ({ t: String(f.t).trim().slice(0, LIMITS.faceText) || String(i + 1), c: PLAYER_COLORS.indexOf(f.c) >= 0 ? f.c : "" }));
+    const faces = dd.faces.map((f, i) => ({ t: String(f.t).trim().slice(0, LIMITS.faceText) || String(i + 1), c: cix(f.c) >= 0 ? f.c : "" }));
     if (dd.id) {
       const idx = S.settings.dice.findIndex(x => x.id === dd.id);
       if (idx >= 0) S.settings.dice[idx] = { id: dd.id, name: name, faces: faces };
