@@ -1610,6 +1610,10 @@ function selectDotDom(color) {
   back.querySelectorAll(".dot.sel").forEach(d => { d.classList.remove("sel"); d.setAttribute("aria-pressed", "false"); });
   btn.classList.add("sel");
   btn.setAttribute("aria-pressed", "true");
+  /* odblokowanie przycisku DODAJ (renderuje się z disabled, dopóki nie ma koloru;
+     bez re-renderu trzeba zdjąć atrybut w miejscu) */
+  const confirm = back.querySelector('[data-a="confirmAddPlayer"]');
+  if (confirm) confirm.disabled = false;
   return true;
 }
 
