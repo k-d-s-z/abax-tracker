@@ -229,6 +229,9 @@
     overflow: hidden;
   }
   .score-btns button:active { background: rgba(var(--accent-rgb), 0.3); border-color: var(--accent); }
+  /* A10: etykieta nie może być ucięta przy dużych wartościach i dużej czcionce —
+     skala czcionki zależna od długości tekstu (JS ustawia klasę), awaryjnie zawijanie */
+  .score-btns button.long-lbl { font-size: calc(0.78 * var(--btn-fs, 14px) * var(--fs-mult)); }
   .score-btns button.amount-btn { border-style: dashed; border-color: var(--border-glow); background: rgba(255,255,255,0.02); color: var(--accent-text); }
 
   .confirm-row { display:flex; gap:10px; margin-top:12px; }
@@ -295,6 +298,10 @@
   .empty { text-align:center; color:var(--text-muted); font-size: calc(14px * var(--fs-mult)); padding:36px 12px; line-height:1.6; font-style:italic; }
   .header-row { display:flex; align-items:center; gap:4px; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; }
   .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--brown-800); border:1px solid var(--accent); color:#fff; font-size: calc(12px * var(--fs-mult)); font-weight:600; padding:10px 20px; z-index:99; animation:toastIn .22s ease-out; box-shadow:var(--shadow-2); border-radius:30px; letter-spacing:0.5px; max-width: 90vw; text-align:center; }
+  /* A8: toast to stabilny live region — chowamy przez przezroczystość (display/hidden
+     wycinałoby element z drzewa dostępności), ekran czytnika ogłasza zmianę tekstu */
+  .toast[hidden] { display:flex; visibility:hidden; pointer-events:none; }
+  .toast { display:flex; align-items:center; }
   .tiny { font-size: calc(11px * var(--fs-mult)); color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px; }
   .mt { margin-top:12px; }
   .winner { font-size: calc(32px * var(--fs-mult)); font-weight:900; background:linear-gradient(135deg, #fff 0%, var(--accent-text) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; padding:8px 0; }
@@ -361,6 +368,9 @@
   .c8 { --pc:#D81B60; } .c9 { --pc:#00ACC1; } .c10 { --pc:#6D4C41; } .c11 { --pc:#000000; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
   .player-card { border-left:4px solid var(--pc); }
   .list-item.accent { border-left-color:var(--pc); }
+  /* A7: czarny (c11) na ciemnym tle — karta gracza i wyróżnione pozycje też z obwódką */
+  .player-card.c11 { border-left-color:#3a3a3a; box-shadow: inset 2px 0 0 rgba(255,255,255,0.35); }
+  .list-item.accent.c11 { border-left-color:#3a3a3a; box-shadow: inset 2px 0 0 rgba(255,255,255,0.35); }
   .pos { color:var(--green); } .neg { color:var(--red); }
   /* czarny (c11) widoczny na ciemnym tle: obwódka/poświata zamiast krycia */
   .dot.c11 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); }
@@ -419,6 +429,11 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
   }
+  /* A9: Windows High Contrast — gradientowe wypełnienia tekstu (-webkit-text-fill-color:
+     transparent) znikają w trybie forced-colors; przywracamy zwykły kolor */
+  @media (forced-colors: active) {
+    h1, .score-num, .winner { background: none; -webkit-background-clip: initial; -webkit-text-fill-color: currentColor; color: canvastext; }
+  }
   .check-row { display:flex; align-items:center; gap:12px; min-height:var(--tap); cursor:pointer; }
   .check-row input { width:22px; height:22px; flex-shrink:0; margin:0; accent-color:var(--accent); cursor:pointer; }
   .check-row span { font-size:calc(14px * var(--fs-mult)); font-weight:600; color:var(--text-light); }
@@ -431,7 +446,10 @@
   .dice-out { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px; min-height:76px; margin-top:16px; }
   .die-tile { min-width:64px; height:64px; padding:0 8px; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.1; overflow-wrap:anywhere; border-radius:12px; border:2px solid var(--accent); background:var(--surface-2); color:var(--text-light); font-size:calc(28px * var(--fs-mult)); font-weight:900; box-shadow:0 4px 15px rgba(0,0,0,.4); }
   .die-tile.long { font-size:calc(16px * var(--fs-mult)); }
-  .die-tile.col { background:var(--pc); border-color:var(--pc); color:var(--ink); }
+  .die-tile.col { background:var(--pc); border-color:var(--pc); }
+  /* A6: kolor tekstu na kolorowej kości wg luminancji tła (fiolet/brąz/róż dają z --ink tylko ~2,5–3,9:1) */
+  .die-tile.col { color:#fff; }
+  .die-tile.col.c0, .die-tile.col.c3, .die-tile.col.c4, .die-tile.col.c5, .die-tile.col.c6, .die-tile.col.c9 { color:var(--ink); }
   .dice-info { min-height:24px; margin-top:8px; text-align:center; font-weight:800; font-size:calc(18px * var(--fs-mult)); color:var(--accent-text); }
   .face-list { max-height:min(320px, 45vh); max-height:min(320px, 45dvh); overflow-y:auto; margin-top:10px; }
   .face-row { display:flex; align-items:center; gap:8px; padding:4px 0; }

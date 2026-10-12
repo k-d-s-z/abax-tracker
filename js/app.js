@@ -5,7 +5,7 @@
    ================================================================ */
 const STR = {
   pl: {
-    title: "ABAX TRACKER", newGame: "+&nbsp; NOWA GRA", newGameTitle: "NOWA GRA",
+    title: "ABAX TRACKER", newGame: "+&nbsp; NOWA GRA", newGameTitle: "NOWA GRA", scoringTitle: "PUNKTACJA",
     savedLineups: "ZAPISANE SKŁADY",
     noLineups: "Brak zapisanych składów.<br>Stwórz nową grę, a skład zapisze się automatycznie.",
     play: "GRAJ", settings: "Ustawienia", settingsTitle: "USTAWIENIA",
@@ -106,7 +106,7 @@ const STR = {
     gameModulesTitle: "MODUŁY"
   },
   en: {
-    title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME",
+    title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME", scoringTitle: "SCORING",
     savedLineups: "SAVED LINEUPS",
     noLineups: "No saved lineups yet.<br>Start a new game and the lineup will be saved automatically.",
     play: "PLAY", settings: "Settings", settingsTitle: "SETTINGS",
@@ -470,6 +470,8 @@ let toastTimer = 0;
 function toast(msg) {
   const el = document.getElementById("toast");
   if (!el) return;
+  el.setAttribute("role", "status");           // A8: live region — czytnik ekranu ogłosi komunikat
+  el.setAttribute("aria-live", "polite");
   el.textContent = msg;
   el.hidden = false;
   el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; // restart animacji
@@ -486,6 +488,8 @@ function undoToast(msg, entry) {
     el = document.createElement("div");
     el.id = "undoToast";
     el.className = "toast toast-undo";
+    el.setAttribute("role", "status");          // A8
+    el.setAttribute("aria-live", "polite");
     document.body.appendChild(el);
   }
   el.textContent = "";
@@ -1051,8 +1055,8 @@ function moduleCardsHtml(m, pfx, inpId, inGame) {
     </div>` : "";
   const diceCtl = m.dice.on ? `<p class="tiny note mt8">${t("diceModNote")}</p>` : "";
   const card = (nameKey, key, body, icon) => `
-    <div class="module-card${m[key].on ? "" : " off"}" ${act(pfx + "Toggle", { v: key })} role="button" tabindex="0" aria-pressed="${m[key].on}">
-      <div class="row">
+    <div class="module-card${m[key].on ? "" : " off"}">
+      <div class="row module-head" ${act(pfx + "Toggle", { v: key })} role="button" tabindex="0" aria-pressed="${m[key].on}">
         <span class="name">${icon ? `<span class="mod-ico">${icon}</span>` : ""}${t(nameKey)}</span>
         <span class="tiny mod-state">${m[key].on ? t("moduleOn") : t("moduleOff")}</span>
       </div>
@@ -1092,7 +1096,9 @@ function scoreButtonsHtml(id) {
   const vals = buttonValues();
   const btn = v => {
     const label = (v > 0 ? "+" : "\u2212") + Math.abs(v);
-    return `<button aria-label="${label}" ${act("pend", { id: id, v: v })}>${label}</button>`;
+    /* A10: długie etykiety (4+ znaki) dostają mniejszą czcionkę — nie są ucinane przy fs 160% */
+    const cls = label.length >= 4 ? " long-lbl" : "";
+    return `<button class="${cls.trim()}" aria-label="${label}" ${act("pend", { id: id, v: v })}>${label}</button>`;
   };
   const minus = `<button class="amount-btn" aria-label="${t("subtractPoints")}" ${act("openCustomAmount", { id: id, v: -1 })}>\u2212\u2026</button>` +
     vals.slice().reverse().map(v => btn(-v)).join("");
@@ -1138,7 +1144,7 @@ function playerCardHtml(p) {
 function viewGame() {
   const cards = S.players.map(playerCardHtml);
   cacheCards(cards);
-  return `<div class="header-row between sticky">
+  return `<h1 class="sr-only">${t("scoringTitle")}</h1><div class="header-row between sticky">
     <span class="row-left">
       <button class="icon-btn" aria-label="${t("backToMenu")}" data-a="askExitGame">${ICONS.back}</button>
     </span>
@@ -1648,6 +1654,11 @@ function render() {
     }
   } else if (S.dialog && !sameDlg) {
     focusDialog(); // tylko przy otwarciu nowego dialogu; re-render wewnątrz (np. +/− rund) nie kradnie fokusu
+  } else if (S.dialog && sameDlg && activeId) {
+    /* A4: krok dialogu się zmienił (np. imię → kolor) i stare pole zniknęło z DOM —
+       fokus musi przejść na nowy dialog, nie ginać na body */
+    const el2 = document.getElementById(activeId);
+    if (!(el2 && typeof el2.focus === "function")) focusDialog();
   }
 }
 
@@ -1662,7 +1673,13 @@ function restoreFocus() {
   if (S.lastFocus && document.contains(S.lastFocus) && typeof S.lastFocus.focus === "function") S.lastFocus.focus();
   S.lastFocus = null;
 }
-function setScreen(s) { hideUndoToast(); S.dialog = null; S.editDraft = null; S.dieDraft = null; S.screen = s; render(); window.scrollTo(0, 0); }
+/* Tytuł dokumentu podąża za ekranem (A5) — czytniki ekranu i historia karty przeglądarki */
+function syncTitle() {
+  const key = { home: "title", setup: "newGameTitle", settings: "settingsTitle", game: "scoringTitle" }[S.screen] || "title";
+  document.title = t(key) + " — Abax Tracker";
+}
+
+function setScreen(s) { hideUndoToast(); S.dialog = null; S.editDraft = null; S.dieDraft = null; S.screen = s; render(); window.scrollTo(0, 0); syncTitle(); }
 function openDialogFn(d) {
   if (!document.querySelector(".dialog-back")) S.lastFocus = document.activeElement;
   S.dialog = d;
