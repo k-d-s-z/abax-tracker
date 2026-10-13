@@ -259,10 +259,31 @@ const LIMITS = {
    gdzie t = napis na ściance (liczba lub tekst), c = kolor z PLAYER_COLORS albo "" (brak). */
 const DEFAULT_DIE = { id: "d6", name: "D6", faces: [1, 2, 3, 4, 5, 6].map(n => ({ t: String(n), c: "" })) };
 
-const LS_KEY = "licznik_punktow_v1";
-const LS_SETTINGS_KEY = "licznik_punktow_settings_v1";
-const LS_SAVES_KEY = "licznik_punktow_saves_v1";
-const LS_GAME_KEY = "licznik_punktow_game_v1"; // autozapis trwającej gry
+/* Prefiks abax_tracker_ (krok 8 audytu): unikalny dla aplikacji — na k-d-s-z.github.io
+   localStorage jest wspólne dla całego origin. Stare klucze licznik_punktow_* są
+   migrowane jednorazowo przy starcie (migrateLegacyKeys). */
+const LS_PREFIX = "abax_tracker_";
+const LS_KEY = LS_PREFIX + "v1";
+const LS_SETTINGS_KEY = LS_PREFIX + "settings_v1";
+const LS_SAVES_KEY = LS_PREFIX + "saves_v1";
+const LS_GAME_KEY = LS_PREFIX + "game_v1"; // autozapis trwającej gry
+const LEGACY_LS_KEYS = [
+  ["licznik_punktow_v1", LS_KEY],
+  ["licznik_punktow_settings_v1", LS_SETTINGS_KEY],
+  ["licznik_punktow_saves_v1", LS_SAVES_KEY],
+  ["licznik_punktow_game_v1", LS_GAME_KEY]
+];
+/* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje */
+function migrateLegacyKeys() {
+  for (const [from, to] of LEGACY_LS_KEYS) {
+    try {
+      if (localStorage.getItem(to) === null) {
+        const raw = localStorage.getItem(from);
+        if (raw !== null) { localStorage.setItem(to, raw); localStorage.removeItem(from); }
+      }
+    } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
+  }
+}
 
 const STORE = { recovered: false, recoveredFromBak: false };
 
@@ -472,6 +493,30 @@ function saveSaves(list) { writeStore(LS_SAVES_KEY, list); }
 
 function applyFontScale() { document.documentElement.style.setProperty("--fs-mult", S.settings.fontScale); }
 function applyLang() { document.documentElement.lang = S.settings.lang; }
+
+/* Stały region aria-live dla wyników (krok 7 audytu): karty są podmieniane przez
+   replaceChild, więc aria-live na .score-num bywa nieogłaszane. Jeden trwały
+   element poza #app ogłasza zmianę wyniku po ✓. */
+function ensureScoreAnnouncer() {
+  let el = document.getElementById("scoreAnnouncer");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "scoreAnnouncer";
+    el.className = "sr-only";
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function announceScore(id) {
+  const p = Logic.findPlayer(S, id);
+  if (!p) return;
+  const el = ensureScoreAnnouncer();
+  el.textContent = "";
+  void el.offsetWidth; // restart ogłoszenia przy tej samej wartości
+  el.textContent = esc(p.name) + ": " + p.score;
+}
 
 /* Toast to osobny element poza #app: nie wywołuje render(), więc nie przebudowuje widoku ani dialogów. */
 let toastTimer = 0;
@@ -1141,7 +1186,7 @@ function playerCardHtml(p) {
     </div>
     <div class="score-row">
       <span class="score-side" aria-hidden="true"></span>
-      <span class="score-num${S.animScore === p.id ? " bump" : ""}" aria-live="polite">${p.score}</span>
+      <span class="score-num${S.animScore === p.id ? " bump" : ""}">${p.score}</span>
       <span class="score-side">${pend ? `<span class="pending ${pend > 0 ? "pos" : "neg"}">${pend > 0 ? "+" + pend : pend}</span>` : ""}</span>
     </div>
     ${scoreButtonsHtml(p.id)}
@@ -1218,15 +1263,15 @@ function viewSettings() {
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
     </div>
     <div class="scroll">
-      <p class="settings-group">${t("settingsGroupPlay")}</p>
-      <p class="sub">${t("quickButtons")}</p>
+      <h2 class="settings-group">${t("settingsGroupPlay")}</h2>
+      <h3 class="sub">${t("quickButtons")}</h3>
       <div class="card">
         ${btnRows}
         <button class="btn-outline mt full"${vals.length >= MAX_BUTTON_PAIRS ? " disabled" : ""} data-a="addButtonValue">${t("addPair")}</button>
         <p class="tiny tc note mt10">${t("onCard")} ${vals.length * 2 + 2} ${t("buttonsCount1")}</p>
         <p class="tiny note mt8">${t("buttonsTip")}</p>
       </div>
-      <p class="sub">${t("defaultModulesSection")}</p>
+      <h3 class="sub">${t("defaultModulesSection")}</h3>
       <div class="card">
         ${[["draw", "moduleDraw"], ["rounds", "moduleRounds"], ["timer", "moduleTimer"], ["target", "moduleTarget"], ["dice", "moduleDice"]].map(k => `<label class="check-row">
           <input type="checkbox" data-mod="${k[0]}"${S.settings.defaultModules[k[0]] ? " checked" : ""}>
@@ -1234,14 +1279,14 @@ function viewSettings() {
         </label>`).join("")}
         <p class="tiny note mt8">${t("defaultModulesNote")}</p>
       </div>
-      <p class="sub">${t("diceSection")}</p>
+      <h3 class="sub">${t("diceSection")}</h3>
       <div class="card">
         ${dieRows}
         <button class="btn-outline mt full"${S.settings.dice.length >= LIMITS.diceTypes ? " disabled" : ""} data-a="addDie">${t("addDie")}</button>
         <p class="tiny tc note mt10">${t("diceSettingsNote")}</p>
       </div>
-      <p class="settings-group">${t("settingsGroupLook")}</p>
-      <p class="sub">${t("language")}</p>
+      <h2 class="settings-group">${t("settingsGroupLook")}</h2>
+      <h3 class="sub">${t("language")}</h3>
       <div class="card">
         <div class="row">
           <button class="lang-btn${S.settings.lang === "pl" ? " sel" : ""}" ${act("setLang", { v: "pl" })}>POLSKI</button>
@@ -1249,17 +1294,17 @@ function viewSettings() {
         </div>
         <p class="tiny tc note mt10">${t("langNote")}</p>
       </div>
-      <p class="sub">${t("fontSize")}</p>
+      <h3 class="sub">${t("fontSize")}</h3>
       <div class="card">${fontHtml}</div>
-      <p class="sub">${t("screenTitle")}</p>
+      <h3 class="sub">${t("screenTitle")}</h3>
       <div class="card">
         <label class="check-row"><input type="checkbox" id="keepAwake"${S.settings.keepAwake ? " checked" : ""}${navigator.wakeLock ? "" : " disabled"}><span>${t("keepAwake")}</span></label>
         <p class="tiny note mt8">${navigator.wakeLock ? t("keepAwakeNote") : t("keepAwakeUnsupported")}</p>
       </div>
-      <p class="settings-group">${t("settingsGroupData")}</p>
-      <p class="sub">${t("savedGames")}</p>
+      <h2 class="settings-group">${t("settingsGroupData")}</h2>
+      <h3 class="sub">${t("savedGames")}</h3>
       <div class="card">${savesHtml}</div>
-      <p class="sub">${t("backup")}</p>
+      <h3 class="sub">${t("backup")}</h3>
       <div class="card">
         <button class="btn-outline mt full" data-a="exportData">${t("exportBtn")}</button>
         <button class="btn-outline mt full" data-a="importClick">${t("importDataBtn")}</button>
@@ -1747,6 +1792,7 @@ function startGame(players) {
   /* moduły gry: szkic z ekranu NOWA GRA; po zakończeniu gry (finishGame) szkic
      znika, więc start zapisanego składu bierze zestaw domyślny z ustawień (B2) */
   S.modules = sanitizeModules(S.setupModules || modulesFromDefaults());
+  S.setupModules = null; // F3: szkic zużyty — GRAJ na zapisanym składzie zawsze bierze zestaw domyślny
   S.modules.rounds.current = 1;
   if (S.modules.timer.on) S.modules.timer.elapsed = 0, S.modules.timer.startedAt = Date.now();
   applyTargetFlags();
@@ -1791,7 +1837,7 @@ const ACTIONS = {
     setScreen("setup");
   },
   openSettings() { setScreen("settings"); },
-  backHome() { setScreen("home"); },
+  backHome() { S.setupModules = null; setScreen("home"); }, // F3: powrót z NOWA GRA porzuca szkic modułów
   dialogBackdrop(el, e) { if (e.target === el) closeDialog(); },
   closeDialog() { closeDialog(); },
   noop() {}, // klik wewnątrz karty modułu (np. pole celu) nie przełącza modułu
@@ -1948,6 +1994,7 @@ const ACTIONS = {
     delete S.pending[id];
     S.animScore = id;
     checkTargetHit(Logic.findPlayer(S, id));
+    announceScore(id); // stały region aria-live (krok 7): czytnik ogłosi „Ania: 12"
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
     render();
     setTimeout(() => { if (S.animScore === id) { S.animScore = null; render(); } }, 180);
@@ -2100,6 +2147,7 @@ const ACTIONS = {
     applyLang();
     saveSettings();
     render();
+    syncTitle(); // F4: tytuł karty nadąża za zmianą języka
   },
   addButtonValue() {
     const existing = S.settings.buttonValues;
@@ -2395,11 +2443,10 @@ document.addEventListener("change", function (e) {
 });
 
 document.addEventListener("keydown", function (e) {
-  /* Escape zamyka dialog — ale respektuje noBack (F5, audyt): szkic edycji kości ma
-     przetrwać Escape tak samo jak przypadkowe dotknięcie tła */
+  /* Escape zamyka dialog — chronimy tylko okno ze szkicem (editDie); okna
+     informacyjne (drawResult, targetReached) zamykamy, bo nie mają szkicu (F5, audyt) */
   if (e.key === "Escape" && S.dialog) {
-    const back = document.querySelector(".dialog-back");
-    if (!(back && !back.dataset.a)) closeDialog(); // brak data-a = okno z noBack
+    if (S.dialog.type !== "editDie") closeDialog();
     return;
   }
 
@@ -2441,6 +2488,7 @@ document.addEventListener("keydown", function (e) {
 
 /* --- Inicjalizacja --- */
 document.addEventListener("visibilitychange", function () { wakeFailed = false; syncWakeLock(); });
+migrateLegacyKeys(); // krok 8: jednorazowy przenosin starych kluczy licznik_punktow_*
 applyLang();
 applyFontScale();
 render();
