@@ -1,9 +1,6 @@
-# ABAX Tracker — konfiguracja Dependabota
-# UWAGA: ten plik to NIE workflow. Miejsce: .github/dependabot.yml
-# (katalog .github, ale POZA workflows — dlatego nie działał, gdy leżał tam).
 version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+# This repository does not contain a GitHub Action manifest or a workflow file
+# under .github/workflows, so Dependabot should not try to scan GitHub Actions.
+# Keeping the update list empty prevents the updater failure:
+# "/action.yml or /.github/workflows/<anything>.yml not found"
+updates: []
