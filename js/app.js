@@ -281,7 +281,18 @@ function readStore(key) {
     return null;
   }
   const parsed = tryParseEnvelope(raw, key);
-  if (parsed === undefined) return null; // kwarantanna — dane uszkodzone
+  if (parsed === undefined) {
+    /* F2 (audyt): kwarantanna klucza głównego — od razu próbujemy kopii .bak,
+       zanim cokolwiek zdąży nadpisać klucz nowym zapisem (wtedy kopa zostałaby
+       pominięta na zawsze) */
+    let bak = null;
+    try { bak = localStorage.getItem(key + ".bak"); } catch (e) {}
+    if (bak !== null) {
+      const d = tryParseEnvelope(bak, key);
+      if (d !== null) { STORE.recovered = true; STORE.recoveredFromBak = true; return d; }
+    }
+    return null;
+  }
   return parsed;
 }
 
@@ -508,7 +519,7 @@ function undoToast(msg, entry) {
   el.hidden = false;
   el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
   clearTimeout(undoToastTimer);
-  undoToastTimer = setTimeout(() => { el.hidden = true; }, 5000);
+  undoToastTimer = setTimeout(() => { el.hidden = true; }, 8000); // 8 s (audyt UX): więcej czasu na PRZYWRÓĆ
 }
 function hideUndoToast() {
   clearTimeout(undoToastTimer);
@@ -1119,7 +1130,7 @@ function playerCardHtml(p) {
   const bottom = pend
     ? `<div class="confirm-row">
         <button class="btn-cancel" aria-label="${t("cancelShort")}" ${act("pendCancel", { id: p.id })}>✕</button>
-        <button class="btn-apply" aria-label="OK" ${act("pendApply", { id: p.id })}>✓</button>
+        <button class="btn-apply" aria-label="${t("ok")}" ${act("pendApply", { id: p.id })}>✓</button>
       </div>`
     : `<div class="history-chips">${chips || `<span class="tiny no-entries">${t("noEntries")}</span>`}</div>`;
 
@@ -1138,10 +1149,10 @@ function playerCardHtml(p) {
   </div>`;
 }
 
-function viewGame() {
-  const cards = S.players.map(playerCardHtml);
-  cacheCards(cards);
-  return `<h1 class="sr-only">${t("scoringTitle")}</h1><div class="header-row between sticky">
+/* Nagłówek ekranu gry — wydzielony, żeby dało się go przebudować BEZ efektów
+   ubocznych (F1: wcześniejsze wołanie pełnego viewGame() nadpisowało S.cardCache). */
+function gameHeaderHtml() {
+  return `<div class="header-row between sticky" data-sig="${headerSig()}">
     <span class="row-left">
       <button class="icon-btn" aria-label="${t("backToMenu")}" data-a="askExitGame">${ICONS.back}</button>
     </span>
@@ -1156,7 +1167,13 @@ function viewGame() {
       <button class="icon-btn" aria-label="${t("editLineupBtn")}" data-a="openEdit">${ICONS.pencil}</button>
       <button class="btn-outline" data-a="openFinish">${t("end")}</button>
     </span>
-  </div>
+  </div>`;
+}
+
+function viewGame() {
+  const cards = S.players.map(playerCardHtml);
+  cacheCards(cards);
+  return `<h1 class="sr-only">${t("scoringTitle")}</h1>${gameHeaderHtml()}
   <div class="scroll">${cards.join("")}</div>`;
 }
 
@@ -1550,10 +1567,6 @@ function cacheCards(cards) {
 
 /* Sygnatura nagłówka gry: które moduły są włączone (zmiana = przebudowa nagłówka, B1) */
 function headerSig() { const m = S.modules; return m ? [m.rounds.on, m.target.on, m.timer.on, m.dice.on].join() : ""; }
-function forceGameHeader() {
-  const hdr = app.querySelector(".header-row.sticky");
-  if (hdr) hdr.dataset.sig = ""; // wymusi przebudowę w najbliższym partialRenderGame
-}
 
 function partialRenderGame() {
   const undoBtn = app.querySelector('[data-a="undo"]');
@@ -1564,10 +1577,12 @@ function partialRenderGame() {
      zestawu wymuszamy przebudowę nagłówka. */
   const hdr = app.querySelector(".header-row.sticky");
   if (hdr && hdr.dataset.sig !== headerSig()) {
+    /* F1 (audyt): nagłówek budujemy bez efektów ubocznych — gameHeaderHtml() nie
+       dotyka S.cardCache, więc diff kart poniżej nadal widzi zmiany po tapie „+1". */
     const tmp = document.createElement("div");
-    tmp.innerHTML = viewGame();
+    tmp.innerHTML = gameHeaderHtml();
     const nh = tmp.querySelector(".header-row.sticky");
-    if (nh) { nh.dataset.sig = headerSig(); hdr.replaceWith(nh); }
+    if (nh) hdr.replaceWith(nh);
     else hdr.remove();
   }
 
@@ -1677,7 +1692,10 @@ function syncTitle() {
 }
 
 function setScreen(s) { hideUndoToast(); S.dialog = null; S.editDraft = null; S.dieDraft = null; S.screen = s; render(); window.scrollTo(0, 0); syncTitle(); }
+/* ekrany ustawiane bezpośrednio (S.screen = ...) też muszą odświeżyć tytuł (F4) */
+function gotoScreen(s) { S.screen = s; render(); window.scrollTo(0, 0); syncTitle(); }
 function openDialogFn(d) {
+  hideUndoToast(); // toast „Cofnięto" nie może zasłaniać przycisków nowego dialogu (audyt UX)
   if (!document.querySelector(".dialog-back")) S.lastFocus = document.activeElement;
   S.dialog = d;
   render();
@@ -1736,8 +1754,7 @@ function startGame(players) {
   S.dialog = S.modules.draw.on
     ? { type: "drawResult", name: S.players[randInt(S.players.length)].name }
     : null;
-  S.screen = "game";
-  render(); window.scrollTo(0, 0);
+  gotoScreen("game");
 }
 
 /* Cel osiągnięty: flaga gracza (⚑) odtwarzana po wznowieniu/wczytaniu — bez okna informacyjnego */
@@ -1869,7 +1886,6 @@ const ACTIONS = {
     if (k === "timer") { m.on ? timerStart() : timerStop(); }
     if (k === "target") { m.on ? applyTargetFlags() : S.players.forEach(p => { p.targetHit = false; }); }
     persistGame(); // zmiana modułu wchodzi do autozapisu od razu (B1)
-    forceGameHeader(); // ...i odświeża nagłówek gry (ikony/status modułów), B1
     render();
   },
   editModRounds(d) {
@@ -2023,8 +2039,8 @@ const ACTIONS = {
     S.modules = r.modules || sanitizeModules(null);
     if (S.modules.timer.on && !S.modules.timer.startedAt) S.modules.timer.startedAt = Date.now(); // wznowienie zegara
     applyTargetFlags();
-    S.pending = {}; S.cardCache = null; S.resume = null; S.dialog = null; S.screen = "game";
-    render(); window.scrollTo(0, 0);
+    S.pending = {}; S.cardCache = null; S.resume = null; S.dialog = null;
+    gotoScreen("game");
   },
   askDiscardResume() { openDialogFn({ type: "confirmDiscardResume" }); },
   confirmDiscardResume() { S.resume = null; clearPersistedGame(); closeDialog(); },
@@ -2057,8 +2073,7 @@ const ACTIONS = {
     S.pending = {};
     S.cardCache = null;
     S.dialog = null;
-    S.screen = "game";
-    render(); window.scrollTo(0, 0);
+    gotoScreen("game");
   },
   askDeleteSave(id) {
     const s = S.saves.find(x => x.id === id);
@@ -2380,8 +2395,13 @@ document.addEventListener("change", function (e) {
 });
 
 document.addEventListener("keydown", function (e) {
-  /* Escape zamyka dialog (poza obowiązkowym wyborem pierwszego gracza) */
-  if (e.key === "Escape" && S.dialog) { closeDialog(); return; }
+  /* Escape zamyka dialog — ale respektuje noBack (F5, audyt): szkic edycji kości ma
+     przetrwać Escape tak samo jak przypadkowe dotknięcie tła */
+  if (e.key === "Escape" && S.dialog) {
+    const back = document.querySelector(".dialog-back");
+    if (!(back && !back.dataset.a)) closeDialog(); // brak data-a = okno z noBack
+    return;
+  }
 
   /* Zmiana kolejności z klawiatury: strzałki góra/dół na uchwycie karty */
   if ((e.key === "ArrowUp" || e.key === "ArrowDown") && e.target.matches && e.target.matches("[data-drag]")) {

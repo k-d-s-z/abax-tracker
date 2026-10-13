@@ -361,9 +361,12 @@
   .c8 { --pc:#D81B60; } .c9 { --pc:#00ACC1; } .c10 { --pc:#6D4C41; } .c11 { --pc:#000000; }  /* czarny: na ciemnym tle zawsze z jaśniejszą obwódką */
   .player-card { border-left:4px solid var(--pc); }
   .list-item.accent { border-left-color:var(--pc); }
-  /* A7: czarny (c11) na ciemnym tle — karta gracza i wyróżnione pozycje też z obwódką */
+  /* A7: czarny (c11) na ciemnym tle — karta gracza i wyróżnione pozycje też z obwódką;
+     brąz (c10) i fiolet (c7) mają kontrast paska 2,4–2,6:1 z tłem (audyt WCAG 1.4.11) */
   .player-card.c11 { border-left-color:#3a3a3a; box-shadow: inset 2px 0 0 rgba(255,255,255,0.35); }
   .list-item.accent.c11 { border-left-color:#3a3a3a; box-shadow: inset 2px 0 0 rgba(255,255,255,0.35); }
+  .player-card.c10, .player-card.c7 { box-shadow: inset 2px 0 0 rgba(255,255,255,0.35); }
+  .list-item.accent.c10, .list-item.accent.c7 { box-shadow: inset 2px 0 0 rgba(255,255,255,0.35); }
   .pos { color:var(--green); } .neg { color:var(--red); }
   /* czarny (c11) widoczny na ciemnym tle: obwódka/poświata zamiast krycia */
   .dot.c11 { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); }
@@ -438,7 +441,10 @@
   .die-tile.col { background:var(--pc); border-color:var(--pc); }
   /* A6: kolor tekstu na kolorowej kości wg luminancji tła (fiolet/brąz/róż dają z --ink tylko ~2,5–3,9:1) */
   .die-tile.col { color:#fff; }
-  .die-tile.col.c0, .die-tile.col.c3, .die-tile.col.c4, .die-tile.col.c5, .die-tile.col.c6, .die-tile.col.c9 { color:var(--ink); }
+  /* tekst wg luminancji ścianki (audyt: kontrasty ≥4,5:1 dla 15 px kafelków) */
+  .die-tile.col.c0, .die-tile.col.c3, .die-tile.col.c4, .die-tile.col.c5 { color:var(--ink); }
+  .die-tile.col.c1, .die-tile.col.c2 { color:var(--ink); }
+  .die-tile.col.c9 { color:#fff; }
   .dice-info { min-height:24px; margin-top:8px; text-align:center; font-weight:800; font-size:calc(18px * var(--fs-mult)); color:var(--accent-text); }
   .face-list { max-height:min(320px, 45vh); max-height:min(320px, 45dvh); overflow-y:auto; margin-top:10px; }
   .face-row { display:flex; align-items:center; gap:8px; padding:4px 0; }
@@ -503,6 +509,10 @@
   .module-card:not(.off) .name::before { background:var(--accent); }
   .module-card .name { font-size:calc(14px * var(--fs-mult)); font-weight:800; letter-spacing:1px; color:var(--accent-text); text-transform:uppercase; }
   .module-card .mod-state { text-transform:none; letter-spacing:0; white-space:nowrap; }
+  /* nagłówek karty modułu = przełącznik: minimalna wysokość celu dotykowego 44 px */
+  .module-card .module-head { min-height:44px; cursor:pointer; }
+  .module-card .module-head:focus-visible { outline:2px solid var(--accent); outline-offset:1px; border-radius:8px; }
+
   /* moduł wyłączony: przygaszona karta — klik rozjaśnia i dodaje do gry */
   .module-card.off { background:rgba(255,255,255,0.02); border-color:var(--border); opacity:.65; }
   .module-card.off .name { color:var(--text-muted); }
@@ -521,11 +531,11 @@
   .mod-ico { display:inline-flex; width:16px; height:16px; margin-right:6px; vertical-align:-3px; color:inherit; }
   .mod-ico svg { width:100%; height:100%; display:block; }
   /* przycisk „+ DODAJ GRACZA” na ekranie NOWA GRA */
-  .btn-add-player { min-height:52px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
+  .btn-add-player { min-height:52px; width:100%; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
   /* toast cofnięcia: informacja + przycisk PRZYWRÓĆ (gaśnie po 5 s) */
   .toast-undo { display:flex; align-items:center; gap:12px; justify-content:center; max-width:92vw; z-index:100; }
   .toast-undo[hidden] { display:none; }
-  .toast-undo-btn { flex:0 0 auto; min-height:34px; padding:4px 14px; background:var(--accent-grad); color:var(--ink); border:1px solid var(--accent); border-radius:20px; font-weight:800; font-size:calc(11px * var(--fs-mult)); letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
+  .toast-undo-btn { flex:0 0 auto; min-height:44px; padding:6px 16px; background:var(--accent-grad); color:var(--ink); border:1px solid var(--accent); border-radius:20px; font-weight:800; font-size:calc(11px * var(--fs-mult)); letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
   .toast-undo-btn:active { transform:scale(.95); }
 
   /* ===== TABLET + DESKTOP: szerszy układ od 700 px (tablet pionowo = 2 kolumny kart) ===== */
@@ -538,7 +548,7 @@
     [data-screen="game"] .scroll { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 14px; }
     [data-screen="game"] .scroll .card { margin-bottom: 0; width: 340px; max-width: 100%; }
     /* dokładnie 4 graczy: siatka 2×2 zamiast 1×4 — spójnie z układem 900 px i 6 graczami */
-    [data-screen="game"] .scroll:has(> .card:nth-child(4):last-child) { max-width: calc(2 * 340px + 14px); }
+    [data-screen="game"] .scroll:has(> .card:nth-child(4):last-child) { max-width: calc(2 * 340px + 14px); margin-inline: auto; }
 
     /* Ekran główny: zapisane składy wyśrodkowane (1 karta stoi na środku, kolejne dokładają się rzędami) */
     [data-screen="home"] .scroll { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
