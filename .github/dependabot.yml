@@ -1,9 +1,6 @@
 # ABAX Tracker — konfiguracja Dependabota
-# Umieść jako: .github/dependabot.yml
-#
-# UWAGA: to NIE jest plik workflow. Prawidłowa lokalizacja to .github/dependabot.yml
-# (poza katalogiem workflows). Plik .github/workflows/dependabot.yml z audytu
-# to uszkodzona kopia CI i należy go USUNĄĆ.
+# UWAGA: ten plik to NIE workflow. Miejsce: .github/dependabot.yml
+# (katalog .github, ale POZA workflows — dlatego nie działał, gdy leżał tam).
 version: 2
 updates:
   - package-ecosystem: "github-actions"
