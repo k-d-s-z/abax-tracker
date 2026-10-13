@@ -1,0 +1,291 @@
+# ABAX Tracker — CI: testy + Lighthouse + dostępność
+# Umieść jako: .github/workflows/ci.yml
+#
+# Joby:
+#   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
+#        a) brak błędów konsoli przy starcie
+#        b) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
+#           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
+#   2. lighthouse — Lighthouse CI z progami (assert, C6)
+#   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
+#                  i dialogów; fail przy naruszeniach krytycznych/poważnych (C5)
+#
+# Uwaga: Playwright i http-server instalujemy LOKALNIE w katalogu ci-workdir
+# (npm install -g + import w .mjs nie działa — Node nie widzi globalnych pakietów
+# przy importach ES). Serwowanie aplikacji i uruchamianie testu w jednym kroku,
+# bo proces w tle nie przeżywa końca kroku, gdy katalog zostanie sprzątnięty.
+#
+# TODO (docelowo): package.json + package-lock.json w repo i `npm ci` zamiast
+# niepiętych wersji (C4); akcje przypiąć do commit-SHA i włączyć Dependabota
+# dla ekosystemu github-actions.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# zasada najmniejszych uprawnień (C4)
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'   # jedno LTS dla wszystkich jobów (C3)
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install deps (lokalnie, nie globalnie)
+        run: |
+          mkdir -p ci-workdir
+          cd ci-workdir
+          npm init -y >/dev/null
+          npm install --no-fund --no-audit playwright http-server
+
+      - name: Install Chromium for Playwright
+        run: |
+          cd ci-workdir
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test + wbudowany harness ?test
+        env:
+          APP_DIR: ${{ github.workspace }}
+        run: |
+          cd ci-workdir
+          cat > smoke.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import { spawn } from 'child_process';
+
+          const BASE = 'http://127.0.0.1:8000';
+
+          // start serwera w tle Z TEGO SAMEGO procesu testu
+          const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
+
+          // czekamy, aż port naprawdę odpowie (nie sztywny sleep, C2)
+          async function waitForPort(url, ms = 15000) {
+            const deadline = Date.now() + ms;
+            while (Date.now() < deadline) {
+              try { await fetch(url); return true; }
+              catch { await new Promise(r => setTimeout(r, 250)); }
+            }
+            return false;
+          }
+
+          let browser = null;
+          async function main() {
+            if (!(await waitForPort(BASE + '/index.html'))) {
+              console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
+            }
+            browser = await chromium.launch();
+            const page = await browser.newPage();
+
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            page.on('pageerror', err => errors.push(String(err)));
+
+            // 1. Aplikacja ładuje się bez błędów konsoli
+            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+            if (errors.length) {
+              console.error('Błędy konsoli przy starcie:', errors);
+              process.exitCode = 1; return;
+            }
+
+            // 2. Kluczowa struktura: kontener aplikacji + toast
+            for (const sel of ['#app', '#toast']) {
+              if (!(await page.locator(sel).count())) {
+                console.error('Brak elementu: ' + sel);
+                process.exitCode = 1; return;
+              }
+            }
+
+            // 3. Wbudowany harness ?test — wynik bezpośrednio z runSelfTests() (C1):
+            //    wyjątek w harnessie lub niezgodność passed/total = FAIL,
+            //    komunikat o błędach trafia do logu, a job kończy się czerwono.
+            await page.goto(BASE + '/index.html?test', { waitUntil: 'networkidle' });
+            const r = await page.evaluate(() => {
+              try {
+                const res = window.__abaxTests();
+                return { ok: true, passed: res.passed, total: res.total,
+                         failed: res.results.filter(x => !x.ok).map(x => x.name) };
+              } catch (e) {
+                return { ok: false, error: String(e && e.stack ? e.stack : e) };
+              }
+            });
+            if (!r.ok || r.passed !== r.total || errors.length) {
+              console.error('Harness ?test nie przeszedł:', JSON.stringify(r, null, 2));
+              if (errors.length) console.error('Błędy konsoli:', errors);
+              process.exitCode = 1; return;
+            }
+            console.log(`OK: smoke + harness ?test (${r.passed}/${r.total})`);
+          }
+          try {
+            await main();
+          } finally {
+            if (browser) await browser.close().catch(() => {});
+            server.kill();
+          }
+          EOF
+          node smoke.mjs
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Progi (C6): job NIE przechodzi, jeśli wynik spadnie poniżej baseline.
+      - name: Write lighthouserc
+        run: |
+          cat > lighthouserc.json <<'EOF'
+          {
+            "ci": {
+              "collect": {
+                "staticDistDir": ".",
+                "numberOfRuns": 3
+              },
+              "assert": {
+                "assertions": {
+                  "categories:accessibility": ["error", { "minScore": 0.95 }],
+                  "categories:best-practices": ["error", { "minScore": 0.95 }],
+                  "categories:performance": ["error", { "minScore": 0.9 }],
+                  "categories:seo": ["warn", { "minScore": 0.9 }]
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          # Aplikacja mobile-first: domyślny preset (mobile).
+
+  a11y-axe:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # C5: axe działa wewnątrz Playwright — jeden Chromium (nieparowana para
+      # Chrome/ChromeDriver znika), skanujemy realne ekrany aplikacji, nie tylko home.
+      - name: Install deps (lokalnie)
+        run: |
+          mkdir -p ci-workdir
+          cd ci-workdir
+          npm init -y >/dev/null
+          npm install --no-fund --no-audit playwright @axe-core/playwright http-server
+
+      - name: Install Chromium for Playwright
+        run: |
+          cd ci-workdir
+          npx playwright install --with-deps chromium
+
+      - name: axe scan (home, NOWA GRA, USTAWIENIA, dialogi)
+        env:
+          APP_DIR: ${{ github.workspace }}
+        run: |
+          cd ci-workdir
+          cat > a11y.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import { AxeBuilder } from '@axe-core/playwright';
+          import { spawn } from 'child_process';
+
+          const BASE = 'http://127.0.0.1:8000';
+          const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
+
+          async function waitForPort(url, ms = 15000) {
+            const deadline = Date.now() + ms;
+            while (Date.now() < deadline) {
+              try { await fetch(url); return true; }
+              catch { await new Promise(r => setTimeout(r, 250)); }
+            }
+            return false;
+          }
+
+          // ekrany do skanowania: [nazwa, akcja prowadząca do ekranu]
+          const SCREENS = [
+            ['home', null],
+            ['setup-nowa-gra', '[data-a="newGame"]'],
+            ['setup-dodaj-gracza', '[data-a="openAddPlayer"]'],
+            ['settings', '[data-a="openSettings"]'],
+            ['settings-dodaj-kosc', '[data-a="addDie"]'],
+          ];
+
+          let browser = null;
+          async function main() {
+            if (!(await waitForPort(BASE + '/index.html'))) {
+              console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
+            }
+            browser = await chromium.launch();
+            // AxeBuilder wymaga strony z osobnego kontekstu (browser.newContext()),
+            // nie bezpośrednio z browser.newPage()
+            const context = await browser.newContext();
+            const page = await context.newPage();
+            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+
+            let blocking = [];
+            for (const [name, action] of SCREENS) {
+              if (action) {
+                const el = page.locator(action).first();
+                if (await el.count()) { await el.click(); await page.waitForTimeout(150); }
+                else { console.warn(`Pominięto ${name}: brak ${action}`); continue; }
+              }
+              const res = await new AxeBuilder({ page })
+                .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+                .analyze();
+              const serious = res.violations.filter(v => ['critical', 'serious'].includes(v.impact));
+              const moderate = res.violations.filter(v => v.impact === 'moderate');
+              if (res.violations.length) {
+                console.log(`[axe] ${name}: ${res.violations.length} naruszeń` +
+                  ` (${serious.length} krytycznych/poważnych, ${moderate.length} umiarkowanych)`);
+                for (const v of res.violations) {
+                  console.log(`  - [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} węzłów)`);
+                }
+              } else {
+                console.log(`[axe] ${name}: czysto`);
+              }
+              blocking = blocking.concat(serious.map(v => `${name}: [${v.impact}] ${v.id} — ${v.help}`));
+              // powrót do home przed kolejnym ekranem
+              if (action) {
+                const back = page.locator('[data-a="closeDialog"], [data-a="backHome"]').first();
+                if (await back.count()) { await back.click().catch(() => {}); await page.waitForTimeout(150); }
+                const back2 = page.locator('[data-a="backHome"]').first();
+                if (await back2.count()) { await back2.click().catch(() => {}); await page.waitForTimeout(150); }
+              }
+            }
+            // po ustaleniu baseline zamień poniższy blok na: if (blocking.length) → exit 1
+            if (blocking.length) {
+              console.error('NARUSZENIA KRYTYCZNE/POWAŻNE:\n' + blocking.join('\n'));
+              process.exitCode = 1;
+            } else {
+              console.log('OK: brak naruszeń krytycznych/poważnych WCAG 2.x AA');
+            }
+          }
+          try {
+            await main();
+          } finally {
+            if (browser) await browser.close().catch(() => {});
+            server.kill();
+          }
+          EOF
+          node a11y.mjs
