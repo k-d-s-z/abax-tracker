@@ -5,10 +5,13 @@
 #   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
 #        a) brak błędów konsoli przy starcie
 #        b) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
-#           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
+#        c) E2E przepływ gry: NOWA GRA → gracz → GRAJ → tap +1 → ✓ → wynik 1
+#           (regresyjny test błędu F1: pierwszy tap musiał od razu pokazać ✓/✕)
+#        d) kontrola wersji CACHE: zmiana plików z CORE wymaga podbicia numeru
+#           w sw.js (komentarz w sw.js wreszcie mówi prawdę)
 #   2. lighthouse — Lighthouse CI z progami (assert, C6)
-#   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
-#                  i dialogów; fail przy naruszeniach krytycznych/poważnych (C5)
+#   3. a11y-axe  — axe-core/playwright: home, NOWA GRA, dialog gracza, USTAWIENIA,
+#                  dialog kości ORAZ ekran gry z oknami (edycja składu, koniec gry)
 #
 # Uwaga: Playwright i http-server instalujemy LOKALNIE w katalogu ci-workdir
 # (npm install -g + import w .mjs nie działa — Node nie widzi globalnych pakietów
@@ -38,7 +41,11 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 2 — kontrola CACHE porównuje HEAD z HEAD~1,
+      # domyślny shallow clone (depth 1) nie ma HEAD~1
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
@@ -56,7 +63,35 @@ jobs:
           cd ci-workdir
           npx playwright install --with-deps chromium
 
-      - name: Smoke test + wbudowany harness ?test
+      # Krok 2 planu naprawy (audyt): zmiana pliku z CORE bez podbicia CACHE = FAIL.
+      # W przeciwnym razie użytkownicy zostają na starej wersji bezterminowo.
+      - name: Kontrola wersji CACHE w sw.js
+        run: |
+          # pliki, których dotyczy numer CACHE (muszą zgadzać się z CORE w sw.js)
+          CORE_FILES="index.html css/app.css js/app.js manifest.webmanifest"
+          # hash aktualnej zawartości plików CORE
+          CORE_HASH=$(cat $CORE_FILES | sha256sum | cut -c1-8)
+          # numer CACHE z sw.js (ostatnie 8 znaków po "abax-tracker-")
+          CACHE_LINE=$(grep -m1 'const CACHE = ' sw.js)
+          echo "sw.js: $CACHE_LINE (hash CORE: $CORE_HASH)"
+          if ! echo "$CACHE_LINE" | grep -q "$CORE_HASH"; then
+            # numer nie odpowiada hashowi: dopuszczamy, jeśli podbicie nastąpiło
+            # w tym samym commicie (diff dotyka sw.js) — sprawdzamy po prostu,
+            # że przy zmianie któregokolwiek pliku CORE podbito i CACHE.
+            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E "^(index.html|css/app.css|js/app.js|manifest.webmanifest)$" || true)
+            if [ -n "$CHANGED" ]; then
+              if git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -q "^sw.js$"; then
+                echo "OK: pliki CORE zmienione, CACHE podbity w tym samym commicie"
+              else
+                echo "::error::Zmieniono plik(y) CORE: $CHANGED — podbij numer CACHE w sw.js"
+                exit 1
+              fi
+            fi
+          else
+            echo "OK: CACHE zawiera hash aktualnych plików CORE"
+          fi
+
+      - name: Smoke test + harness ?test + E2E przepływ gry
         env:
           APP_DIR: ${{ github.workspace }}
         run: |
@@ -125,7 +160,46 @@ jobs:
               if (errors.length) console.error('Błędy konsoli:', errors);
               process.exitCode = 1; return;
             }
-            console.log(`OK: smoke + harness ?test (${r.passed}/${r.total})`);
+            console.log(`OK: harness ?test (${r.passed}/${r.total})`);
+
+            // 4. E2E: przepływ gry (regresja F1 z audytu — pierwszy tap +1 musi
+            //    natychmiast pokazać sumę oczekującą i przyciski ✓/✕, a po ✓ wynik = 1)
+            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+            await page.click('[data-a="newGame"]');
+            await page.click('[data-a="openAddPlayer"]');
+            await page.fill('#newPlayerName', 'Test');
+            await page.click('[data-a="confirmAddPlayerName"]');
+            // okno wyboru koloru: pierwszy wolny kolor, potem „DODAJ" (okno zamyka się dopiero po nim)
+            await page.click('.dialog .colors button.dot:not([disabled])');
+            await page.click('[data-a="confirmAddPlayer"]');
+            await page.click('[data-a="startFromSetup"]');
+
+            const firstTap = page.locator('[data-a="pend"][data-v="1"]').first();
+            await firstTap.click();
+            // PO PIERWSZYM TAPIE: wiersz ✓/✕ musi być widoczny natychmiast
+            const confirmVisible = await page.locator('.confirm-row').first().isVisible();
+            if (!confirmVisible) {
+              console.error('REGRESJA F1: pierwszy tap +1 nie pokazał przycisków ✓/✕');
+              process.exitCode = 1; return;
+            }
+            await page.click('[data-a="pendApply"]');
+            const score = await page.locator('.score-num').first().textContent();
+            if (score.trim() !== '1') {
+              console.error('E2E: po ✓ wynik powinien być 1, jest: ' + score);
+              process.exitCode = 1; return;
+            }
+            // cofnięcie i przywrócenie
+            await page.click('[data-a="undo"]');
+            const restore = page.locator('.toast-undo-btn');
+            if (await restore.count()) {
+              await restore.click();
+              const score2 = await page.locator('.score-num').first().textContent();
+              if (score2.trim() !== '1') {
+                console.error('E2E: po PRZYWRÓĆ wynik powinien wrócić do 1, jest: ' + score2);
+                process.exitCode = 1; return;
+              }
+            }
+            console.log('OK: E2E przepływ gry (tap → ✓ → wynik 1, undo → przywróć)');
           }
           try {
             await main();
@@ -230,6 +304,21 @@ jobs:
             ['settings', '[data-a="openSettings"]'],
             ['settings-dodaj-kosc', '[data-a="addDie"]'],
           ];
+          /* ekran gry + jego okna — najważniejszy ekran aplikacji, dawniej pomijany */
+          const GAME_FLOW = async (page) => {
+            await page.click('[data-a="newGame"]');
+            await page.click('[data-a="openAddPlayer"]');
+            await page.fill('#newPlayerName', 'A11y');
+            await page.click('[data-a="confirmAddPlayerName"]');
+            await page.click('.dialog .colors button.dot:not([disabled])');
+            await page.click('[data-a="confirmAddPlayer"]');
+            await page.click('[data-a="startFromSetup"]');
+            return [
+              ['gra', null],
+              ['gra-edycja-skladu', '[data-a="openEdit"]'],
+              ['gra-koniec-gry', '[data-a="openFinish"]'],
+            ];
+          };
 
           let browser = null;
           async function main() {
@@ -244,7 +333,8 @@ jobs:
             await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
 
             let blocking = [];
-            for (const [name, action] of SCREENS) {
+            async function scanAll(screens) {
+            for (const [name, action] of screens) {
               if (action) {
                 const el = page.locator(action).first();
                 if (await el.count()) { await el.click(); await page.waitForTimeout(150); }
@@ -273,6 +363,13 @@ jobs:
                 if (await back2.count()) { await back2.click().catch(() => {}); await page.waitForTimeout(150); }
               }
             }
+            }
+
+            await scanAll(SCREENS);
+            // ekran gry z oknami (krok 2 planu naprawy) — dawniej pomijany
+            const gameScreens = await GAME_FLOW(page);
+            await scanAll(gameScreens);
+
             // po ustaleniu baseline zamień poniższy blok na: if (blocking.length) → exit 1
             if (blocking.length) {
               console.error('NARUSZENIA KRYTYCZNE/POWAŻNE:\n' + blocking.join('\n'));
