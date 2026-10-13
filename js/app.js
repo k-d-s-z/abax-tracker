@@ -8,7 +8,7 @@ const STR = {
     title: "ABAX TRACKER", newGame: "+&nbsp; NOWA GRA", newGameTitle: "NOWA GRA", scoringTitle: "PUNKTACJA",
     savedLineups: "ZAPISANE SKŁADY",
     noLineups: "Brak zapisanych składów.<br>Stwórz nową grę, a skład zapisze się automatycznie.",
-    play: "GRAJ", settings: "Ustawienia", settingsTitle: "USTAWIENIA",
+    play: "GRAJ", settingsTitle: "USTAWIENIA",
     settingsGroupPlay: "Rozgrywka", settingsGroupLook: "Wygląd i obsługa", settingsGroupData: "Dane",
     removeLineup: "Usuń skład", removeLineupQ: "Usunąć skład?",
     playerName: "Nazwa gracza", namePlaceholder: "np. Ania", color: "Kolor:",
@@ -109,7 +109,7 @@ const STR = {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME", scoringTitle: "SCORING",
     savedLineups: "SAVED LINEUPS",
     noLineups: "No saved lineups yet.<br>Start a new game and the lineup will be saved automatically.",
-    play: "PLAY", settings: "Settings", settingsTitle: "SETTINGS",
+    play: "PLAY", settingsTitle: "SETTINGS",
     settingsGroupPlay: "Gameplay", settingsGroupLook: "Appearance & handling", settingsGroupData: "Data",
     removeLineup: "Delete lineup", removeLineupQ: "Delete lineup?",
     playerName: "Player name", namePlaceholder: "e.g. Anna", color: "Color:",
@@ -217,7 +217,6 @@ const ICONS = {
   undo:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10 h9 a5 5 0 0 1 0 10 h-3"/><path d="M4 10 L8 6 M4 10 L8 14"/></svg>',
   pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3 L21 7 L10 18 L5 19 L6 14 Z"/></svg>',
   trash:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7 h16"/><path d="M9 7 V4 h6 v3"/><path d="M6 7 l1 13 h10 l1-13"/><path d="M10 11 v5 M14 11 v5"/></svg>',
-  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   dice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1" fill="currentColor" stroke="none"/></svg>',
   load: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7 v5 l3.5 2"/></svg>'
@@ -415,8 +414,6 @@ const S = {
   saves: sanitizeSaves(readStore(LS_SAVES_KEY)),
   players: [],
   history: [],
-  setupName: "",
-  setupColor: null,
   pending: {},          // pending[playerId] = suma niezatwierdzonych zmian
   dialog: null,
   animScore: null,
@@ -611,7 +608,7 @@ function roundsLabel() {
   if (!r || !r.on) return "";
   return "R " + r.current;
 }
-function roundChangedToast(prev) {
+function roundChangedToast() {
   const r = S.modules && S.modules.rounds;
   if (!r || !r.on || !r.count) return;
   if (r.current === r.count) toast(t("lastRoundInfo"));
@@ -1764,7 +1761,7 @@ function movePlayer(id, dir) {
 const ACTIONS = {
   /* nawigacja */
   newGame() {
-    S.players = []; S.setupName = ""; S.setupColor = null;
+    S.players = [];
     /* szkic modułów: start od zestawu domyślnego z Ustawień */
     const dm = S.settings.defaultModules || defaultModules(null);
     S.setupModules = {
@@ -1796,15 +1793,9 @@ const ACTIONS = {
     const g = S.groups.find(x => x.id === id); if (!g) return;
     startGame(g.players);
   },
-  pickColor(c) {
-    if (usedColors().includes(c)) return;
-    S.setupColor = c;
-    render();
-  },
   /* Dodawanie gracza: okno z imieniem → okno z wyborem koloru (klik dodaje) */
   openAddPlayer() {
     if (S.players.length >= PLAYER_COLORS.length) return;
-    S.setupName = ""; S.setupColor = null;
     openDialogFn({ type: "addPlayer", value: "" });
   },
   confirmAddPlayerName() {
