@@ -229,7 +229,7 @@
   .score-btns button:active { background: rgba(var(--accent-rgb), 0.3); border-color: var(--accent); }
   /* A10: etykieta nie może być ucięta przy dużych wartościach i dużej czcionce —
      skala czcionki zależna od długości tekstu (JS ustawia klasę), awaryjnie zawijanie */
-  .score-btns button.long-lbl { font-size: calc(0.78 * var(--btn-fs, 14px) * var(--fs-mult)); }
+  .score-btns button.long-lbl { font-size: calc(0.72 * var(--btn-fs, 14px) * var(--fs-mult)); white-space:normal; overflow:visible; line-height:1.1; padding:4px 2px; }  /* A10: nie ucinamy, tylko zawijamy */
   .score-btns button.amount-btn { border-style: dashed; border-color: var(--border-glow); background: rgba(255,255,255,0.02); color: var(--accent-text); }
 
   .confirm-row { display:flex; gap:10px; margin-top:12px; }
@@ -442,9 +442,10 @@
   /* A6: kolor tekstu na kolorowej kości wg luminancji tła (fiolet/brąz/róż dają z --ink tylko ~2,5–3,9:1) */
   .die-tile.col { color:#fff; }
   /* tekst wg luminancji ścianki (audyt: kontrasty ≥4,5:1 dla 15 px kafelków) */
-  .die-tile.col.c0, .die-tile.col.c3, .die-tile.col.c4, .die-tile.col.c5 { color:var(--ink); }
+  .die-tile.col.c0, .die-tile.col.c3, .die-tile.col.c4 { color:var(--ink); }
+  .die-tile.col.c5 { color:#fff; }  /* szary: biały tekst 4,61:1 (audyt WCAG) */
   .die-tile.col.c1, .die-tile.col.c2 { color:var(--ink); }
-  .die-tile.col.c9 { color:#fff; }
+  .die-tile.col.c9 { color:var(--ink); }  /* turkus: ciemny tekst 7,01:1 (audyt WCAG) */
   .dice-info { min-height:24px; margin-top:8px; text-align:center; font-weight:800; font-size:calc(18px * var(--fs-mult)); color:var(--accent-text); }
   .face-list { max-height:min(320px, 45vh); max-height:min(320px, 45dvh); overflow-y:auto; margin-top:10px; }
   .face-row { display:flex; align-items:center; gap:8px; padding:4px 0; }
@@ -495,7 +496,11 @@
   .dice-static { text-align:left; font-weight:600; font-size:calc(15px * var(--fs-mult)); color:var(--text-muted); padding:12px; border:1px dashed var(--border); border-radius:8px; margin-top:8px; }
 
   /* ===== Nagłówki grup ustawień (Rozgrywka / Wygląd / Dane) — mocniejsze niż .sub ===== */
-  .settings-group { font-size: calc(13px * var(--fs-mult)); font-weight:900; letter-spacing:2.5px; text-transform:uppercase; text-align:left; color:var(--text-light); margin:28px 0 4px; padding-bottom:6px; border-bottom:2px solid var(--border); }
+  /* nagłówki semantyczne w Ustawieniach (h2/h3) — zero różnicy wizualnej względem dawnych <p> */
+  h2.settings-group, h3.sub, .sub, p.sub { margin:0; }
+  h2.settings-group { font-size: calc(13px * var(--fs-mult)); font-weight:900; letter-spacing:2.5px; text-transform:uppercase; text-align:left; color:var(--text-light); margin:28px 0 4px; padding-bottom:6px; border-bottom:2px solid var(--border); }
+  h3.sub { font-size: calc(12px * var(--fs-mult)); font-weight:800; letter-spacing:2px; text-transform:uppercase; text-align:left; color:var(--text-muted); margin:16px 0 6px; }
+  .settings-group:first-child { margin-top:0; }
   .settings-group:first-child { margin-top:0; }
   .settings-group + .sub { margin-top:12px; }
 

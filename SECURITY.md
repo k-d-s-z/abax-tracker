@@ -2,11 +2,11 @@
 
 ## Supported Versions / Wspierane wersje
 
-| Version | Supported |
-| ------- | --------- |
-| main (live) | ✅ |
+|Version|Supported|
+|-|-|
+|main (live)|✅|
 
-Aplikacja jest wydawana ciągłe z gałęzi `main` — poprawki bezpieczeństwa trafiają na żywo razem z normalnym wdrożeniem.
+Aplikacja jest wydawana ciągle z gałęzi `main` — poprawki bezpieczeństwa trafiają na żywo razem z normalnym wdrożeniem.
 
 ## Reporting a Vulnerability / Zgłaszanie podatności
 
@@ -16,6 +16,7 @@ Aplikacja jest wydawana ciągłe z gałęzi `main` — poprawki bezpieczeństwa 
 
 ## Scope / Zakres
 
-- Aplikacja jest w 100% client-side: żadne dane nie opuszczają urządzenia (brak sieci, backendu i kont).
-- Dane (nazwy graczy, wyniki) są przechowywane w localStorage w jawnym tekście — nie przechowuj w nich danych wrażliwych.
-- Zgłoszenia dotyczące nagłówków HTTP na GitHub Pages (brak `frame-ancestors` itd.) są znane i wynikają z ograniczeń hostingu.
+* Aplikacja jest w 100% client-side: żadne dane nie opuszczają urządzenia (brak sieci, backendu i kont).
+* Dane (nazwy graczy, wyniki) są przechowywane w localStorage w jawnym tekście — nie przechowuj w nich danych wrażliwych.
+* Zgłoszenia dotyczące nagłówków HTTP na GitHub Pages (brak `frame-ancestors` itd.) są znane i wynikają z ograniczeń hostingu.
+
