@@ -537,6 +537,8 @@
        Drag & drop działa bez zmian: dragTick liczy pozycję docelową po obu osiach (X w rzędzie, Y między rzędami). */
     [data-screen="game"] .scroll { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 14px; }
     [data-screen="game"] .scroll .card { margin-bottom: 0; width: 340px; max-width: 100%; }
+    /* dokładnie 4 graczy: siatka 2×2 zamiast 1×4 — spójnie z układem 900 px i 6 graczami */
+    [data-screen="game"] .scroll:has(> .card:nth-child(4):last-child) { max-width: calc(2 * 340px + 14px); }
 
     /* Ekran główny: zapisane składy wyśrodkowane (1 karta stoi na środku, kolejne dokładają się rzędami) */
     [data-screen="home"] .scroll { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
