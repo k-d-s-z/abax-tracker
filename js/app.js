@@ -109,7 +109,9 @@ const STR = {
     finishedGames: "OSTATNIE GRY", noFinished: "Brak zakończonych gier.",
     gameSaved: "Zapisano wynik gry w Ostatnich grach",
     deleteFinished: "Usuń grę z Ostatnich gier", deleteFinishedQ: "Usunąć grę z Ostatnich gier?",
-    finishedDeleted: "Usunięto grę z Ostatnich gier", finishedRestored: "Przywrócono grę w Ostatnich grach"
+    finishedDeleted: "Usunięto grę z Ostatnich gier", finishedRestored: "Przywrócono grę w Ostatnich grach",
+    /* U2: pełne słowa w pasku statusu; U3: podpowiedź przy pierwszym wpisie */
+    roundWord: "Runda", firstEntryHint: "Dotknij liczby, aby edytować lub usunąć wpis"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME", scoringTitle: "SCORING",
@@ -215,7 +217,9 @@ const STR = {
     finishedGames: "RECENT GAMES", noFinished: "No finished games yet.",
     gameSaved: "Game result saved to Recent games",
     deleteFinished: "Delete game from Recent games", deleteFinishedQ: "Delete game from Recent games?",
-    finishedDeleted: "Game deleted from Recent games", finishedRestored: "Game restored in Recent games"
+    finishedDeleted: "Game deleted from Recent games", finishedRestored: "Game restored in Recent games",
+    /* U2: full words in the status bar; U3: hint on the first entry */
+    roundWord: "Round", firstEntryHint: "Tap a number to edit or delete the entry"
   }
 };
 
@@ -704,7 +708,7 @@ function timerStart() { const m = S.modules && S.modules.timer; if (m && m.on &&
 function timerStop() { const m = S.modules && S.modules.timer; if (m && m.startedAt) { m.elapsed = timerMs(); m.startedAt = null; } }
 function timerLabel(ms) {
   const min = Math.floor(ms / 60000);
-  if (min < 60) return min + "'";
+  if (min < 60) return min + " min"; // U2: pełne słowo zamiast kreski (title nie działa na dotyku)
   return Math.floor(min / 60) + " h " + String(min % 60).padStart(2, "0") + " min";
 }
 /* Lekkie odświeżanie timera w pasku statusu (bez render() — nie przebudowuje kart ani fokusu).
@@ -720,7 +724,7 @@ setInterval(function () {
 function roundsLabel() {
   const r = S.modules && S.modules.rounds;
   if (!r || !r.on) return "";
-  return "R " + r.current;
+  return t("roundWord") + " " + r.current; // U2: pełne słowo zamiast "R n"
 }
 function roundChangedToast() {
   const r = S.modules && S.modules.rounds;
@@ -1078,7 +1082,7 @@ function runSelfTests() {
   check("moduły: sanityzacja poprawnego stanu gry", (() => { const m = sanitizeModules({ draw: { on: true }, rounds: { on: true, count: 9, current: 2 }, target: { on: true, value: 150 }, timer: { on: true, elapsed: 60000, startedAt: null }, dice: { on: true } }); return m.draw.on === true && m.dice.on === true && m.rounds.on && m.rounds.count === 9 && m.rounds.current === 2 && m.target.value === 150 && m.timer.elapsed === 60000; })());
   check("moduły: śmieciowe dane → bezpieczne wartości", (() => { const m = sanitizeModules({ draw: "x", dice: 1, rounds: { on: "x", count: -5, current: 99999 }, target: { on: true, value: 0 }, timer: { on: true, elapsed: -1, startedAt: "x" } }); return m.draw.on === false && m.dice.on === false && m.rounds.on === false && m.rounds.count === 0 && m.rounds.current === 1 && m.target.on === false && m.target.value === 100 && m.timer.elapsed === 0 && m.timer.startedAt === null; })());
   check("moduły: zapis gry zachowuje stan modułów", (() => { const e = sanitizeSaves([{ players: [{ id: "0", name: "A", color: "#e2e8f0" }], history: [{ hid: "h", id: "0", delta: 5 }], modules: { rounds: { on: true, count: 3, current: 1 }, target: { on: false, value: 0 }, timer: { on: true, elapsed: 0, startedAt: 123 }, draw: { on: true }, dice: { on: false } } }])[0]; return !!e && !!e.modules && e.modules.rounds.count === 3 && e.modules.timer.startedAt === 123 && e.modules.draw.on === true && e.modules.dice.on === false; })());
-  check("moduły: timer etykieta minut i godzin", timerLabel(0) === "0'" && timerLabel(65 * 60000) === "1 h 05 min");
+  check("moduły: timer etykieta minut i godzin", timerLabel(0) === "0 min" && timerLabel(65 * 60000) === "1 h 05 min");
 
   check("cc: nieznany kolor -> c0", cc("red;x") === "c0" && cc(PLAYER_COLORS[3]) === "c3");
 
@@ -1213,7 +1217,7 @@ function viewSetup() {
     </div>`).join("")
     : `<p class="tiny tc pad">${t("addAtLeastOne")}</p>`;
 
-  return `<div class="header-row">
+  return `<h1 class="sr-only">${t("newGameTitle")}</h1><div class="header-row">
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("newGameTitle")}</h2>
     </div>
     <button class="btn-outline btn-add-player"${S.players.length >= PLAYER_COLORS.length ? " disabled" : ""} data-a="openAddPlayer">${t("addPlayer")}</button>
@@ -1271,6 +1275,7 @@ function playerCardHtml(p) {
     </div>
     ${scoreButtonsHtml(p.id)}
     <div class="card-row">${bottom}</div>
+    ${!pend && S.history.length === 1 && entries.length === 1 ? `<p class="tiny tc note mt4">${t("firstEntryHint")}</p>` : ""}
   </div>`;
 }
 
@@ -1283,7 +1288,7 @@ function gameHeaderHtml() {
     </span>
     <span class="game-status">
       ${S.modules && S.modules.rounds.on ? `<button class="stat-btn" aria-label="${t("nextRound")}: ${roundsLabel()}" data-a="nextRound">${roundsLabel()}</button>` : ""}
-      ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")}: ${S.modules.target.value}">\u2691${S.modules.target.value}</span>` : ""}
+      ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")}: ${S.modules.target.value}">${t("targetWord")} ${S.modules.target.value}</span>` : ""}
       ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}"><span class="mod-ico">${ICONS.clock}</span><span id="timerStatLabel">${timerLabel(timerMs())}</span></span>` : ""}
     </span>
     <span class="row-left tools">
@@ -1340,7 +1345,7 @@ function viewSettings() {
     </div>`).join("");
 
 
-  return `<div class="header-row">
+  return `<h1 class="sr-only">${t("settingsTitle")}</h1><div class="header-row">
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
     </div>
     <div class="scroll">

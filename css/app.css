@@ -230,7 +230,7 @@
   .score-btns button:active { background: rgba(var(--accent-rgb), 0.3); border-color: var(--accent); }
   /* A10: etykieta nie może być ucięta przy dużych wartościach i dużej czcionce —
      skala czcionki zależna od długości tekstu (JS ustawia klasę), awaryjnie zawijanie */
-  .score-btns button.long-lbl { font-size: calc(0.72 * var(--btn-fs, 14px) * var(--fs-mult)); white-space:normal; overflow:visible; line-height:1.1; padding:4px 2px; }  /* A10: nie ucinamy, tylko zawijamy */
+  .score-btns button.long-lbl { font-size: calc(0.68 * var(--btn-fs, 14px) * var(--fs-mult)); white-space:normal; overflow:visible; line-height:1.1; padding:4px 2px; }  /* A10: nie ucinamy, tylko zawijamy */
   .score-btns button.amount-btn { border-style: dashed; border-color: var(--border-glow); background: rgba(255,255,255,0.02); color: var(--accent-text); }
 
   .confirm-row { display:flex; gap:10px; margin-top:12px; }
@@ -498,12 +498,10 @@
 
   /* ===== Nagłówki grup ustawień (Rozgrywka / Wygląd / Dane) — mocniejsze niż .sub ===== */
   /* nagłówki semantyczne w Ustawieniach (h2/h3) — zero różnicy wizualnej względem dawnych <p> */
-  h2.settings-group, h3.sub, .sub, p.sub { margin:0; }
-  /* ekran gu0142u00f3wny: reset margin:0 z refaktoru nagu0142u00f3wku00f3w Ustawieu0144 skleiu0142 "ZAPISANE SKu0141ADY" z przyciskiem USTAWIENIA */
-  [data-screen="home"] > p.sub:first-of-type { margin-top:24px; }
+  h2.settings-group, h3.sub { margin:0; }  /* N4: reset tylko dla nagłówków Ustawień — p.sub (sekcje na home i NOWA GRA) wraca do globalnych marginesów .sub */
+  /* N4: łątka dla ekranu głównego usunięta — p.sub wraca do globalnych marginesów .sub */
   h2.settings-group { font-size: calc(13px * var(--fs-mult)); font-weight:900; letter-spacing:2.5px; text-transform:uppercase; text-align:left; color:var(--text-light); margin:28px 0 4px; padding-bottom:6px; border-bottom:2px solid var(--border); }
   h3.sub { font-size: calc(12px * var(--fs-mult)); font-weight:800; letter-spacing:2px; text-transform:uppercase; text-align:left; color:var(--text-muted); margin:16px 0 6px; }
-  .settings-group:first-child { margin-top:0; }
   .settings-group:first-child { margin-top:0; }
   .settings-group + .sub { margin-top:12px; }
 

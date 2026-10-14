@@ -1,6 +1,7 @@
 {
   "name": "Abax Tracker",
   "short_name": "Abax Tracker",
+  "description": "Licznik punktów do gier planszowych — offline, bez reklam, bez kont.",
   "id": "./index.html",
   "start_url": "./index.html",
   "scope": "./",
@@ -9,6 +10,7 @@
   "background_color": "#130e0a",
   "theme_color": "#130e0a",
   "lang": "pl",
+  "categories": ["games", "utilities"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
