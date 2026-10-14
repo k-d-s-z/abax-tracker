@@ -273,15 +273,19 @@ const LEGACY_LS_KEYS = [
   ["licznik_punktow_saves_v1", LS_SAVES_KEY],
   ["licznik_punktow_game_v1", LS_GAME_KEY]
 ];
-/* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje */
+/* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje.
+   Migrujemy też kopie .bak i .corrupt — inaczej odzyskanie danych ze starej
+   kopii zapasowej byłoby niemożliwe po usunięciu starego klucza głównego (N2). */
 function migrateLegacyKeys() {
   for (const [from, to] of LEGACY_LS_KEYS) {
-    try {
-      if (localStorage.getItem(to) === null) {
-        const raw = localStorage.getItem(from);
-        if (raw !== null) { localStorage.setItem(to, raw); localStorage.removeItem(from); }
-      }
-    } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
+    for (const sfx of ["", ".bak", ".corrupt"]) {
+      try {
+        if (localStorage.getItem(to + sfx) === null) {
+          const raw = localStorage.getItem(from + sfx);
+          if (raw !== null) { localStorage.setItem(to + sfx, raw); localStorage.removeItem(from + sfx); }
+        }
+      } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
+    }
   }
 }
 
@@ -436,6 +440,8 @@ function sanitizeDice(raw) {
   }
   return out;
 }
+
+migrateLegacyKeys(); // N2: PRZED odczytem stanu — inaczej pierwsze ładowanie nie widzi starych danych
 
 /* Dane z localStorage przechodzą TĘ SAMĄ sanityzację co import (ochrona przed
    uszkodzonym lub ręcznie zmodyfikowanym storage). */
@@ -2488,7 +2494,6 @@ document.addEventListener("keydown", function (e) {
 
 /* --- Inicjalizacja --- */
 document.addEventListener("visibilitychange", function () { wakeFailed = false; syncWakeLock(); });
-migrateLegacyKeys(); // krok 8: jednorazowy przenosin starych kluczy licznik_punktow_*
 applyLang();
 applyFontScale();
 render();
