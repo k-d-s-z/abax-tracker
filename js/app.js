@@ -1,3 +1,6 @@
+"use strict";
+
+
 /* ================================================================
    1. I18N — MODUŁ TŁUMACZEŃ (osobna sekcja, gotowa do wydzielenia)
    ================================================================ */
@@ -285,13 +288,17 @@ const LEGACY_LS_KEYS = [
 ];
 /* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje */
 function migrateLegacyKeys() {
+  /* N2: migrujemy też kopie .bak i .corrupt — inaczej odzyskanie danych ze starej
+     kopii zapasowej byłoby niemożliwe po usunięciu starego klucza głównego. */
   for (const [from, to] of LEGACY_LS_KEYS) {
-    try {
-      if (localStorage.getItem(to) === null) {
-        const raw = localStorage.getItem(from);
-        if (raw !== null) { localStorage.setItem(to, raw); localStorage.removeItem(from); }
-      }
-    } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
+    for (const sfx of ["", ".bak", ".corrupt"]) {
+      try {
+        if (localStorage.getItem(to + sfx) === null) {
+          const raw = localStorage.getItem(from + sfx);
+          if (raw !== null) { localStorage.setItem(to + sfx, raw); localStorage.removeItem(from + sfx); }
+        }
+      } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
+    }
   }
 }
 
@@ -447,6 +454,8 @@ function sanitizeDice(raw) {
   return out;
 }
 
+migrateLegacyKeys(); // N2: PRZED odczytem stanu — pierwsze ładowanie od razu widzi stare dane
+
 /* Dane z localStorage przechodzą TĘ SAMĄ sanityzację co import (ochrona przed
    uszkodzonym lub ręcznie zmodyfikowanym storage). */
 const S = {
@@ -562,7 +571,7 @@ function announceScore(id) {
   const el = ensureScoreAnnouncer();
   el.textContent = "";
   void el.offsetWidth; // restart ogłoszenia przy tej samej wartości
-  el.textContent = esc(p.name) + ": " + p.score;
+  el.textContent = p.name + ": " + p.score; // N5: textContent escapuje sam — esc() dawało podwójne escaping
 }
 
 /* Toast to osobny element poza #app: nie wywołuje render(), więc nie przebudowuje widoku ani dialogów. */
@@ -934,15 +943,16 @@ function sanitizeSaves(raw) {
    Wykonywana automatycznie przy każdym imporcie; skipped = liczba odrzuconych wpisów. */
 function validateImport(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) return null;
-  const hasPayload = Array.isArray(data.groups) || Array.isArray(data.saves) || data.settings;
+  const hasPayload = Array.isArray(data.groups) || Array.isArray(data.saves) || data.settings || Array.isArray(data.finished);
   if (!hasPayload) return null;
   const groups = sanitizeGroups(data.groups);
   const saves = sanitizeSaves(data.saves);
+  const finished = sanitizeFinished(data.finished); // E1: historia gier w imporcie
   const rawG = Array.isArray(data.groups) ? data.groups.length : 0;
   const rawS = Array.isArray(data.saves) ? data.saves.length : 0;
   if (rawG + rawS > 0 && !groups.length && !saves.length) return null;
   const settings = data.settings ? sanitizeSettings(data.settings, S.settings.lang) : null;
-  return { groups: groups, saves: saves, settings: settings, skipped: Math.max(0, rawG - groups.length) + Math.max(0, rawS - saves.length) };
+  return { groups: groups, saves: saves, finished: finished, settings: settings, skipped: Math.max(0, rawG - groups.length) + Math.max(0, rawS - saves.length) };
 }
 
 /* ================================================================
@@ -2380,7 +2390,7 @@ const ACTIONS = {
   /* eksport / import */
   exportData() {
     try {
-      const payload = { version: SCHEMA_VERSION, exportedAt: Date.now(), groups: S.groups, saves: S.saves, settings: S.settings };
+      const payload = { version: SCHEMA_VERSION, exportedAt: Date.now(), groups: S.groups, saves: S.saves, finished: S.finished, settings: S.settings }; // E1: historia gier w kopii zapasowej
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -2407,6 +2417,10 @@ const ACTIONS = {
     if (Array.isArray(data.saves)) {
       S.saves = data.saves;
       saveSaves(S.saves);
+    }
+    if (Array.isArray(data.finished)) { // E1: historia gier — podmieniana tylko gdy jest w pliku (B5)
+      S.finished = data.finished;
+      saveFinished();
     }
     if (data.settings) {
       S.settings = data.settings;
@@ -2591,7 +2605,6 @@ document.addEventListener("keydown", function (e) {
 
 /* --- Inicjalizacja --- */
 document.addEventListener("visibilitychange", function () { wakeFailed = false; syncWakeLock(); });
-migrateLegacyKeys(); // krok 8: jednorazowy przenosin starych kluczy licznik_punktow_*
 applyLang();
 applyFontScale();
 render();
