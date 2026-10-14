@@ -41,15 +41,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # potrzebne do git diff HEAD~1 w kontroli CACHE
+          fetch-depth: 0  # C1: pełna historia — kontrola CACHE na zakresie before..sha
 
       # N3: zmiana pliku z CORE wymaga zmiany sw.js (bump CACHE).
       # Inaczej użytkownicy z aktywnym service workerem dostają STARY kod z cache —
       # dokładnie błąd N1 z audytu (poprawki nie docierały mimo wgrania plików).
       - name: Kontrola CACHE (zmiana CORE bez zmiany sw.js = FAIL)
         run: |
-          DIFF=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
-          if [ -z "$DIFF" ]; then echo "Brak HEAD~1 (pierwszy commit?) — pomijam kontrolę."; exit 0; fi
+          DIFF=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          if [ -z "$DIFF" ]; then echo "Brak zakresu do porównania (pierwszy commit?) — pomijam kontrolę."; exit 0; fi
           CORE_CHANGED=$(echo "$DIFF" | grep -E '^(index\.html|manifest\.webmanifest|css/app\.css|js/app\.js)$' | wc -l)
           SW_CHANGED=$(echo "$DIFF" | grep -E '^sw\.js$' | wc -l)
           if [ "$CORE_CHANGED" -gt 0 ] && [ "$SW_CHANGED" -eq 0 ]; then
