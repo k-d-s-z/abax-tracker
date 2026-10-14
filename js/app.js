@@ -103,7 +103,10 @@ const STR = {
     newPlayerTitle: "NOWY GRACZ", chooseColor: "Wybierz kolor:", nextStep: "DALEJ",
     defaultModulesSection: "ZESTAW MODUŁÓW DOMYŚLNYCH",
     defaultModulesNote: "Te moduły będą wstępnie włączone przy tworzeniu nowej gry. W każdej grze możesz je zmienić przed startem oraz ołówkiem w trakcie gry.",
-    gameModulesTitle: "MODUŁY"
+    gameModulesTitle: "MODUŁY",
+    /* P1: historia zakończonych gier */
+    finishedGames: "OSTATNIE GRY", noFinished: "Brak zakończonych gier.",
+    gameSaved: "Zapisano wynik gry w Ostatnich grach"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME", scoringTitle: "SCORING",
@@ -204,7 +207,10 @@ const STR = {
     newPlayerTitle: "NEW PLAYER", chooseColor: "Choose a color:", nextStep: "NEXT",
     defaultModulesSection: "DEFAULT MODULE SET",
     defaultModulesNote: "These modules will be pre-enabled when creating a new game. You can change them before each game and with the pencil during play.",
-    gameModulesTitle: "MODULES"
+    gameModulesTitle: "MODULES",
+    /* P1: finished games history */
+    finishedGames: "RECENT GAMES", noFinished: "No finished games yet.",
+    gameSaved: "Game result saved to Recent games"
   }
 };
 
@@ -252,7 +258,8 @@ const LIMITS = {
   dieName: 20, faceText: 8,
   diceLog: 50,          // tyle ostatnich rzutów pamięta otwarte okno rzutu
   roundsMax: 999,       // licznik rund: maksymalna planowana liczba rund (0 = ∞)
-  targetMax: 999999     // cel punktowy: górny limit (= limit punktów)
+  targetMax: 999999,    // cel punktowy: górny limit (= limit punktów)
+  finished: 20          // P1: tyle ostatnich zakończonych gier pamięta historia
 };
 
 /* Wbudowana, zawsze dostępna kość D6 (1–6). Własne kości: settings.dice = [{id, name, faces:[{t, c}]}],
@@ -266,6 +273,7 @@ const LS_PREFIX = "abax_tracker_";
 const LS_KEY = LS_PREFIX + "v1";
 const LS_SETTINGS_KEY = LS_PREFIX + "settings_v1";
 const LS_SAVES_KEY = LS_PREFIX + "saves_v1";
+const LS_HISTORY_KEY = LS_PREFIX + "history_v1"; // P1: wyniki zakończonych gier
 const LS_GAME_KEY = LS_PREFIX + "game_v1"; // autozapis trwającej gry
 const LEGACY_LS_KEYS = [
   ["licznik_punktow_v1", LS_KEY],
@@ -273,19 +281,15 @@ const LEGACY_LS_KEYS = [
   ["licznik_punktow_saves_v1", LS_SAVES_KEY],
   ["licznik_punktow_game_v1", LS_GAME_KEY]
 ];
-/* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje.
-   Migrujemy też kopie .bak i .corrupt — inaczej odzyskanie danych ze starej
-   kopii zapasowej byłoby niemożliwe po usunięciu starego klucza głównego (N2). */
+/* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje */
 function migrateLegacyKeys() {
   for (const [from, to] of LEGACY_LS_KEYS) {
-    for (const sfx of ["", ".bak", ".corrupt"]) {
-      try {
-        if (localStorage.getItem(to + sfx) === null) {
-          const raw = localStorage.getItem(from + sfx);
-          if (raw !== null) { localStorage.setItem(to + sfx, raw); localStorage.removeItem(from + sfx); }
-        }
-      } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
-    }
+    try {
+      if (localStorage.getItem(to) === null) {
+        const raw = localStorage.getItem(from);
+        if (raw !== null) { localStorage.setItem(to, raw); localStorage.removeItem(from); }
+      }
+    } catch (e) {} // localStorage niedostępny — aplikacja działa dalej bez zapisu
   }
 }
 
@@ -441,8 +445,6 @@ function sanitizeDice(raw) {
   return out;
 }
 
-migrateLegacyKeys(); // N2: PRZED odczytem stanu — inaczej pierwsze ładowanie nie widzi starych danych
-
 /* Dane z localStorage przechodzą TĘ SAMĄ sanityzację co import (ochrona przed
    uszkodzonym lub ręcznie zmodyfikowanym storage). */
 const S = {
@@ -450,6 +452,7 @@ const S = {
   groups: sanitizeGroups(readStore(LS_KEY)),
   settings: sanitizeSettings(readStore(LS_SETTINGS_KEY)),
   saves: sanitizeSaves(readStore(LS_SAVES_KEY)),
+  finished: sanitizeFinished(readStore(LS_HISTORY_KEY)), // P1: wyniki zakończonych gier
   players: [],
   history: [],
   pending: {},          // pending[playerId] = suma niezatwierdzonych zmian
@@ -496,6 +499,42 @@ function newId() {
 function saveGroups(g) { writeStore(LS_KEY, g); }
 function saveSettings() { writeStore(LS_SETTINGS_KEY, S.settings, false); }
 function saveSaves(list) { writeStore(LS_SAVES_KEY, list); }
+
+/* --- P1: historia zakończonych gier (tylko wyniki — bez pełnej historii punktacji) ---
+   Limit LIMITS.finished (ostatnie gry). Gracze przechodzą tę samą sanityzację co import
+   (sanitizePlayers: unikalne kolory, nazwa ≤20, score w ±limit), więc uszkodzony
+   wpis jest pomijany przy ładowaniu, a nie psuje ekranu Ustawień. */
+function sanitizeFinished(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [], seen = new Set();
+  for (const g of raw) {
+    if (out.length >= LIMITS.finished) break;
+    if (!g || typeof g !== "object") continue;
+    const players = sanitizePlayers(g.players);
+    if (!players) continue;
+    const target = (g.target === null || g.target === undefined) ? null : Math.trunc(Number(g.target));
+    out.push({
+      id: uniqueId(g.id, seen),
+      savedAt: Number.isFinite(Number(g.savedAt)) ? Number(g.savedAt) : Date.now(),
+      players: players,
+      target: (target !== null && target > 0 && target <= LIMITS.targetMax) ? target : null
+    });
+  }
+  return out;
+}
+function saveFinished() { writeStore(LS_HISTORY_KEY, S.finished); }
+/* zapis wyniku gry — wołane z finishGame() PRZED wyczyszczeniem stanu */
+function recordFinishedGame() {
+  if (!S.players.length) return;
+  S.finished.unshift({
+    id: newId(), savedAt: Date.now(),
+    players: S.players.map(p => ({ name: p.name, color: p.color, score: Math.trunc(p.score) })),
+    target: (S.modules && S.modules.target.on) ? S.modules.target.value : null
+  });
+  if (S.finished.length > LIMITS.finished) S.finished.length = LIMITS.finished;
+  saveFinished();
+  toast(t("gameSaved"));
+}
 
 function applyFontScale() { document.documentElement.style.setProperty("--fs-mult", S.settings.fontScale); }
 function applyLang() { document.documentElement.lang = S.settings.lang; }
@@ -1265,6 +1304,17 @@ function viewSettings() {
       </span>
     </div>`).join("");
 
+  const finishedHtml = S.finished.length ? S.finished.map(g => {
+    const date = new Date(g.savedAt).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" });
+    /* ranking malejąco; zwycięzca (remis na szczycie = wszyscy najlepsi) z wyróżnieniem */
+    const rank = g.players.slice().sort((a, b) => b.score - a.score);
+    const top = rank[0].score;
+    const rows = rank.map(p => `<span class="finish-row${p.score === top ? " win" : ""}"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span><span class="finish-score">${p.score}</span></span>`).join("");
+    return `<div class="list-item">
+      <span class="row-left col"><span class="save-meta">${date}${g.target !== null ? " • " + t("targetWord") + ": " + g.target : ""}</span><span class="finish-list">${rows}</span></span>
+    </div>`;
+  }).join("") : `<p class="empty">${t("noFinished")}</p>`;
+
   return `<div class="header-row">
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
     </div>
@@ -1310,6 +1360,8 @@ function viewSettings() {
       <h2 class="settings-group">${t("settingsGroupData")}</h2>
       <h3 class="sub">${t("savedGames")}</h3>
       <div class="card">${savesHtml}</div>
+      <h3 class="sub">${t("finishedGames")}</h3>
+      <div class="card">${finishedHtml}</div>
       <h3 class="sub">${t("backup")}</h3>
       <div class="card">
         <button class="btn-outline mt full" data-a="exportData">${t("exportBtn")}</button>
@@ -2085,7 +2137,7 @@ const ACTIONS = {
     render();
   },
   openFinish() { openDialogFn({ type: "finish" }); },
-  finishGame() { timerStop(); S.players = []; S.pending = {}; S.history = []; S.cardCache = null; S.modules = null; S.setupModules = null; clearPersistedGame(); setScreen("home"); restoreFocus(); },
+  finishGame() { recordFinishedGame(); timerStop(); S.players = []; S.pending = {}; S.history = []; S.cardCache = null; S.modules = null; S.setupModules = null; clearPersistedGame(); setScreen("home"); restoreFocus(); },
   resumeGame() {
     const r = S.resume; if (!r) return;
     S.players = r.players; S.history = r.history;
@@ -2494,6 +2546,7 @@ document.addEventListener("keydown", function (e) {
 
 /* --- Inicjalizacja --- */
 document.addEventListener("visibilitychange", function () { wakeFailed = false; syncWakeLock(); });
+migrateLegacyKeys(); // krok 8: jednorazowy przenosin starych kluczy licznik_punktow_*
 applyLang();
 applyFontScale();
 render();
