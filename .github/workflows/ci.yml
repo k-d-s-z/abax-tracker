@@ -3,8 +3,9 @@
 #
 # Joby:
 #   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
-#        a) brak błędów konsoli przy starcie
-#        b) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
+#        a) kontrola CACHE (N3: zmiana plików CORE bez zmiany sw.js = FAIL)
+#        b) brak błędów konsoli przy starcie
+#        c) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
 #           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
 #   2. lighthouse — Lighthouse CI z progami (assert, C6)
 #   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
@@ -39,6 +40,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # potrzebne do git diff HEAD~1 w kontroli CACHE
+
+      # N3: zmiana pliku z CORE wymaga zmiany sw.js (bump CACHE).
+      # Inaczej użytkownicy z aktywnym service workerem dostają STARY kod z cache —
+      # dokładnie błąd N1 z audytu (poprawki nie docierały mimo wgrania plików).
+      - name: Kontrola CACHE (zmiana CORE bez zmiany sw.js = FAIL)
+        run: |
+          DIFF=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          if [ -z "$DIFF" ]; then echo "Brak HEAD~1 (pierwszy commit?) — pomijam kontrolę."; exit 0; fi
+          CORE_CHANGED=$(echo "$DIFF" | grep -E '^(index\.html|manifest\.webmanifest|css/app\.css|js/app\.js)$' | wc -l)
+          SW_CHANGED=$(echo "$DIFF" | grep -E '^sw\.js$' | wc -l)
+          if [ "$CORE_CHANGED" -gt 0 ] && [ "$SW_CHANGED" -eq 0 ]; then
+            echo "::error::Zmieniono plik z CORE sw.js (index.html / manifest / css/app.css / js/app.js) bez zmiany sw.js. Zrób bump CACHE, inaczej użytkownicy z aktywnym service workerem nie dostaną nowego kodu (audyt N1)."
+            exit 1
+          fi
+          echo "OK: kontrola CACHE przeszła (CORE_CHANGED=$CORE_CHANGED, SW_CHANGED=$SW_CHANGED)."
 
       - uses: actions/setup-node@v4
         with:
