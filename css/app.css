@@ -1,5 +1,4 @@
-/* ABAX TRACKER — style aplikacji. Przeniesione bez zmian z inline <style>.
-   CSP wymaga teraz style-src 'self' (zero inline CSS w HTML i JS-templates). */
+CSP wymaga teraz style-src 'self' (zero inline CSS w HTML i JS-templates). */
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   /* touch-action:manipulation wyłącza opóźnienie 300ms i double-tap zoom na mobilkach */
   :root {
@@ -531,7 +530,7 @@
   .game-status { display:flex; align-items:center; justify-content:center; gap:6px; flex:1; min-width:0; flex-wrap:wrap; }
   .stat-btn { display:inline-flex; align-items:center; justify-content:center; min-height:var(--tap); min-width:44px; padding:4px 10px; background:var(--surface-2); border:1px solid rgba(var(--accent-rgb), .35); color:var(--accent-text); font-weight:800; font-size:calc(13px * var(--fs-mult)); border-radius:8px; cursor:default; white-space:nowrap; font-variant-numeric:tabular-nums; }  /* U1: min-width 44px — README obiecuje cele dotykowe 44 px */
   /* P1: lista wyników zakończonej gry w Ustawieniach (OSTATNIE GRY) */
-  .finish-list { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:4px; }
+  .finish-list { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; }
   .finish-row { display:flex; align-items:center; gap:6px; min-width:0; }
   .finish-row .name { font-size:calc(13px * var(--fs-mult)); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .finish-score { font-weight:800; font-size:calc(13px * var(--fs-mult)); color:var(--text-muted); }

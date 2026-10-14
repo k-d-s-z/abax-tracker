@@ -1,5 +1,3 @@
-"use strict";
-
 /* ================================================================
    1. I18N — MODUŁ TŁUMACZEŃ (osobna sekcja, gotowa do wydzielenia)
    ================================================================ */
@@ -106,7 +104,9 @@ const STR = {
     gameModulesTitle: "MODUŁY",
     /* P1: historia zakończonych gier */
     finishedGames: "OSTATNIE GRY", noFinished: "Brak zakończonych gier.",
-    gameSaved: "Zapisano wynik gry w Ostatnich grach"
+    gameSaved: "Zapisano wynik gry w Ostatnich grach",
+    deleteFinished: "Usuń grę z Ostatnich gier", deleteFinishedQ: "Usunąć grę z Ostatnich gier?",
+    finishedDeleted: "Usunięto grę z Ostatnich gier", finishedRestored: "Przywrócono grę w Ostatnich grach"
   },
   en: {
     title: "ABAX TRACKER", newGame: "+&nbsp; NEW GAME", newGameTitle: "NEW GAME", scoringTitle: "SCORING",
@@ -210,7 +210,9 @@ const STR = {
     gameModulesTitle: "MODULES",
     /* P1: finished games history */
     finishedGames: "RECENT GAMES", noFinished: "No finished games yet.",
-    gameSaved: "Game result saved to Recent games"
+    gameSaved: "Game result saved to Recent games",
+    deleteFinished: "Delete game from Recent games", deleteFinishedQ: "Delete game from Recent games?",
+    finishedDeleted: "Game deleted from Recent games", finishedRestored: "Game restored in Recent games"
   }
 };
 
@@ -599,6 +601,8 @@ function undoToast(msg, entry) {
   btn.addEventListener("click", function () {
     clearTimeout(undoToastTimer);
     el.hidden = true;
+    /* P1: generyczne przywrócenie (np. usunięta gra z OSTATNIE GRY) albo klasyczne punkty */
+    if (entry.restore) { entry.restore(); return; }
     if (Logic.applyPoints(S, entry.id, entry.delta)) {
       if (S.modules && S.modules.target.on) applyTargetFlags();
       render();
@@ -1123,7 +1127,28 @@ function viewHome() {
       <button class="btn-outline" data-a="openSettings">${t("settingsTitle")}</button>
     </div>
     <p class="sub">${t("savedLineups")}</p>
-    <div class="scroll">${groupsHtml}</div>`;
+    <div class="scroll">${groupsHtml}</div>
+    <p class="sub">${t("finishedGames")}</p>
+    <div class="scroll">${finishedHomeHtml()}</div>`;
+}
+
+/* P1: sekcja OSTATNIE GRY na ekranie głównym (pod ZAPISANE SKŁADY) —
+   z usuwaniem (X → potwierdzenie → toast z PRZYWRÓĆ). */
+function finishedHomeHtml() {
+  if (!S.finished.length) return `<p class="empty">${t("noFinished")}</p>`;
+  return S.finished.map(g => {
+    const date = new Date(g.savedAt).toLocaleDateString(locale(), { dateStyle: "short" });
+    const rank = g.players.slice().sort((a, b) => b.score - a.score);
+    const top = rank[0].score;
+    const rows = rank.map(p => `<span class="finish-row${p.score === top ? " win" : ""}"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span><span class="finish-score">${p.score}</span></span>`).join("");
+    return `<div class="card">
+      <div class="row">
+        <span class="save-meta">${date}${g.target !== null ? " • " + t("targetWord") + ": " + g.target : ""}</span>
+        <button class="icon-btn" aria-label="${t("deleteFinished")}" ${act("askDeleteFinished", { id: g.id })}>${ICONS.trash}</button>
+      </div>
+      <div class="finish-list">${rows}</div>
+    </div>`;
+  }).join("");
 }
 
 /* --- Moduły gry: karty używane na ekranie NOWA GRA (szkic) i w oknie ołówka (gra) ---
@@ -1304,16 +1329,6 @@ function viewSettings() {
       </span>
     </div>`).join("");
 
-  const finishedHtml = S.finished.length ? S.finished.map(g => {
-    const date = new Date(g.savedAt).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" });
-    /* ranking malejąco; zwycięzca (remis na szczycie = wszyscy najlepsi) z wyróżnieniem */
-    const rank = g.players.slice().sort((a, b) => b.score - a.score);
-    const top = rank[0].score;
-    const rows = rank.map(p => `<span class="finish-row${p.score === top ? " win" : ""}"><span class="avatar ${cc(p.color)}"></span><span class="name">${esc(p.name)}</span><span class="finish-score">${p.score}</span></span>`).join("");
-    return `<div class="list-item">
-      <span class="row-left col"><span class="save-meta">${date}${g.target !== null ? " • " + t("targetWord") + ": " + g.target : ""}</span><span class="finish-list">${rows}</span></span>
-    </div>`;
-  }).join("") : `<p class="empty">${t("noFinished")}</p>`;
 
   return `<div class="header-row">
       <button class="icon-btn" data-a="backHome" aria-label="${t("back")}">${ICONS.back}</button><h2>${t("settingsTitle")}</h2>
@@ -1360,8 +1375,6 @@ function viewSettings() {
       <h2 class="settings-group">${t("settingsGroupData")}</h2>
       <h3 class="sub">${t("savedGames")}</h3>
       <div class="card">${savesHtml}</div>
-      <h3 class="sub">${t("finishedGames")}</h3>
-      <div class="card">${finishedHtml}</div>
       <h3 class="sub">${t("backup")}</h3>
       <div class="card">
         <button class="btn-outline mt full" data-a="exportData">${t("exportBtn")}</button>
@@ -1543,6 +1556,15 @@ function dialogHtml(noAnim) {
       <div class="dialog-actions">
         <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
         <button class="dlg-btn red" ${act("confirmDeleteSaveFn", { id: d.id })}>${t("remove")}</button>
+      </div>`;
+  }
+  else if (d.type === "confirmDeleteFinished") {
+    /* P1: potwierdzenie usunięcia gry z OSTATNIE GRY (na home) — z możliwością PRZYWRÓĆ w toaście */
+    inner = `${title(t("deleteFinishedQ"))}
+      <p class="dlg-name">${new Date(d.savedAt).toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}</p>
+      <div class="dialog-actions">
+        <button class="dlg-btn secondary" data-a="closeDialog">${t("cancelShort")}</button>
+        <button class="dlg-btn red" ${act("confirmDeleteFinishedFn", { id: d.id })}>${t("remove")}</button>
       </div>`;
   }
   else if (d.type === "confirmImport") {
@@ -2184,6 +2206,29 @@ const ACTIONS = {
     const s = S.saves.find(x => x.id === id);
     if (!s) return;
     openDialogFn({ type: "confirmDeleteSave", id: id, name: s.name });
+  },
+  /* P1: usuwanie gry z OSTATNIE GRY (home) — potwierdzenie, potem toast z PRZYWRÓĆ */
+  askDeleteFinished(id) {
+    const g = S.finished.find(x => x.id === id);
+    if (!g) return;
+    openDialogFn({ type: "confirmDeleteFinished", id: id, savedAt: g.savedAt });
+  },
+  confirmDeleteFinishedFn(id) {
+    const idx = S.finished.findIndex(x => x.id === id);
+    if (idx < 0) { closeDialog(); return; }
+    const removed = S.finished.splice(idx, 1)[0];
+    saveFinished();
+    closeDialog();
+    render();
+    /* toast z PRZYWRÓĆ: nietknięty wpis wraca na swoje miejsce w historii */
+    undoToast(t("finishedDeleted"), {
+      restore: function () {
+        S.finished.splice(Math.min(idx, S.finished.length), 0, removed);
+        saveFinished();
+        render();
+        toast(t("finishedRestored"));
+      }
+    });
   },
   confirmDeleteSaveFn(id) {
     S.saves = S.saves.filter(x => x.id !== id);
