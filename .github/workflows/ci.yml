@@ -11,7 +11,10 @@
 #           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
 #   2. lighthouse — Lighthouse CI z progami (assert, C6)
 #   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
-#                  i dialogów; fail przy naruszeniach krytycznych/poważnych (C5)
+#                  i dialogów (nawigacja ŁAŃCUCHAMI kroków od home, świeża
+#                  strona per ekran); w logu target+html+powód każdego
+#                  naruszonego węzła; fail przy naruszeniach krytycznych/
+#                  poważnych (C5)
 #
 # Anty-truncation (N6/N7 z audytu): pliki wgrane przez "Add files via upload"
 # potrafiły stracić początek — app.css zaczynał się od środka komentarza, więc
@@ -286,14 +289,31 @@ jobs:
             return false;
           }
 
-          // ekrany do skanowania: [nazwa, akcja prowadząca do ekranu]
+          // Ekrany jako ŁAŃCUCHY kroków od home. Poprzednia wersja po skanie
+          // wracała do home i dopiero TAM szukała akcji następnego ekranu —
+          // dlatego setup-dodaj-gracza i settings-dodaj-kosc były pomijane
+          // (openAddPlayer istnieje tylko na ekranie NOWA GRA). Teraz każdy
+          // ekran zaczynamy od świeżego page.goto i klikamy całą ścieżkę.
           const SCREENS = [
-            ['home', null],
-            ['setup-nowa-gra', '[data-a="newGame"]'],
-            ['setup-dodaj-gracza', '[data-a="openAddPlayer"]'],
-            ['settings', '[data-a="openSettings"]'],
-            ['settings-dodaj-kosc', '[data-a="addDie"]'],
+            // [nazwa, kroki do kliknięcia po kolei od home]
+            ['home', []],
+            ['setup-nowa-gra', ['[data-a="newGame"]']],
+            ['setup-dodaj-gracza', ['[data-a="newGame"]', '[data-a="openAddPlayer"]']],
+            ['settings', ['[data-a="openSettings"]']],
+            ['settings-dodaj-kosc', ['[data-a="openSettings"]', '[data-a="addDie"]']],
           ];
+
+          // Klik kroku: najpierw po data-a; gdy brak — po dostępnej nazwie
+          // przycisku (tekst widoczny, np. „+ DODAJ KOŚĆ" / „+ ADD DIE").
+          async function clickStep(page, sel, labelRe) {
+            const bySel = page.locator(sel).first();
+            if (await bySel.count()) { await bySel.click(); return true; }
+            const byName = page.getByRole('button', { name: labelRe }).first();
+            if (await byName.count()) { await byName.click(); return true; }
+            const byText = page.locator('button, [role="button"]').filter({ hasText: labelRe }).first();
+            if (await byText.count()) { await byText.click(); return true; }
+            return false;
+          }
 
           let browser = null;
           async function main() {
@@ -304,16 +324,22 @@ jobs:
             // AxeBuilder wymaga strony z osobnego kontekstu (browser.newContext()),
             // nie bezpośrednio z browser.newPage()
             const context = await browser.newContext();
-            const page = await context.newPage();
-            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
 
             let blocking = [];
-            for (const [name, action] of SCREENS) {
-              if (action) {
-                const el = page.locator(action).first();
-                if (await el.count()) { await el.click(); await page.waitForTimeout(150); }
-                else { console.warn(`Pominięto ${name}: brak ${action}`); continue; }
+            for (const [name, steps] of SCREENS) {
+              const page = await context.newPage();
+              await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+              let ok = true;
+              for (let i = 0; i < steps.length; i++) {
+                const labelRe = /dodaj kości|add die|nowa kość|new die/i;
+                if (!(await clickStep(page, steps[i], labelRe))) {
+                  console.warn(`Pominięto ${name}: brak ${steps[i]} (krok ${i + 1})`);
+                  ok = false; break;
+                }
+                await page.waitForTimeout(200);
               }
+              if (!ok) { await page.close().catch(() => {}); continue; }
+
               const res = await new AxeBuilder({ page })
                 .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
                 .analyze();
@@ -324,20 +350,24 @@ jobs:
                   ` (${serious.length} krytycznych/poważnych, ${moderate.length} umiarkowanych)`);
                 for (const v of res.violations) {
                   console.log(`  - [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} węzłów)`);
+                  // Szczegóły węzłów (target + html + powód): bez tego wpis
+                  // „label-content-name-mismatch (2 węzły)" nie mówi, KTÓRE
+                  // elementy naprawić. Limit 5 węzłów na regułę, żeby log nie puchł.
+                  for (const n of v.nodes.slice(0, 5)) {
+                    console.log(`      target: ${JSON.stringify(n.target).slice(0, 200)}`);
+                    console.log(`      html:   ${String(n.html || '').replace(/\s+/g, ' ').slice(0, 300)}`);
+                    const reasons = [...(n.any || []), ...(n.all || [])].map(a => a.message).join(' | ');
+                    if (reasons) console.log(`      reason: ${reasons.slice(0, 300)}`);
+                  }
                 }
               } else {
                 console.log(`[axe] ${name}: czysto`);
               }
               blocking = blocking.concat(serious.map(v => `${name}: [${v.impact}] ${v.id} — ${v.help}`));
-              // powrót do home przed kolejnym ekranem
-              if (action) {
-                const back = page.locator('[data-a="closeDialog"], [data-a="backHome"]').first();
-                if (await back.count()) { await back.click().catch(() => {}); await page.waitForTimeout(150); }
-                const back2 = page.locator('[data-a="backHome"]').first();
-                if (await back2.count()) { await back2.click().catch(() => {}); await page.waitForTimeout(150); }
-              }
+              await page.close().catch(() => {});
             }
-            // po ustaleniu baseline zamień poniższy blok na: if (blocking.length) → exit 1
+            // naruszenia krytyczne/poważne = FAIL (progu nie osłabiamy —
+            // jeśli świeci, poprawiamy aplikację, nie test)
             if (blocking.length) {
               console.error('NARUSZENIA KRYTYCZNE/POWAŻNE:\n' + blocking.join('\n'));
               process.exitCode = 1;
