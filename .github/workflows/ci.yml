@@ -5,9 +5,10 @@
 #   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
 #        a) kontrola CACHE (N3: zmiana plików CORE bez zmiany sw.js = FAIL)
 #        b) kontrola nagłówków plików — anty-truncation (N6/N7)
-#        c) kontrola stylu obliczonego w przeglądarce (N6: reguła resetu *)
-#        d) brak błędów konsoli przy starcie
-#        e) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
+#        c) kontrola składni JS: node --check dla sw.js i js/app.js (S1)
+#        d) kontrola stylu obliczonego w przeglądarce (N6: reguła resetu *)
+#        e) brak błędów konsoli przy starcie
+#        f) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
 #           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
 #   2. lighthouse — Lighthouse CI z progami (assert, C6)
 #   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
@@ -94,6 +95,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      # S1: upload przez web UI potrafi ZŁAMAĆ SKŁADNIĘ w środku pliku — w repo
+      # znaleziono znak nowej linii wewnątrz słowa "new" w sw.js (SyntaxError,
+      # service worker w ogóle się nie instalował, a CI tego nie widział, bo
+      # nic nie parsowało sw.js). node --check tylko parsuje plik (nic nie
+      # wykonuje), więc łapie to tanio, zanim uruchomi się cokolwiek innego.
+      - name: Kontrola składni JS (sw.js, js/app.js)
+        run: |
+          set -e
+          node --check sw.js
+          echo "OK: sw.js — składnia poprawna"
+          node --check js/app.js
+          echo "OK: js/app.js — składnia poprawna"
 
       - name: Install deps (lokalnie, nie globalnie)
         run: |
