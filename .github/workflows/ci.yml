@@ -322,8 +322,10 @@ jobs:
             }
             browser = await chromium.launch();
             // AxeBuilder wymaga strony z osobnego kontekstu (browser.newContext()),
-            // nie bezpośrednio z browser.newPage()
-            const context = await browser.newContext();
+            // nie bezpośrednio z browser.newPage(). Locale pl-PL: bez tego
+            // Chromium CI ma navigator.language=en-US i axe skanuje ANGIELSKIE
+            // etykiety (aria-label itd.) — a docelowym językiem jest polski.
+            const context = await browser.newContext({ locale: 'pl-PL' });
 
             let blocking = [];
             for (const [name, steps] of SCREENS) {
