@@ -149,7 +149,7 @@ const STR = {
     fontSmaller: "Decrease font size", fontBigger: "Increase font size",
     quickButtons: "QUICK-ADD BUTTONS", pair: "PAIR",
     removePair: "Remove this button pair", addPair: "+ ADD BUTTON PAIR",
-    onCard: "Currently on a player card:",
+    onCard: "Currently on player card:",
     buttonsCount1: "buttons (including the fixed “+…” / “–…” for entering any number).",
     buttonsTip: "Tip: from 3 pairs the buttons are arranged in two rows (minus above plus), so the player card gets taller. On a small screen start with 1–2 pairs.",
     backup: "BACKUP", exportBtn: "EXPORT DATA (BACKUP)",
@@ -292,7 +292,7 @@ const LEGACY_LS_KEYS = [
 ];
 /* jednorazowa migracja: przenosimy stary klucz tylko, gdy nowy nie istnieje */
 function migrateLegacyKeys() {
-  /* N2: migrujemy też kopie .bak i .corrupt — inaczej odzyskanie danych ze starej
+  /* N2: migrujemy też kopie .bak i .corrupt — inaczej odzyskanie danych ze starego
      kopii zapasowej byłoby niemożliwe po usunięciu starego klucza głównego. */
   for (const [from, to] of LEGACY_LS_KEYS) {
     for (const sfx of ["", ".bak", ".corrupt"]) {
@@ -913,7 +913,7 @@ function sanitizeSaves(raw) {
     if (!s || typeof s !== "object") continue;
     const players = sanitizePlayers(s.players);
     if (!players) continue;
-    /* mapa starych id graczy -> nowe id (indeksy) */
+    /* mapa starych id gracza -> nowe id (indeksy) */
     const idMap = Object.create(null); // bez prototypu: id typu "toString" nie przejdzie walidacji
     s.players.forEach((p, i) => { if (p && typeof p === "object" && p.id !== undefined) idMap[String(p.id)] = String(i); });
     const history = [];
@@ -1180,7 +1180,7 @@ function moduleCardsHtml(m, pfx, inpId, inGame) {
       ${ctl(pfx + "Rounds", { v: -1 }, "\u2212", "\u2212", m.rounds.count <= 0)}
       <span class="pct">${m.rounds.count ? m.rounds.count : t("roundsInf")}</span>
       ${ctl(pfx + "Rounds", { v: 1 }, "+", "+", m.rounds.count >= LIMITS.roundsMax)}
-      ${ctl(pfx + "RoundsInf", {}, t("roundsInf"), t("roundsInfLabel"), m.rounds.count === 0)}
+      ${ctl(pfx + "RoundsInf", {}, t("roundsInf"), t("roundsInf") + " " + t("roundsInfLabel"), m.rounds.count === 0)}
     </div>
     <p class="tiny note mt4">${t("roundsCountQ")}</p>
     </div>` : "";
@@ -1237,10 +1237,10 @@ function scoreButtonsHtml(id) {
     const cls = label.length >= 4 ? " long-lbl" : "";
     return `<button class="${cls.trim()}" aria-label="${label}" ${act("pend", { id: id, v: v })}>${label}</button>`;
   };
-  const minus = `<button class="amount-btn" aria-label="${t("subtractPoints")}" ${act("openCustomAmount", { id: id, v: -1 })}>\u2212\u2026</button>` +
+  const minus = `<button class="amount-btn" aria-label="\u2212\u2026 ${t("subtractPoints")}" ${act("openCustomAmount", { id: id, v: -1 })}>\u2212\u2026</button>` +
     vals.slice().reverse().map(v => btn(-v)).join("");
   const plus = vals.map(v => btn(v)).join("") +
-    `<button class="amount-btn" aria-label="${t("addPoints")}" ${act("openCustomAmount", { id: id, v: 1 })}>+\u2026</button>`;
+    `<button class="amount-btn" aria-label="+\u2026 ${t("addPoints")}" ${act("openCustomAmount", { id: id, v: 1 })}>+\u2026</button>`;
   /* od 3 par: dwa rzędy (minusy nad plusami) — przy 10 przyciskach w jednym rzędzie cel dotyku miał ok. 24 px */
   if (vals.length >= 3) return `<div class="score-stack"><div class="score-btns s14">${minus}</div><div class="score-btns s14">${plus}</div></div>`;
   return `<div class="score-btns s14">${minus}${plus}</div>`;
@@ -1258,14 +1258,14 @@ function playerCardHtml(p) {
   }).join("");
   const bottom = pend
     ? `<div class="confirm-row">
-        <button class="btn-cancel" aria-label="${t("cancelShort")}" ${act("pendCancel", { id: p.id })}>✕</button>
-        <button class="btn-apply" aria-label="${t("ok")}" ${act("pendApply", { id: p.id })}>✓</button>
+        <button class="btn-cancel" aria-label="✕ ${t("cancelShort")}" ${act("pendCancel", { id: p.id })}>✕</button>
+        <button class="btn-apply" aria-label="✓ ${t("ok")}" ${act("pendApply", { id: p.id })}>✓</button>
       </div>`
     : `<div class="history-chips">${chips || `<span class="tiny no-entries">${t("noEntries")}</span>`}</div>`;
 
   return `<div class="card player-card ${cc(p.color)}" data-card="${esc(p.id)}">
     <div class="row">
-      <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name player-name">${esc(p.name)}</span>${p.targetHit ? `<span class="target-flag" title="${t("targetReachedTitle")}" aria-label="${t("targetReachedTitle")}">\u2691</span>` : ""}</span>
+      <span class="row-left"><span class="avatar ${cc(p.color)}"></span><span class="name player-name">${esc(p.name)}</span>${p.targetHit ? `<span class="target-flag" title="${t("targetReachedTitle")}" aria-label="\u2691 ${t("targetReachedTitle")}">\u2691</span>` : ""}</span>
       <button class="icon-btn drag-handle" data-drag aria-label="${t("dragHandle")}: ${esc(p.name)}" aria-keyshortcuts="ArrowUp ArrowDown">${ICONS.move}</button>
     </div>
     <div class="score-row">
@@ -1280,7 +1280,7 @@ function playerCardHtml(p) {
 }
 
 /* Nagłówek ekranu gry — wydzielony, żeby dało się go przebudować BEZ efektów
-   ubocznych (F1: wcześniejsze wołanie pełnego viewGame() nadpisowało S.cardCache). */
+   ubocznych (F1: wcześniejsze wołanie pełnego viewGame() nadpisawało S.cardCache). */
 function gameHeaderHtml() {
   return `<div class="header-row between sticky" data-sig="${headerSig()}">
     <span class="row-left">
@@ -1288,8 +1288,8 @@ function gameHeaderHtml() {
     </span>
     <span class="game-status">
       ${S.modules && S.modules.rounds.on ? `<button class="stat-btn" aria-label="${t("nextRound")}: ${roundsLabel()}" data-a="nextRound">${roundsLabel()}</button>` : ""}
-      ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")}: ${S.modules.target.value}">${t("targetWord")} ${S.modules.target.value}</span>` : ""}
-      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat" title="${t("gameTime")}"><span class="mod-ico">${ICONS.clock}</span><span id="timerStatLabel">${timerLabel(timerMs())}</span></span>` : ""}
+      ${S.modules && S.modules.target.on ? `<span class="stat-btn" data-stat="target" title="${t("targetWord")}: ${S.modules.target.value}" aria-label="${t("targetWord")} ${S.modules.target.value}">${t("targetWord")} ${S.modules.target.value}</span>` : ""}
+      ${S.modules && S.modules.timer.on ? `<span class="stat-btn" id="timerStat"><span class="mod-ico">${ICONS.clock}</span><span id="timerStatLabel">${timerLabel(timerMs())}</span></span>` : ""}
     </span>
     <span class="row-left tools">
       <button class="icon-btn" aria-label="${t("undo")}"${S.history.length ? "" : " disabled"} data-a="undo">${ICONS.undo}</button>
@@ -1320,10 +1320,13 @@ function viewSettings() {
   }).join("") : `<p class="empty">${t("noSaves")}</p>`;
 
   const fs = S.settings.fontScale;
+  /* WCAG 2.5.3 (label-content-name-mismatch): dostępna nazwa musi zawierać tekst
+     widoczny na przycisku. aria-label zaczyna się więc od dokładnie tego, co widać
+     (A− / A+), a dopiero potem przychodzi opis z tłumaczenia. */
   const fontHtml = `<div class="row font-ctl">
-    <button class="btn-outline font-btn" aria-label="${t("fontSmaller")}"${fs <= FONT_MIN ? " disabled" : ""} ${act("changeFontScale", { v: -0.1 })}>A−</button>
+    <button class="btn-outline font-btn" aria-label="A− ${t("fontSmaller")}"${fs <= FONT_MIN ? " disabled" : ""} ${act("changeFontScale", { v: -0.1 })}>A−</button>
     <span class="tiny pct">${Math.round(fs * 100)}%</span>
-    <button class="btn-outline font-btn" aria-label="${t("fontBigger")}"${fs >= FONT_MAX ? " disabled" : ""} ${act("changeFontScale", { v: 0.1 })}>A+</button>
+    <button class="btn-outline font-btn" aria-label="A+ ${t("fontBigger")}"${fs >= FONT_MAX ? " disabled" : ""} ${act("changeFontScale", { v: 0.1 })}>A+</button>
   </div>`;
 
   const vals = buttonValues();
@@ -1600,9 +1603,9 @@ function dialogHtml(noAnim) {
     inner = `${title(t("dice"))}
       <p class="tiny mt" id="diceCountLbl">${t("diceCountQ")}</p>
       <div class="row font-ctl dice-count" role="group" aria-labelledby="diceCountLbl">
-        <button class="btn-outline font-btn" id="diceDec" aria-label="${t("diceFewer")}"${n <= 1 ? " disabled" : ""} ${act("diceCount", { v: -1 })}>\u2212</button>
+        <button class="btn-outline font-btn" id="diceDec" aria-label="\u2212 ${t("diceFewer")}"${n <= 1 ? " disabled" : ""} ${act("diceCount", { v: -1 })}>\u2212</button>
         <span class="pct" aria-live="polite">${n}</span>
-        <button class="btn-outline font-btn" id="diceInc" aria-label="${t("diceMore")}"${n >= LIMITS.diceCount ? " disabled" : ""} ${act("diceCount", { v: 1 })}>+</button>
+        <button class="btn-outline font-btn" id="diceInc" aria-label="+ ${t("diceMore")}"${n >= LIMITS.diceCount ? " disabled" : ""} ${act("diceCount", { v: 1 })}>+</button>
       </div>
       <p class="tiny mt" id="diceTypeLbl">${t("diceTypeQ")}</p>
       ${typeHtml}
@@ -1730,7 +1733,7 @@ function partialRenderGame() {
   const rb = app.querySelector('[data-a="nextRound"]');
   if (rb && S.modules && S.modules.rounds.on) { rb.textContent = roundsLabel(); rb.setAttribute("aria-label", t("nextRound") + ": " + roundsLabel()); }
   const tb = app.querySelector('[data-stat="target"]');
-  if (tb && S.modules && S.modules.target.on) tb.textContent = "\u2691" + S.modules.target.value;
+  if (tb && S.modules && S.modules.target.on) { tb.textContent = t("targetWord") + " " + S.modules.target.value; tb.setAttribute("aria-label", tb.textContent); }
   const tm = app.querySelector("#timerStatLabel");
   if (tm && S.modules && S.modules.timer.on) tm.textContent = timerLabel(timerMs());
 
@@ -2054,7 +2057,7 @@ const ACTIONS = {
     const inp = document.getElementById("editTarget");
     if (inp && String(inp.value) !== String(m.value)) inp.value = m.value;
     const tb = app.querySelector('[data-stat="target"]');
-    if (tb) tb.textContent = "\u2691" + m.value;
+    if (tb) { tb.textContent = t("targetWord") + " " + m.value; tb.setAttribute("aria-label", tb.textContent); }
   },
 
   /* licznik rund: klik w status potwierdza przejście do kolejnej rundy */

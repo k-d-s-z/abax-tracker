@@ -1,0 +1,401 @@
+# ABAX Tracker — CI: testy + Lighthouse + dostępność
+# Umieść jako: .github/workflows/ci.yml
+#
+# Joby:
+#   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
+#        a) kontrola CACHE (N3: zmiana plików CORE bez zmiany sw.js = FAIL)
+#        b) kontrola nagłówków plików — anty-truncation (N6/N7)
+#        c) kontrola składni JS: node --check dla sw.js i js/app.js (S1)
+#        d) kontrola stylu obliczonego w przeglądarce (N6: reguła resetu *)
+#        e) brak błędów konsoli przy starcie
+#        f) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
+#           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
+#   2. lighthouse — Lighthouse CI z progami (assert, C6)
+#   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
+#                  i dialogów (nawigacja ŁAŃCUCHAMI kroków od home, świeża
+#                  strona per ekran); w logu target+html+powód każdego
+#                  naruszonego węzła; fail przy naruszeniach krytycznych/
+#                  poważnych (C5)
+#
+# Anty-truncation (N6/N7 z audytu): pliki wgrane przez "Add files via upload"
+# potrafiły stracić początek — app.css zaczynał się od środka komentarza, więc
+# przeglądarka odrzucała regułę `*` (znikał reset box-sizing/touch-action),
+# a app.js traciło "use strict". Testy 65/65 przechodziły, bo sprawdzały tylko
+# konsolę. Dlatego pilnujemy obu plików na dwa sposoby: statycznie (początek
+# pliku) i wizualnie (styl obliczony w Chromium).
+#
+# Uwaga: Playwright i http-server instalujemy LOKALNIE w katalogu ci-workdir
+# (npm install -g + import w .mjs nie działa — Node nie widzi globalnych pakietów
+# przy importach ES). Serwowanie aplikacji i uruchamianie testu w jednym kroku,
+# bo proces w tle nie przeżywa końca kroku, gdy katalog zostanie sprzątnięty.
+#
+# TODO (docelowo): package.json + package-lock.json w repo i `npm ci` zamiast
+# niepiętych wersji (C4); akcje przypiąć do commit-SHA i włączyć Dependabota
+# dla ekosystemu github-actions.
+
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# zasada najmniejszych uprawnień (C4)
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'   # jedno LTS dla wszystkich jobów (C3)
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # C1: pełna historia — kontrola CACHE na zakresie before..sha
+
+      # N3: zmiana pliku z CORE wymaga zmiany sw.js (bump CACHE).
+      # Inaczej użytkownicy z aktywnym service workerem dostają STARY kod z cache —
+      # dokładnie błąd N1 z audytu (poprawki nie docierały mimo wgrania plików).
+      - name: Kontrola CACHE (zmiana CORE bez zmiany sw.js = FAIL)
+        run: |
+          DIFF=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          if [ -z "$DIFF" ]; then echo "Brak zakresu do porównania (pierwszy commit?) — pomijam kontrolę."; exit 0; fi
+          CORE_CHANGED=$(echo "$DIFF" | grep -E '^(index\.html|manifest\.webmanifest|css/app\.css|js/app\.js)$' | wc -l)
+          SW_CHANGED=$(echo "$DIFF" | grep -E '^sw\.js$' | wc -l)
+          if [ "$CORE_CHANGED" -gt 0 ] && [ "$SW_CHANGED" -eq 0 ]; then
+            echo "::error::Zmieniono plik z CORE (index.html / manifest / css/app.css / js/app.js) bez zmiany sw.js. Zrób bump CACHE, inaczej użytkownicy z aktywnym service workerem nie dostaną nowego kodu (audyt N1)."
+            exit 1
+          fi
+          echo "OK: kontrola CACHE przeszła (CORE_CHANGED=$CORE_CHANGED, SW_CHANGED=$SW_CHANGED)."
+
+      # N6/N7: statyczna kontrola nagłówków plików. Ucięty początek = FAIL
+      # natychmiast, zanim uruchomi się cokolwiek innego — cheap and loud.
+      - name: Kontrola nagłówków plików (anty-truncation, N6/N7)
+        run: |
+          fail=0
+          # N6: app.css musi zaczynać się od komentarza /* i zawierać regułę
+          # resetu * z box-sizing:border-box w pierwszych 20 liniach.
+          if ! head -c 200 css/app.css | grep -q '^/\*'; then
+            echo "::error::css/app.css nie zaczyna się od komentarza /* — początek pliku został ucięty (audyt N6). Przeglądarka odrzuci regułę resetu * (box-sizing, touch-action) i cała aplikacja renderuje się inaczej."
+            fail=1
+          fi
+          if ! sed -n '1,20p' css/app.css | grep -Eq '\*[^/]*box-sizing:border-box'; then
+            echo "::error::css/app.css: w pierwszych 20 liniach brak reguły resetu * z box-sizing:border-box (audyt N6)."
+            fail=1
+          fi
+          # N7: app.js musi zaczynać się od "use strict";
+          if ! head -c 200 js/app.js | grep -q '"use strict"'; then
+            echo "::error::js/app.js nie zaczyna się od \"use strict\"; — początek pliku został ucięty (audyt N7)."
+            fail=1
+          fi
+          exit $fail
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # S1: upload przez web UI potrafi ZŁAMAĆ SKŁADNIĘ w środku pliku — w repo
+      # znaleziono znak nowej linii wewnątrz słowa "new" w sw.js (SyntaxError,
+      # service worker w ogóle się nie instalował, a CI tego nie widział, bo
+      # nic nie parsowało sw.js). node --check tylko parsuje plik (nic nie
+      # wykonuje), więc łapie to tanio, zanim uruchomi się cokolwiek innego.
+      - name: Kontrola składni JS (sw.js, js/app.js)
+        run: |
+          set -e
+          node --check sw.js
+          echo "OK: sw.js — składnia poprawna"
+          node --check js/app.js
+          echo "OK: js/app.js — składnia poprawna"
+
+      - name: Install deps (lokalnie, nie globalnie)
+        run: |
+          mkdir -p ci-workdir
+          cd ci-workdir
+          npm init -y >/dev/null
+          npm install --no-fund --no-audit playwright http-server
+
+      - name: Install Chromium for Playwright
+        run: |
+          cd ci-workdir
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test + wbudowany harness ?test
+        env:
+          APP_DIR: ${{ github.workspace }}
+        run: |
+          cd ci-workdir
+          cat > smoke.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import { spawn } from 'child_process';
+
+          const BASE = 'http://127.0.0.1:8000';
+
+          // start serwera w tle Z TEGO SAMEGO procesu testu
+          const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
+
+          // czekamy, aż port naprawdę odpowie (nie sztywny sleep, C2)
+          async function waitForPort(url, ms = 15000) {
+            const deadline = Date.now() + ms;
+            while (Date.now() < deadline) {
+              try { await fetch(url); return true; }
+              catch { await new Promise(r => setTimeout(r, 250)); }
+            }
+            return false;
+          }
+
+          let browser = null;
+          async function main() {
+            if (!(await waitForPort(BASE + '/index.html'))) {
+              console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
+            }
+            browser = await chromium.launch();
+            const page = await browser.newPage();
+
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            page.on('pageerror', err => errors.push(String(err)));
+
+            // 1. Aplikacja ładuje się bez błędów konsoli
+            await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+            if (errors.length) {
+              console.error('Błędy konsoli przy starcie:', errors); process.exitCode = 1; return;
+            }
+
+            // 2. Kluczowa struktura: kontener aplikacji + toast
+            for (const sel of ['#app', '#toast']) {
+              if (!(await page.locator(sel).count())) {
+                console.error('Brak elementu: ' + sel); process.exitCode = 1; return;
+              }
+            }
+
+            // 2b. N6 — kontrola stylu obliczonego (anty-truncation, druga warstwa):
+            //     gdy początek app.css został ucięty, przeglądarka odrzuca regułę `*`
+            //     i body ma box-sizing: content-box, a przyciski touch-action: auto
+            //     (opóźnienie 300 ms + double-tap zoom). Testy konsolowe tego nie
+            //     widzą — dlatego sprawdzamy właśnie to.
+            const styleProbe = await page.evaluate(() => {
+              const btn = document.querySelector('button');
+              return {
+                bodyBoxSizing: getComputedStyle(document.body).boxSizing,
+                btnTouchAction: btn ? getComputedStyle(btn).touchAction : '(no button)'
+              };
+            });
+            if (styleProbe.bodyBoxSizing !== 'border-box' || styleProbe.btnTouchAction !== 'manipulation') {
+              console.error('Reguła resetu * nie działa (audyt N6 — objaw uciętego początku app.css):', styleProbe);
+              process.exitCode = 1; return;
+            }
+            console.log('OK: styl obliczony — body border-box, button touch-action:manipulation');
+
+            // 3. Wbudowany harness ?test — wynik bezpośrednio z runSelfTests() (C1):
+            //    wyjątek w harnessie lub niezgodność passed/total = FAIL,
+            //    komunikat o błędach trafia do logu, a job kończy się czerwono.
+            await page.goto(BASE + '/index.html?test', { waitUntil: 'networkidle' });
+            const r = await page.evaluate(() => {
+              try {
+                const res = window.__abaxTests();
+                return { ok: true, passed: res.passed, total: res.total,
+                         failed: res.results.filter(x => !x.ok).map(x => x.name) };
+              } catch (e) {
+                return { ok: false, error: String(e && e.stack ? e.stack : e) };
+              }
+            });
+            if (!r.ok || r.passed !== r.total || errors.length) {
+              console.error('Harness ?test nie przeszedł:', JSON.stringify(r, null, 2));
+              if (errors.length) console.error('Błędy konsoli:', errors);
+              process.exitCode = 1; return;
+            }
+            console.log(`OK: smoke + harness ?test (${r.passed}/${r.total})`);
+          }
+          try {
+            await main();
+          } finally {
+            if (browser) await browser.close().catch(() => {});
+            server.kill();
+          }
+          EOF
+          node smoke.mjs
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Progi (C6): job NIE przechodzi, jeśli wynik spadnie poniżej baseline.
+      - name: Write lighthouserc
+        run: |
+          cat > lighthouserc.json <<'EOF'
+          {
+            "ci": {
+              "collect": {
+                "staticDistDir": ".",
+                "numberOfRuns": 3
+              },
+              "assert": {
+                "assertions": {
+                  "categories:accessibility": ["error", { "minScore": 0.95 }],
+                  "categories:best-practices": ["error", { "minScore": 0.95 }],
+                  "categories:performance": ["error", { "minScore": 0.9 }],
+                  "categories:seo": ["warn", { "minScore": 0.9 }]
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          # Aplikacja mobile-first: domyślny preset (mobile).
+
+  a11y-axe:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # C5: axe działa wewnątrz Playwright — jeden Chromium (nieparowana para
+      # Chrome/ChromeDriver znika), skanujemy realne ekrany aplikacji, nie tylko home.
+      - name: Install deps (lokalnie)
+        run: |
+          mkdir -p ci-workdir
+          cd ci-workdir
+          npm init -y >/dev/null
+          npm install --no-fund --no-audit playwright @axe-core/playwright http-server
+
+      - name: Install Chromium for Playwright
+        run: |
+          cd ci-workdir
+          npx playwright install --with-deps chromium
+
+      - name: axe scan (home, NOWA GRA, USTAWIENIA, dialogi)
+        env:
+          APP_DIR: ${{ github.workspace }}
+        run: |
+          cd ci-workdir
+          cat > a11y.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import { AxeBuilder } from '@axe-core/playwright';
+          import { spawn } from 'child_process';
+
+          const BASE = 'http://127.0.0.1:8000';
+          const server = spawn('node', ['./node_modules/http-server/bin/http-server', process.env.APP_DIR, '-p', '8000', '--silent']);
+
+          async function waitForPort(url, ms = 15000) {
+            const deadline = Date.now() + ms;
+            while (Date.now() < deadline) {
+              try { await fetch(url); return true; }
+              catch { await new Promise(r => setTimeout(r, 250)); }
+            }
+            return false;
+          }
+
+          // Ekrany jako ŁAŃCUCHY kroków od home. Poprzednia wersja po skanie
+          // wracała do home i dopiero TAM szukała akcji następnego ekranu —
+          // dlatego setup-dodaj-gracza i settings-dodaj-kosc były pomijane
+          // (openAddPlayer istnieje tylko na ekranie NOWA GRA). Teraz każdy
+          // ekran zaczynamy od świeżego page.goto i klikamy całą ścieżkę.
+          const SCREENS = [
+            // [nazwa, kroki do kliknięcia po kolei od home]
+            ['home', []],
+            ['setup-nowa-gra', ['[data-a="newGame"]']],
+            ['setup-dodaj-gracza', ['[data-a="newGame"]', '[data-a="openAddPlayer"]']],
+            ['settings', ['[data-a="openSettings"]']],
+            ['settings-dodaj-kosc', ['[data-a="openSettings"]', '[data-a="addDie"]']],
+          ];
+
+          // Klik kroku: najpierw po data-a; gdy brak — po dostępnej nazwie
+          // przycisku (tekst widoczny, np. „+ DODAJ KOŚĆ" / „+ ADD DIE").
+          async function clickStep(page, sel, labelRe) {
+            const bySel = page.locator(sel).first();
+            if (await bySel.count()) { await bySel.click(); return true; }
+            const byName = page.getByRole('button', { name: labelRe }).first();
+            if (await byName.count()) { await byName.click(); return true; }
+            const byText = page.locator('button, [role="button"]').filter({ hasText: labelRe }).first();
+            if (await byText.count()) { await byText.click(); return true; }
+            return false;
+          }
+
+          let browser = null;
+          async function main() {
+            if (!(await waitForPort(BASE + '/index.html'))) {
+              console.error('Serwer nie wystartował na czas'); process.exitCode = 1; return;
+            }
+            browser = await chromium.launch();
+            // AxeBuilder wymaga strony z osobnego kontekstu (browser.newContext()),
+            // nie bezpośrednio z browser.newPage(). Locale pl-PL: bez tego
+            // Chromium CI ma navigator.language=en-US i axe skanuje ANGIELSKIE
+            // etykiety (aria-label itd.) — a docelowym językiem jest polski.
+            const context = await browser.newContext({ locale: 'pl-PL' });
+
+            let blocking = [];
+            for (const [name, steps] of SCREENS) {
+              const page = await context.newPage();
+              await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
+              let ok = true;
+              for (let i = 0; i < steps.length; i++) {
+                const labelRe = /dodaj kości|add die|nowa kość|new die/i;
+                if (!(await clickStep(page, steps[i], labelRe))) {
+                  console.warn(`Pominięto ${name}: brak ${steps[i]} (krok ${i + 1})`);
+                  ok = false; break;
+                }
+                await page.waitForTimeout(200);
+              }
+              if (!ok) { await page.close().catch(() => {}); continue; }
+
+              const res = await new AxeBuilder({ page })
+                .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+                .analyze();
+              const serious = res.violations.filter(v => ['critical', 'serious'].includes(v.impact));
+              const moderate = res.violations.filter(v => v.impact === 'moderate');
+              if (res.violations.length) {
+                console.log(`[axe] ${name}: ${res.violations.length} naruszeń` +
+                  ` (${serious.length} krytycznych/poważnych, ${moderate.length} umiarkowanych)`);
+                for (const v of res.violations) {
+                  console.log(`  - [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} węzłów)`);
+                  // Szczegóły węzłów (target + html + powód): bez tego wpis
+                  // „label-content-name-mismatch (2 węzły)" nie mówi, KTÓRE
+                  // elementy naprawić. Limit 5 węzłów na regułę, żeby log nie puchł.
+                  for (const n of v.nodes.slice(0, 5)) {
+                    console.log(`      target: ${JSON.stringify(n.target).slice(0, 200)}`);
+                    console.log(`      html:   ${String(n.html || '').replace(/\s+/g, ' ').slice(0, 300)}`);
+                    const reasons = [...(n.any || []), ...(n.all || [])].map(a => a.message).join(' | ');
+                    if (reasons) console.log(`      reason: ${reasons.slice(0, 300)}`);
+                  }
+                }
+              } else {
+                console.log(`[axe] ${name}: czysto`);
+              }
+              blocking = blocking.concat(serious.map(v => `${name}: [${v.impact}] ${v.id} — ${v.help}`));
+              await page.close().catch(() => {});
+            }
+            // naruszenia krytyczne/poważne = FAIL (progu nie osłabiamy —
+            // jeśli świeci, poprawiamy aplikację, nie test)
+            if (blocking.length) {
+              console.error('NARUSZENIA KRYTYCZNE/POWAŻNE:\n' + blocking.join('\n'));
+              process.exitCode = 1;
+            } else {
+              console.log('OK: brak naruszeń krytycznych/poważnych WCAG 2.x AA');
+            }
+          }
+          try {
+            await main();
+          } finally {
+            if (browser) await browser.close().catch(() => {});
+            server.kill();
+          }
+          EOF
+          node a11y.mjs
