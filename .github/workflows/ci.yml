@@ -4,12 +4,21 @@
 # Joby:
 #   1. tests — aplikacja w prawdziwej przeglądarce (Playwright):
 #        a) kontrola CACHE (N3: zmiana plików CORE bez zmiany sw.js = FAIL)
-#        b) brak błędów konsoli przy starcie
-#        c) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
+#        b) kontrola nagłówków plików — anty-truncation (N6/N7)
+#        c) kontrola stylu obliczonego w przeglądarce (N6: reguła resetu *)
+#        d) brak błędów konsoli przy starcie
+#        e) wbudowany harness ?test — wynik czytamy z window.__abaxTests()
 #           (nie z konsoli: wyjątek w runSelfTests nie może przejść na zielono, C1)
 #   2. lighthouse — Lighthouse CI z progami (assert, C6)
 #   3. a11y-axe  — axe-core/playwright w Playwright: skan home/setup/settings
 #                  i dialogów; fail przy naruszeniach krytycznych/poważnych (C5)
+#
+# Anty-truncation (N6/N7 z audytu): pliki wgrane przez "Add files via upload"
+# potrafiły stracić początek — app.css zaczynał się od środka komentarza, więc
+# przeglądarka odrzucała regułę `*` (znikał reset box-sizing/touch-action),
+# a app.js traciło "use strict". Testy 65/65 przechodziły, bo sprawdzały tylko
+# konsolę. Dlatego pilnujemy obu plików na dwa sposoby: statycznie (początek
+# pliku) i wizualnie (styl obliczony w Chromium).
 #
 # Uwaga: Playwright i http-server instalujemy LOKALNIE w katalogu ci-workdir
 # (npm install -g + import w .mjs nie działa — Node nie widzi globalnych pakietów
@@ -21,7 +30,6 @@
 # dla ekosystemu github-actions.
 
 name: CI
-
 on:
   push:
     branches: [main]
@@ -53,10 +61,32 @@ jobs:
           CORE_CHANGED=$(echo "$DIFF" | grep -E '^(index\.html|manifest\.webmanifest|css/app\.css|js/app\.js)$' | wc -l)
           SW_CHANGED=$(echo "$DIFF" | grep -E '^sw\.js$' | wc -l)
           if [ "$CORE_CHANGED" -gt 0 ] && [ "$SW_CHANGED" -eq 0 ]; then
-            echo "::error::Zmieniono plik z CORE sw.js (index.html / manifest / css/app.css / js/app.js) bez zmiany sw.js. Zrób bump CACHE, inaczej użytkownicy z aktywnym service workerem nie dostaną nowego kodu (audyt N1)."
+            echo "::error::Zmieniono plik z CORE (index.html / manifest / css/app.css / js/app.js) bez zmiany sw.js. Zrób bump CACHE, inaczej użytkownicy z aktywnym service workerem nie dostaną nowego kodu (audyt N1)."
             exit 1
           fi
           echo "OK: kontrola CACHE przeszła (CORE_CHANGED=$CORE_CHANGED, SW_CHANGED=$SW_CHANGED)."
+
+      # N6/N7: statyczna kontrola nagłówków plików. Ucięty początek = FAIL
+      # natychmiast, zanim uruchomi się cokolwiek innego — cheap and loud.
+      - name: Kontrola nagłówków plików (anty-truncation, N6/N7)
+        run: |
+          fail=0
+          # N6: app.css musi zaczynać się od komentarza /* i zawierać regułę
+          # resetu * z box-sizing:border-box w pierwszych 20 liniach.
+          if ! head -c 200 css/app.css | grep -q '^/\*'; then
+            echo "::error::css/app.css nie zaczyna się od komentarza /* — początek pliku został ucięty (audyt N6). Przeglądarka odrzuci regułę resetu * (box-sizing, touch-action) i cała aplikacja renderuje się inaczej."
+            fail=1
+          fi
+          if ! sed -n '1,20p' css/app.css | grep -Eq '\*[^/]*box-sizing:border-box'; then
+            echo "::error::css/app.css: w pierwszych 20 liniach brak reguły resetu * z box-sizing:border-box (audyt N6)."
+            fail=1
+          fi
+          # N7: app.js musi zaczynać się od "use strict";
+          if ! head -c 200 js/app.js | grep -q '"use strict"'; then
+            echo "::error::js/app.js nie zaczyna się od \"use strict\"; — początek pliku został ucięty (audyt N7)."
+            fail=1
+          fi
+          exit $fail
 
       - uses: actions/setup-node@v4
         with:
@@ -113,17 +143,33 @@ jobs:
             // 1. Aplikacja ładuje się bez błędów konsoli
             await page.goto(BASE + '/index.html', { waitUntil: 'networkidle' });
             if (errors.length) {
-              console.error('Błędy konsoli przy starcie:', errors);
-              process.exitCode = 1; return;
+              console.error('Błędy konsoli przy starcie:', errors); process.exitCode = 1; return;
             }
 
             // 2. Kluczowa struktura: kontener aplikacji + toast
             for (const sel of ['#app', '#toast']) {
               if (!(await page.locator(sel).count())) {
-                console.error('Brak elementu: ' + sel);
-                process.exitCode = 1; return;
+                console.error('Brak elementu: ' + sel); process.exitCode = 1; return;
               }
             }
+
+            // 2b. N6 — kontrola stylu obliczonego (anty-truncation, druga warstwa):
+            //     gdy początek app.css został ucięty, przeglądarka odrzuca regułę `*`
+            //     i body ma box-sizing: content-box, a przyciski touch-action: auto
+            //     (opóźnienie 300 ms + double-tap zoom). Testy konsolowe tego nie
+            //     widzą — dlatego sprawdzamy właśnie to.
+            const styleProbe = await page.evaluate(() => {
+              const btn = document.querySelector('button');
+              return {
+                bodyBoxSizing: getComputedStyle(document.body).boxSizing,
+                btnTouchAction: btn ? getComputedStyle(btn).touchAction : '(no button)'
+              };
+            });
+            if (styleProbe.bodyBoxSizing !== 'border-box' || styleProbe.btnTouchAction !== 'manipulation') {
+              console.error('Reguła resetu * nie działa (audyt N6 — objaw uciętego początku app.css):', styleProbe);
+              process.exitCode = 1; return;
+            }
+            console.log('OK: styl obliczony — body border-box, button touch-action:manipulation');
 
             // 3. Wbudowany harness ?test — wynik bezpośrednio z runSelfTests() (C1):
             //    wyjątek w harnessie lub niezgodność passed/total = FAIL,
